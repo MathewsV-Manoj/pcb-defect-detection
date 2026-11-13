@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1320" viewBox="0 0 1200 1320" role="img" aria-labelledby="title desc">
+<title id="title">PCB inspection workflow architecture</title>
+<desc id="desc">PCB camera image flows through OpenCV preprocessing, YOLOv8 Nano inference, detection decoding and event generation, Firebase Realtime Database and the operator dashboard. Annotated images are saved separately and an optional language model explains structured detections.</desc>
+<defs>
+  <linearGradient id="background" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F8FBFD"/><stop offset="1" stop-color="#EAF2F6"/></linearGradient>
+  <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#102235" flood-opacity=".10"/></filter>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#456579"/></marker>
+  <marker id="arrowTeal" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#0F8B8D"/></marker>
+  <style>
+    .eyebrow{font:700 17px Arial,sans-serif;fill:#0F8B8D;letter-spacing:2px}
+    .headline{font:700 34px Arial,sans-serif;fill:#102235}
+    .subtitle{font:17px Arial,sans-serif;fill:#607282}
+    .heading{font:700 22px Arial,sans-serif;fill:#102235}
+    .detail{font:16px Arial,sans-serif;fill:#526778}
+    .small{font:14px Arial,sans-serif;fill:#607282}
+    .number{font:700 16px Arial,sans-serif;fill:#fff}
+    .pill{font:700 13px Arial,sans-serif;fill:#0F7779;letter-spacing:1.3px}
+    .node{fill:#fff;stroke:#CCD9E1;stroke-width:2;filter:url(#shadow)}
+    .vision{fill:#E8F5F4;stroke:#0F8B8D;stroke-width:2.4;filter:url(#shadow)}
+    .data{fill:#EEF3F9;stroke:#6283A0;stroke-width:2.2;filter:url(#shadow)}
+    .optional{fill:#FFF6EA;stroke:#D69A4C;stroke-width:2.2;stroke-dasharray:9 7;filter:url(#shadow)}
+    .flow{fill:none;stroke:#456579;stroke-width:3;marker-end:url(#arrow)}
+    .flow-teal{fill:none;stroke:#0F8B8D;stroke-width:3;marker-end:url(#arrowTeal)}
+    .flow-dash{fill:none;stroke:#D69A4C;stroke-width:2.6;stroke-dasharray:9 7;marker-end:url(#arrow)}
+  </style>
+</defs>
+<rect width="1200" height="1320" rx="30" fill="url(#background)"/>
+<text x="68" y="76" class="eyebrow">EDGE-AI PCB AUTOMATED OPTICAL INSPECTION</text>
+<text x="68" y="126" class="headline">From PCB image to traceable inspection result</text>
+<text x="68" y="158" class="subtitle">Vision runs on the edge. Firebase transports records. The dashboard presents the result.</text>
+<g>
+  <rect class="node" x="245" y="198" width="690" height="100" rx="18"/>
+  <circle cx="292" cy="248" r="22" fill="#18334A"/><text x="292" y="254" text-anchor="middle" class="number">01</text>
+  <text x="338" y="240" class="heading">PCB inspection station + camera</text><text x="338" y="270" class="detail">Board positioned; image or camera frame acquired</text>
+  <path class="flow" d="M590 298 V340"/>
+  <rect class="node" x="245" y="344" width="690" height="100" rx="18"/>
+  <circle cx="292" cy="394" r="22" fill="#18334A"/><text x="292" y="400" text-anchor="middle" class="number">02</text>
+  <text x="338" y="386" class="heading">OpenCV image preprocessing</text><text x="338" y="416" class="detail">Validate, resize, letterbox, convert to RGB and normalize</text>
+  <path class="flow" d="M590 444 V486"/>
+  <rect class="vision" x="245" y="490" width="690" height="100" rx="18"/>
+  <circle cx="292" cy="540" r="22" fill="#0F8B8D"/><text x="292" y="546" text-anchor="middle" class="number">03</text>
+  <text x="338" y="532" class="heading">YOLOv8 Nano edge inference</text><text x="338" y="562" class="detail">Localize open circuit, short circuit and missing hole</text>
+  <path class="flow-teal" d="M590 590 V632"/>
+  <rect class="vision" x="245" y="636" width="690" height="100" rx="18"/>
+  <circle cx="292" cy="686" r="22" fill="#0F8B8D"/><text x="292" y="692" text-anchor="middle" class="number">04</text>
+  <text x="338" y="678" class="heading">Detection decoding + annotated PCB image</text><text x="338" y="708" class="detail">Filter predictions, map boxes to the original frame and save output</text>
+  <path class="flow-teal" d="M590 736 V778"/>
+  <rect class="vision" x="245" y="782" width="690" height="100" rx="18"/>
+  <circle cx="292" cy="832" r="22" fill="#0F8B8D"/><text x="292" y="838" text-anchor="middle" class="number">05</text>
+  <text x="338" y="824" class="heading">Structured inspection event</text><text x="338" y="854" class="detail">Board ID, timestamp, class, confidence and bounding boxes</text>
+  <path class="flow-teal" d="M590 882 V924"/>
+  <rect class="data" x="245" y="928" width="690" height="100" rx="18"/>
+  <circle cx="292" cy="978" r="22" fill="#6283A0"/><text x="292" y="984" text-anchor="middle" class="number">06</text>
+  <text x="338" y="970" class="heading">Firebase Realtime Database</text><text x="338" y="1000" class="detail">/live latest state  |  /inspections event history</text>
+  <path class="flow" d="M590 1028 V1070"/>
+  <rect class="data" x="245" y="1074" width="690" height="100" rx="18"/>
+  <circle cx="292" cy="1124" r="22" fill="#6283A0"/><text x="292" y="1130" text-anchor="middle" class="number">07</text>
+  <text x="338" y="1116" class="heading">HTML / CSS / JavaScript dashboard</text><text x="338" y="1146" class="detail">Latest result, defect details, inspection history and CSV export</text>
+</g>
+<path class="flow" d="M245 686 H190 V818 H160"/>
+<rect class="node" x="30" y="770" width="130" height="150" rx="16"/>
+<text x="50" y="804" class="pill">OUTPUT</text><text x="50" y="840" class="heading" style="font-size:17px">Annotated</text><text x="50" y="862" class="heading" style="font-size:17px">PCB image</text><text x="50" y="892" class="small">Saved with</text><text x="50" y="910" class="small">localized boxes</text>
+<path class="flow-dash" d="M935 832 H990 V680 H1020"/>
+<rect class="optional" x="990" y="590" width="180" height="176" rx="18"/>
+<text x="1012" y="624" class="pill">OPTIONAL LAYER</text><text x="1012" y="662" class="heading" style="font-size:19px">Llama advisory</text><text x="1012" y="694" class="small">Explains structured</text><text x="1012" y="716" class="small">YOLO findings only</text><text x="1012" y="744" class="small">No new detections</text>
+<path class="flow-dash" d="M1080 766 V978 H935"/>
+<text x="68" y="1260" class="small">YOLO owns visual localization  |  LLM provides optional explanation  |  Firebase handles data transport</text>
+</svg>
