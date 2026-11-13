@@ -1,0 +1,15 @@
+{
+  "record_id": "EXAMPLE-DO-NOT-COUNT",
+  "board_id": "PCB-EXAMPLE-001",
+  "timestamp": "2026-11-13T12:00:00+05:30",
+  "decision": "REVIEW",
+  "source": "IMAGE_INFERENCE",
+  "model_file": "best.onnx (placeholder; not included)",
+  "model_class_order": ["missing_hole", "open_circuit", "short_circuit"],
+  "inference_latency_ms": null,
+  "detections": [
+    {"class_id": 1, "class_name": "open_circuit", "confidence": 0.82, "bbox_xyxy": [120,80,240,180]}
+  ],
+  "advisory": null,
+  "note": "Illustrative schema example only; not an actual model prediction."
+}

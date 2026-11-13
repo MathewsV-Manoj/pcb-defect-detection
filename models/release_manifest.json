@@ -1,0 +1,15 @@
+{
+  "status": "MISSING_ARTIFACTS",
+  "training_run_expected": "runs/pcb3/",
+  "class_names": ["missing_hole", "open_circuit", "short_circuit"],
+  "input": {"width": 640, "height": 640, "color": "RGB", "layout": "NCHW", "dtype": "float32"},
+  "expected_onnx_output_shape": [1, 7, 8400],
+  "artifacts": {
+    "best_pt": {"path": "models/best.pt", "sha256": null, "present": false},
+    "best_onnx": {"path": "models/best.onnx", "sha256": null, "present": false},
+    "detector_tflite": {"path": "models/detector.tflite", "sha256": null, "present": false}
+  },
+  "metrics": null,
+  "validated": false,
+  "notes": "Populate only after actual model files and saved evaluation artifacts are supplied and verified."
+}

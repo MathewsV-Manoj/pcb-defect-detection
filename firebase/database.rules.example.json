@@ -1,0 +1,16 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "inspections": {
+      "$record_id": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "live": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
+  }
+}

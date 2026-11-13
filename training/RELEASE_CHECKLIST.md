@@ -1,0 +1,12 @@
+- [ ] Confirm exact dataset/archive/version and license.
+- [ ] Inspect training run args.yaml and data.yaml.
+- [ ] Verify class order: 0 missing_hole, 1 open_circuit, 2 short_circuit.
+- [ ] Confirm run is runs/pcb3, not older six-class runs/pcb.
+- [ ] Save best.pt and SHA-256.
+- [ ] Evaluate held-out test split; save per-class precision/recall/mAP@50/mAP@50-95.
+- [ ] Inspect confusion matrix, PR curves and false/missed detections.
+- [ ] Export ONNX from the verified checkpoint.
+- [ ] Compare PyTorch and ONNX predictions on identical test images.
+- [ ] Validate ONNX graph input/output, class mapping and decoder.
+- [ ] Benchmark actual Pi 5: latency, FPS, RAM, temperature and stability.
+- [ ] Record exact package versions and commands.

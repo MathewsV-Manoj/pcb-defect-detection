@@ -1,0 +1,3 @@
+0 missing_hole
+1 open_circuit
+2 short_circuit

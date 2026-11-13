@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PCB inspection event",
+  "type": "object",
+  "required": ["record_id", "board_id", "timestamp", "decision", "source", "detections"],
+  "properties": {
+    "record_id": {"type": "string"},
+    "board_id": {"type": "string"},
+    "timestamp": {"type": "string", "format": "date-time"},
+    "decision": {"enum": ["REVIEW", "NO_TARGET_DEFECT_DETECTED", "ERROR"]},
+    "source": {"enum": ["LIVE", "IMAGE_INFERENCE", "SIMULATION"]},
+    "model_file": {"type": ["string", "null"]},
+    "model_class_order": {"type": "array", "items": {"type": "string"}},
+    "inference_latency_ms": {"type": ["number", "null"], "minimum": 0},
+    "detections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["class_id", "class_name", "confidence", "bbox_xyxy"],
+        "properties": {
+          "class_id": {"type": "integer", "minimum": 0, "maximum": 2},
+          "class_name": {"enum": ["missing_hole", "open_circuit", "short_circuit"]},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "bbox_xyxy": {"type": "array", "items": {"type": "number"}, "minItems": 4, "maxItems": 4}
+        }
+      }
+    },
+    "advisory": {"type": ["string", "null"]},
+    "note": {"type": ["string", "null"]}
+  },
+  "additionalProperties": true
+}

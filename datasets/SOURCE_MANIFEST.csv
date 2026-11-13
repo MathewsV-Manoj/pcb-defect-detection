@@ -1,0 +1,5 @@
+dataset_name,version,source_url,license_or_terms,download_date,local_archive_sha256,classes_original,classes_mapped,used_for_checkpoint,notes
+Mendeley Mixed PCB Defect Dataset,version 4,TO_VERIFY,TO_VERIFY,TO_FILL,TO_FILL,TO_VERIFY,TO_VERIFY,UNKNOWN,Confirm against the exact training run before claiming use
+DeepPCB,official repository,https://github.com/tangsanli5201/DeepPCB,REVIEW_UPSTREAM_TERMS,TO_FILL,TO_FILL,TO_VERIFY,TO_VERIFY,UNKNOWN,Do not map pin-hole to missing_hole without annotation evidence
+Tiny-Defect-Detection-for-PCB,repository dataset links,https://github.com/Ixiaohuihuihui/Tiny-Defect-Detection-for-PCB,REVIEW_UPSTREAM_TERMS,TO_FILL,TO_FILL,TO_VERIFY,TO_VERIFY,UNKNOWN,Verify annotation format and labels
+Own PCB camera images,project captures,INTERNAL,OBTAIN_CONTRIBUTOR_PERMISSION,TO_FILL,TO_FILL,open_circuit;short_circuit;missing_hole,TO_VERIFY,UNKNOWN,Keep physical board groups intact across splits
