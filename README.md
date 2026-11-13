@@ -97,6 +97,8 @@ Board-aware splitting is important because related crops or images from the same
 
 The training utility supports YOLO training, test-split validation and INT8 TFLite export. The following commands illustrate the workflow and parameters; the final report should reproduce the exact arguments recorded in the selected training run.
 
+    cd pcb_engine_kit
+
     python train_export.py train --data data/pcb/data.yaml --size 640 --batch 4 --epochs 100 --device 0
 
     python train_export.py validate --data data/pcb/data.yaml --weights runs/pcb/weights/best.pt --size 640 --device 0
