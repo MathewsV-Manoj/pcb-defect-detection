@@ -1,0 +1,2 @@
+image,label,format,group,split
+images/board_001.jpg,labels/board_001.xml,voc,board_001,train

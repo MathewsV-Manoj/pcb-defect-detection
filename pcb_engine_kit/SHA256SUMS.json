@@ -1,0 +1,23 @@
+{
+  "config.json": "add6da36eb6340b092fd046a5f3a3db919ba940a63fa832c4703a0440256fd57",
+  "dataset.py": "e99595bd437abb891687185bd68edb6e71e5e0ef93cd491ebdb083c5ee9d178b",
+  "engine.py": "52af1861de633a3214e70e9c73b908184dd326cd36108c59714543371a22f163",
+  "evaluate_pi.py": "24f22002615a5e383b34526921d9de4a0b692067515420c738fcdb6c640bf76e",
+  "GUI_ARCHITECTURE.md": "9295d1f486fa822020143abaad5972b1e36dbebc596f4a888778bc4872738408",
+  "label.py": "cc5c6cbb7a2651c3ee3179ee1e2d5191e95bf8fc01ec9a1150c44aa706ad05c9",
+  "make_reference.py": "da02976ff7b946d502f61dcddde60e55e6303f723d36603b5e636efb0d343d7f",
+  "manifest.example.csv": "81da28c1f8758e2d04cd6093c664a1a99425578de2adefbc5d1c371aad45341e",
+  "README.md": "0bb6de027c1a47193eb85d5fc673cb09850a2e87fc5d461269d2b152897be6cf",
+  "requirements-export.txt": "0a68ee97811568d51861e5b153c375114ac5a10a7d4a6445f8a530d627afbf05",
+  "requirements-pi.txt": "a7d1a038c39424fd4c5224b7fd9ba2530da220c3f0cbe88ae9bb4c7cdeeef07a",
+  "requirements-train.txt": "ae9aa1d43ef56aaaef4833e5d0f9c111f6cf0835229374745f56d1955e379908",
+  "safe_extract.py": "b518cf94476d917477177eaaf15fb49de19250e859c99805bc936ab56cd79313",
+  "submit.py": "040377f497771597dfc6161a797aeedfe8c9e4cfa964a9ba99b9971e71659996",
+  "test_contracts.py": "e7eb99689cf94b60d8f862dc459bb1707172ac5011886a684ee19cb99d2cd373",
+  "TRAINING_AND_DEPLOYMENT.md": "4b9378a570bd7493b67841f33af6050102cd6f9717ed25c362b5e83357a68b12",
+  "train_export.py": "58cfb353ff07b3a9324f3bc4b19da051acbb783562c66661ce4c0bdb991db83a",
+  "VERIFICATION.md": "58d245623afd6f1755b35a16c8df0755fb36f320a2b41eb518112e24e281ece8",
+  "optional_unet\\pcb_ultra_resatt_unet.pth": "23107a1805c13e57f3bccace4aa20bd59e5b400468cb3c0b26f6dba0bce1426c",
+  "optional_unet\\README.md": "e0ca5e542c29eda9f8b74fdc1c8c716432dad5aa6089434a921616554de84ef5",
+  "optional_unet\\run_pcb_ultra.py": "85c04e2c980301ef48723bb2f081e743369530e99845e1808037b18f52e5c4a2"
+}
