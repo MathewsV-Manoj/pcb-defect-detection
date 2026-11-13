@@ -17,6 +17,8 @@ The system brings together the following parts:
 
 This repository brings the inspection pipeline, edge software, dataset utilities, dashboard, data contract and deployment documentation into one project.
 
+**Evaluator resources:** [Technical project report](docs/PROJECT_REPORT.md) | [System architecture diagram](docs/inspection_workflow.svg) | [Demonstration video upload folder](demo_video/)
+
 ---
 
 ## 1. Problem statement and project objectives
