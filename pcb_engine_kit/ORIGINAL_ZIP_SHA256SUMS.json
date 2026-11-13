@@ -1,4 +1,5 @@
 {
+  "_description": "Original PCB_ENGINE_KIT.zip internal SHA-256 manifest. Hashes verify the original ZIP entries, not the re-authored/normalized text files committed to this repository.",
   "config.json": "add6da36eb6340b092fd046a5f3a3db919ba940a63fa832c4703a0440256fd57",
   "dataset.py": "e99595bd437abb891687185bd68edb6e71e5e0ef93cd491ebdb083c5ee9d178b",
   "engine.py": "52af1861de633a3214e70e9c73b908184dd326cd36108c59714543371a22f163",
@@ -17,7 +18,7 @@
   "TRAINING_AND_DEPLOYMENT.md": "4b9378a570bd7493b67841f33af6050102cd6f9717ed25c362b5e83357a68b12",
   "train_export.py": "58cfb353ff07b3a9324f3bc4b19da051acbb783562c66661ce4c0bdb991db83a",
   "VERIFICATION.md": "58d245623afd6f1755b35a16c8df0755fb36f320a2b41eb518112e24e281ece8",
-  "optional_unet\\pcb_ultra_resatt_unet.pth": "23107a1805c13e57f3bccace4aa20bd59e5b400468cb3c0b26f6dba0bce1426c",
-  "optional_unet\\README.md": "e0ca5e542c29eda9f8b74fdc1c8c716432dad5aa6089434a921616554de84ef5",
-  "optional_unet\\run_pcb_ultra.py": "85c04e2c980301ef48723bb2f081e743369530e99845e1808037b18f52e5c4a2"
+  "optional_unet\\\\pcb_ultra_resatt_unet.pth": "23107a1805c13e57f3bccace4aa20bd59e5b400468cb3c0b26f6dba0bce1426c",
+  "optional_unet\\\\README.md": "e0ca5e542c29eda9f8b74fdc1c8c716432dad5aa6089434a921616554de84ef5",
+  "optional_unet\\\\run_pcb_ultra.py": "85c04e2c980301ef48723bb2f081e743369530e99845e1808037b18f52e5c4a2"
 }
