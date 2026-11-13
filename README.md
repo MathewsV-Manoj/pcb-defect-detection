@@ -1,5 +1,5 @@
 
-# Intelligent PCB Defect Inspection and Edge Quality Monitoring
+# Edge-AI PCB Automated Optical Inspection (AOI)
 
 **An edge-AI vision system for automated printed circuit board inspection, designed around YOLOv8 Nano and Raspberry Pi deployment.**
 
@@ -91,7 +91,7 @@ The dataset workflow includes:
 - Dataset audit output for reviewing split composition and class coverage.
 - A local OpenCV annotation tool for project-specific images.
 
-Board-aware splitting is important because related crops or images from the same physical board should not be distributed across training and evaluation splits. The dataset source manifest is maintained at SOURCES_MANIFEST in the datasets folder. For a release, record the exact source, version, annotation mapping, license/terms, split and archive checksum used by the selected checkpoint.
+Board-aware splitting is important because related crops or images from the same physical board should not be distributed across training and evaluation splits. The dataset source manifest is maintained at datasets/SOURCE_MANIFEST.csv. For a release, record the exact source, version, annotation mapping, license/terms, split and archive checksum used by the selected checkpoint.
 
 ### Example training and validation
 
