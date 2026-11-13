@@ -89,20 +89,27 @@ The dashboard provides an inspection overview, defect-category counts, latest-re
 
 ### System flow diagram
 
+The complete seven-stage inspection path is shown below. The annotated image is saved as a separate inspection artifact, while the optional advisory branch receives structured detector findings.
+
+![PCB inspection system flowchart](docs/inspection_workflow.svg)
+
+<details>
+<summary>View the editable Mermaid flowchart source</summary>
+
 ```mermaid
 flowchart TD
-    A[PCB positioned at inspection station] --> B[Camera captures PCB image]
-    B --> C[OpenCV preprocessing]
-    C --> D[YOLOv8 Nano edge inference]
-    D --> E[Decode boxes, classes and confidence]
-    E --> F[Create inspection event]
-    E --> G[Generate annotated PCB image]
-    F --> H[Optional Llama operator advisory]
-    F --> I[Firebase Realtime Database]
-    H --> I
-    I --> J[Live HTML dashboard]
-    I --> K[Inspection history and CSV export]
+    A[PCB inspection station and camera] --> B[OpenCV image preprocessing]
+    B --> C[YOLOv8 Nano edge inference]
+    C --> D[Decode detections and annotate image]
+    D --> E[Create structured inspection event]
+    E --> F[Firebase Realtime Database]
+    F --> G[HTML dashboard and inspection history]
+    D --> H[Save annotated PCB image]
+    E -.-> I[Optional Llama advisory]
+    I -.-> F
 ```
+
+</details>
 
 ## 3. System architecture
 
