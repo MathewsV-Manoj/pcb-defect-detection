@@ -68,7 +68,7 @@ The current result semantics distinguish a board requiring review from an image 
 
 ### Stage 5 — Optional operator advisory
 
-The advisory component receives the structured detector findings rather than the original PCB image. A Llama-family model can use the board ID, detected class, confidence, coordinates and approved inspection procedures to generate a short explanation or a suggested manual verification step.
+The advisory component receives the structured detector findings rather than the original PCB image. It passes the board ID, detected class, confidence, coordinates and approved inspection procedures to the Llama-family layer to generate a short explanation or a suggested manual verification step.
 
 The advisory is kept separate from the vision model. It does not create detections, change class labels, suppress predictions or independently make the inspection decision. YOLO remains responsible for visual localization.
 
@@ -248,7 +248,7 @@ These reference comparison candidates are kept separate from YOLO detections. Th
 
 ## 8. AI-assisted operator advisory
 
-The optional advisory interface is designed around structured detector output. Its prompt builder passes selected fields such as board ID, class name, confidence and bounding-box coordinates to the language-model layer.
+The optional advisory interface operates on structured detector output. Its prompt builder passes selected fields such as board ID, class name, confidence and bounding-box coordinates to the language-model layer.
 
 The advisory provides a human-readable explanation and a suggested verification step. It follows these boundaries:
 
