@@ -10,6 +10,12 @@ The operator advisory is a text-only Llama pipeline designed to run on the Raspb
 
 The ExecuTorch runner uses text inputs only. It receives defect type, severity, location, confidence, board ID and timestamp. It does not receive the PCB image.
 
+## Python runner build
+
+The ExecuTorch LLM Runner Python bindings are experimental. They are provided by the ExecuTorch source build, not by the basic runtime package alone. The source build enables `EXECUTORCH_BUILD_PYBIND=ON` or uses the ExecuTorch install script that builds Python bindings. The installed runner module must expose the LLM Runner classes used by `run_executorch.py`.
+
+The runner source uses `MultimodalRunner` with text inputs only. It does not call `make_image_input`, load image tensors or pass the PCB frame to the Llama model.
+
 ## Model
 
 The reference model family is Llama 3.2 Instruct 1B or 3B. The `.pte` model and matching tokenizer binary are separate deployment artifacts. They are not bundled in the source checkout, and no Raspberry Pi inference benchmark is asserted here.
