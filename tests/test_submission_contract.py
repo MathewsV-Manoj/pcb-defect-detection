@@ -180,6 +180,26 @@ class SubmissionContractTests(unittest.TestCase):
             {"missing_hole": "missing_hole", "open_circuit": "open_circuit", "short": "short_circuit"},
         )
 
+    def test_local_execution_claims_match_runtime_configuration(self):
+        local_doc = (ROOT / "docs" / "LOCAL_EXECUTION_AND_PERFORMANCE.md").read_text(encoding="utf-8")
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        report = (ROOT / "docs" / "PROJECT_REPORT.md").read_text(encoding="utf-8")
+        env_example = (ROOT / "raspberry_pi" / ".env.example").read_text(encoding="utf-8")
+        detector = (ROOT / "raspberry_pi" / "inspect_image.py").read_text(encoding="utf-8")
+        llama = (ROOT / "llm_advisory" / "run_executorch.py").read_text(encoding="utf-8")
+        manifest = json.loads((ROOT / "models" / "release_manifest.json").read_text(encoding="utf-8"))
+
+        self.assertIn('providers=["CPUExecutionProvider"]', detector)
+        self.assertIn("executorch_cpp_llama_main", llama)
+        self.assertIn("PCB_FIREBASE_PUBLISH=false", env_example)
+        self.assertIn("no cloud inference endpoint", readme.lower())
+        self.assertIn("Firebase is disabled by default", report)
+        self.assertIn("DLMR metric applicability", local_doc)
+        self.assertFalse(manifest["local_execution"]["remote_inference_api_configured"])
+        self.assertFalse(manifest["local_execution"]["runtime_internet_required_for_inference"])
+        self.assertFalse(manifest["local_execution"]["offline_validation_completed"])
+        self.assertFalse(manifest["local_execution"]["firebase_record_sync"]["default_enabled"])
+
     def test_external_benchmarks_are_explicitly_separate_from_project_measurements(self):
         reference = (ROOT / "docs" / "REFERENCE_BENCHMARKS.md").read_text(encoding="utf-8")
         pipeline = (ROOT / "raspberry_pi" / "benchmark_pipeline.py").read_text(encoding="utf-8")
