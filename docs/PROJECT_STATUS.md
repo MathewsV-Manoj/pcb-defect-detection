@@ -18,7 +18,9 @@ The physical station and its operation are documented in the project demonstrati
 | Vision inference | `raspberry_pi/inspect_image.py` | OpenCV preprocessing and YOLO ONNX CPU inference |
 | Event publishing | `raspberry_pi/firebase_client.py` | Publish structured events to Firebase Realtime Database |
 | Operator interface | `dashboard/index.html` | Present inspection result, advisory and history |
-| Advisory input construction | `llm_advisory/prompt.py` | Package structured detections for Llama advisory reasoning |
+| Advisory prompt | `llm_advisory/prompt.py` | Build a text-only prompt from structured findings |
+| Advisory runtime entry point | `llm_advisory/run_executorch.py` | Invoke the ExecuTorch LLM runner and capture response telemetry |
+| Advisory boundary tests | `tests/test_advisory_contract.py` | Verify structured fields are included and image payloads are excluded |
 | Event contract | `schemas/` | Define defect type, severity, location and confidence fields |
 
 ## Runtime architecture
@@ -27,7 +29,7 @@ The base vision path is ONNX Runtime on the Raspberry Pi 5 ARM CPU. A Hailo NPU 
 
 ## Evidence and release artifacts
 
-The repository contains source for image inference, station-trigger handling, event publishing, prompt construction, dashboard presentation and event validation. The final YOLO detector binary, complete training dataset archive, ExecuTorch model package and target-device benchmark data are not bundled in the current source checkout. The model release manifest records the binary status; no unverified precision, recall, F1, FPS, latency, memory or power figures are stated.
+The repository contains source for image inference, station-trigger handling, event publishing, prompt construction, the ExecuTorch runner entry point, dashboard presentation and advisory contract tests. The final YOLO detector binary, complete training dataset archive, ExecuTorch model package and target-device benchmark data are not bundled in the current source checkout. The model release manifest records the binary status; no unverified precision, recall, F1, FPS, latency, memory or power figures are stated.
 
 ## Hardware interface boundaries
 
