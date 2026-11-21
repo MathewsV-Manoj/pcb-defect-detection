@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import resource
 import subprocess
 import sys
@@ -72,6 +73,50 @@ def validate_advisory(value: dict[str, Any] | None) -> dict[str, Any]:
     return value
 
 
+def parse_pytorch_observer(raw_text: str) -> dict[str, Any] | None:
+    """Parse ExecuTorch's machine-readable generation statistics, if emitted."""
+    found: dict[str, Any] | None = None
+    for line in raw_text.splitlines():
+        marker = line.find("PyTorchObserver")
+        if marker < 0:
+            continue
+        payload = line[marker + len("PyTorchObserver"):].strip()
+        try:
+            stats = json.loads(payload)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(stats, dict) and {
+            "inference_start_ms", "inference_end_ms", "generated_tokens"
+        }.issubset(stats):
+            found = stats
+    return found
+
+
+def observer_ttft_ms(stats: dict[str, Any] | None) -> float | None:
+    if not stats:
+        return None
+    start = stats.get("inference_start_ms")
+    first = stats.get("first_token_ms")
+    if isinstance(start, (int, float)) and isinstance(first, (int, float)) and first >= start:
+        return round(float(first - start), 2)
+    return None
+
+
+def observer_tokens_per_second(stats: dict[str, Any] | None) -> float | None:
+    if not stats:
+        return None
+    generated = stats.get("generated_tokens")
+    start = stats.get("inference_start_ms")
+    end = stats.get("inference_end_ms")
+    if (
+        isinstance(generated, (int, float)) and generated > 0
+        and isinstance(start, (int, float)) and isinstance(end, (int, float))
+        and end > start
+    ):
+        return round(float(generated) * 1000.0 / float(end - start), 2)
+    return None
+
+
 def linux_peak_child_rss_kib() -> int | None:
     try:
         # Linux reports ru_maxrss in KiB. This is the maximum child-process
@@ -123,17 +168,21 @@ def run_cli(
         detail = (completed.stderr or completed.stdout or "No diagnostic output")[-3000:]
         raise RuntimeError(f"ExecuTorch llama_main exited {completed.returncode}: {detail}")
     advisory = validate_advisory(parse_advisory_json(combined))
+    generation_stats = parse_pytorch_observer(combined)
+    ttft_ms = observer_ttft_ms(generation_stats)
+    tokens_per_second = observer_tokens_per_second(generation_stats)
     return {
         "advisory": advisory,
         "advisory_text": json.dumps(advisory, ensure_ascii=False),
         "runner_backend": "executorch_cpp_llama_main",
-        "ttft_ms": None,
+        "ttft_ms": ttft_ms,
         "total_response_ms": round(total_ms, 2),
-        "tokens_per_second": None,
+        "tokens_per_second": tokens_per_second,
+        "generation_stats": generation_stats,
         "process_peak_rss_kb": linux_peak_child_rss_kib(),
         "telemetry_note": (
-            "The C++ runner output does not expose stable per-token timing in this integration; "
-            "TTFT and tokens/s are left null rather than estimated."
+            "TTFT and tokens/second are parsed from ExecuTorch PyTorchObserver output "
+            "when available; otherwise they remain null rather than being estimated."
         ),
     }
 
