@@ -4,6 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "llm_advisory"))
 from prompt import build_prompt
+from run_executorch import parse_advisory_json, validate_advisory
 
 
 class AdvisoryPromptContractTests(unittest.TestCase):
@@ -41,6 +42,28 @@ class AdvisoryPromptContractTests(unittest.TestCase):
         self.assertNotIn("/tmp/private-frame.jpg", prompt)
         self.assertNotIn('"image"', prompt)
         self.assertNotIn('"image_path"', prompt)
+
+    def test_advisory_response_parser_accepts_valid_json_and_fenced_json(self):
+        value = {
+            "explanation": "A conductive track discontinuity was detected.",
+            "recommended_actions": ["Inspect the localized track region."],
+            "severity_note": "Severity is unassessed; request human review.",
+            "log_entry": "PCB-TEST-04: open circuit finding requires review.",
+        }
+        raw = __import__("json").dumps(value)
+        self.assertEqual(validate_advisory(parse_advisory_json(raw)), value)
+        self.assertEqual(validate_advisory(parse_advisory_json("```json\\n" + raw + "\\n```")), value)
+
+    def test_advisory_response_rejects_missing_or_wrongly_typed_fields(self):
+        with self.assertRaises(RuntimeError):
+            validate_advisory({"explanation": "Only a partial response"})
+        with self.assertRaises(RuntimeError):
+            validate_advisory({
+                "explanation": "Finding.",
+                "recommended_actions": "Not a list",
+                "severity_note": "Review.",
+                "log_entry": "Logged.",
+            })
 
     def test_prompt_uses_llama_3_instruct_roles_and_read_only_evidence(self):
         prompt = build_prompt({"board_id": "PCB-TEST-03", "detections": []})
