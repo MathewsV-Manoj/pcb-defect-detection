@@ -49,7 +49,7 @@ The runner uses ExecuTorch's `TextLLMRunner`, which is the text-only runner for 
 
 ## Model packaging
 
-The reference model family is Llama 3.2 Instruct 1B or 3B. The exported ExecuTorch `.pte` model and matching tokenizer binary are separate deployment artifacts and are not stored in the public source repository. The model package and tokenizer must be a matched pair for the runner.
+The reference model family is Llama 3.2 Instruct 1B or 3B. The exported ExecuTorch `.pte` model and matching tokenizer binary are separate deployment artifacts and are not stored in the public source repository. They must be built for the Pi's ARM64 runtime and tested with the exact ExecuTorch build that provides the `TextLLMRunner` Python extension. The model package and tokenizer must be a matched pair for the runner.
 
 Fine-tuning is not required for the structured advisory workflow. A pretrained Instruct model with a controlled prompt is the reference configuration.
 
