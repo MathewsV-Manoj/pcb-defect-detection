@@ -124,13 +124,59 @@ The exported file must still be checked against held-out images and on the targe
 | `docs/` | Project report, workflow diagram, deployment and submission readiness |
 | `demo_video/` | Recorded demonstration file and content checklist |
 
-## Release status
+## Deploy the required Llama advisory
 
-The source code, operator interface, dataset utilities, YOLO training/export source, structured event schema and software tests are present. The repository currently does **not** contain the final `best.pt`, `best.onnx`, ExecuTorch `.pte` model or matching tokenizer. The processed dataset, verified test metrics, completed Raspberry Pi commissioning record and measured Pi performance results are also absent. A demonstration MP4 is present in `demo_video/`; its contents must be checked against the live demonstration sequence before submission.
+The PS5 advisory path is configured for Llama 3.2 1B Instruct SpinQuant INT4/EO8
+running locally through ExecuTorch on the Raspberry Pi 5 CPU. The PTE file
+and matching tokenizer are licensed, large artifacts, so they are downloaded
+locally instead of being committed to Git.
 
-The Bharat AI-SoC Challenge requires a Llama-family model deployed with ExecuTorch. The source runner is present, but the model/tokenizer package is not, so the complete required advisory path is not yet release-ready. Severity is also not implemented beyond the honest `UNASSESSED` state.
+On a machine with access to the Hugging Face model:
 
-No accuracy, latency, throughput, power or full-cycle reliability value is claimed without a corresponding test record. See [Submission readiness](docs/SUBMISSION_READINESS.md) for the Phase 1 checklist and [Project report](docs/PROJECT_REPORT.md) for the implementation description.
+    python -m pip install "huggingface_hub>=0.30,<2"
+    hf auth login
+    python llm_advisory/download_model.py
+
+Build the official Pi 5 C++ runtime on a Linux x86_64 host with CMake 3.26+:
+
+    bash llm_advisory/build_pi5_runner.sh
+
+Copy the local models/llama/ directory (model, tokenizer and runtime) to the
+Pi. The default raspberry_pi/.env.example points to these paths and keeps
+PCB_LLAMA_REQUIRED=true. The Llama component receives the structured
+inspection event as text only and produces an operator advisory; it does not
+modify detections or control machinery. Full instructions:
+[models/llama/README.md](models/llama/README.md) and
+[llm_advisory/README.md](llm_advisory/README.md).
+
+## Release status and evidence
+
+The repository contains the station controller, dashboard, OpenCV/ONNX
+detector source, dataset import/training/export utilities, structured event
+schema, Llama prompt and ExecuTorch runner integration, deployment scripts,
+benchmark scripts, technical report and a demonstration MP4.
+
+The Llama deployment route is now pinned and executable from the repository:
+download a matching PTE/tokenizer pair, build the ExecuTorch Pi 5 runner, copy
+the local files to the Pi, and run the advisory smoke test. The large model
+weights and compiled runtime are not tracked in Git. The repository cannot
+claim that Llama has already run on the team's physical Pi until the smoke test
+and complete station cycle are recorded.
+
+The checkout still does not include the final YOLO best.pt/best.onnx, the
+processed project dataset and its audit, or labelled held-out predictions.
+The final three-class accuracy results, ONNX parity report, real Pi runtime
+measurements, physical commissioning record and confirmed severity policy
+also remain to be produced from the team's own data and hardware. Severity
+therefore remains UNASSESSED; detector confidence is not treated as severity.
+The MP4 file is present, but its actual scenes still need human review.
+
+No project accuracy, latency, FPS, power or end-to-end reliability number is
+claimed without a measurement record. Published Raspberry Pi 5 reference
+results are kept separately in [docs/REFERENCE_BENCHMARKS.md](docs/REFERENCE_BENCHMARKS.md);
+they are not reported as this project's performance. Use
+[docs/SUBMISSION_READINESS.md](docs/SUBMISSION_READINESS.md) for remaining
+evidence and evaluator checks.
 
 ## Team
 
