@@ -13,7 +13,7 @@ makes the disposition decision.
 
 ## 1. Download the model and matching tokenizer
 
-Run from the repository root on a machine with internet access:
+Run from the repository root on a machine with internet access. For the complete Pi setup, use `bash scripts/provision_pi5.sh`; it installs dependencies, downloads this package, and builds the runner automatically.
 
 ```bash
 python -m pip install "huggingface_hub>=0.30,<2"
@@ -29,21 +29,26 @@ The script downloads the exact pinned revision from:
 - Tokenizer: `tokenizer.model`
 
 The .pte artifact is about 1.14 GB. The model page declares the llama3.2
-license. Hugging Face authentication and license acceptance may be required.
+license. The community-exported repository is public at the time of this revision, so Hugging Face login is normally not needed. If its access controls change, follow the repository's authentication instructions. The Llama 3.2 license and acceptable-use policy still apply.
 The downloader writes local SHA-256 hashes to
 `models/llama/download_manifest.json`. Large model files are ignored by Git
 and are not uploaded to this repository.
 
 ## 2. Build the official Pi 5 runner
 
-On a separate Linux x86_64 host with CMake 3.26+, Git and Python 3.10–3.14:
+The recommended path is to build on the Raspberry Pi 5 itself. The one-command provisioner invokes the pinned official ExecuTorch build script and uses the live Pi root filesystem as the target sysroot:
+
+```bash
+bash scripts/provision_pi5.sh
+```
+
+For a separate x86_64 Linux cross-build, set `EXECUTORCH_SYSROOT` to an extracted root filesystem from the exact target Pi OS. A different GLIBC/CXXABI can make the resulting binary fail to load.
 
 ```bash
 bash llm_advisory/build_pi5_runner.sh
 ```
 
-This checks out ExecuTorch `release/1.5` and runs its Raspberry Pi 5 setup
-script. The output is copied to `models/llama/runtime/`:
+This checks out a pinned ExecuTorch 1.5 revision and runs the Raspberry Pi 5 setup script. On a Pi-native build, the sysroot is `/` so the runner links against that device's installed libraries. The output is copied to `models/llama/runtime/`:
 
 - `llama_main`
 - `libllama_runner.so`
@@ -99,8 +104,7 @@ The runner validates a single JSON object with exactly these keys:
 
 - `explanation`: concise description of the supplied findings;
 - `recommended_actions`: array of operator checks;
-- `severity_note`: explicitly preserves `UNASSESSED` until an approved
-  board-specific severity policy exists;
+- `severity_note`: reports the supplied provisional type-based severity priority and explicitly requests human review; unknown classes remain `UNASSESSED`;
 - `log_entry`: concise inspection record text.
 
 Output parsing rejects malformed JSON and mismatched keys. Model output is
