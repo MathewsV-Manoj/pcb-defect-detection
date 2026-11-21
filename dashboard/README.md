@@ -1,7 +1,16 @@
 # Operator dashboard
 
-The dashboard presents the latest PCB inspection state and retained inspection events from Firebase Realtime Database. Its operator view includes camera and conveyor state, IR board-presence sensing, external LED illumination status, defect findings, model metadata, advisory text and inspection history.
+The dashboard presents the latest PCB inspection state and retained inspection events from Firebase Realtime Database.
 
-The dashboard is a presentation layer. Image preprocessing, visual inference and the on-device Llama advisory pipeline execute on the edge device. Firebase provides record synchronization and is not an inference runtime.
+The operator view includes:
+- Board and inspection decision.
+- Camera and conveyor state fields.
+- IR board-presence state at capture.
+- External LED illumination state at capture.
+- Defect type, severity, image location and confidence.
+- Llama advisory text.
+- Inspection history and CSV export.
 
-The HTML source is `index.html`. Live configuration is environment-specific and is not committed with private credentials.
+The dashboard is a presentation layer. Image preprocessing, vision inference and Llama advisory generation execute locally on the Raspberry Pi 5. Firebase provides optional record synchronization and does not execute either model.
+
+The HTML source is `index.html`. Firebase configuration is deployment-specific and private credentials are not included in the repository.

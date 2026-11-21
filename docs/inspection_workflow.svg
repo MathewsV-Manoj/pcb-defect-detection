@@ -1,86 +1,91 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1220" viewBox="0 0 1600 1220" role="img" aria-labelledby="title desc">
-<title id="title">PCB inspection system architecture</title>
-<desc id="desc">A conveyor moves a PCB to an IR sensor trigger. The external LED strip illuminates it for camera capture. OpenCV preprocessing feeds YOLO vision inference, which runs on either the Raspberry Pi CPU or an optional Hailo NPU. Both alternative vision paths feed a structured defect record. A separate Llama ExecuTorch advisory runs on the Pi ARM CPU and feeds operator UI and inspection log.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1280" viewBox="0 0 1600 1280" role="img" aria-labelledby="title desc">
+<title id="title">PCB inspection architecture with separate vision and advisory pipelines</title>
+<desc id="desc">A conveyor moves a PCB to an IR arrival sensor, an external LED strip illuminates it and a camera captures a frame. OpenCV preprocessing feeds one of two alternative vision runtimes: ONNX Runtime on the Raspberry Pi 5 CPU or optional HailoRT on a Hailo NPU. The vision result is converted into a structured defect record. A mandatory Llama ExecuTorch advisory on the Raspberry Pi ARM CPU receives structured text only, generates explanations, verification actions and log text, and sends the completed event to the operator interface and optional Firebase synchronization.</desc>
 <defs>
- <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f8fafb"/><stop offset="1" stop-color="#eaf0f3"/></linearGradient>
- <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#142a38" flood-opacity=".12"/></filter>
- <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12Z" fill="#4b6678"/></marker>
- <marker id="tealArrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12Z" fill="#168b83"/></marker>
- <marker id="orangeArrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12Z" fill="#e36a32"/></marker>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fbfcfd"/><stop offset="1" stop-color="#eaf0f3"/></linearGradient>
+ <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#142a38" flood-opacity=".11"/></filter>
+ <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12Z" fill="#526b79"/></marker>
+ <marker id="teal" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12Z" fill="#13877f"/></marker>
+ <marker id="orange" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto"><path d="M0 0 L12 6 L0 12Z" fill="#e36b35"/></marker>
  <style>
  .ey{font:800 16px Arial,sans-serif;letter-spacing:3px;fill:#bd704a}
  .title{font:700 36px Arial,sans-serif;fill:#1a2b36}
- .sub{font:17px Arial,sans-serif;fill:#5f7683}
- .head{font:700 22px Arial,sans-serif;fill:#1b2e39}
- .body{font:16px Arial,sans-serif;fill:#526b79}
- .small{font:14px Arial,sans-serif;fill:#647b88}
+ .sub{font:17px Arial,sans-serif;fill:#607784}
+ .head{font:700 21px Arial,sans-serif;fill:#1b2e39}
+ .body{font:16px Arial,sans-serif;fill:#536b78}
+ .small{font:14px Arial,sans-serif;fill:#687f8a}
  .node{fill:#fff;stroke:#cbd7de;stroke-width:2;filter:url(#shadow)}
- .physical{fill:#fbf4e9;stroke:#d5a25b;stroke-width:2.3;filter:url(#shadow)}
- .vision{fill:#e8f5f2;stroke:#168b83;stroke-width:2.4;filter:url(#shadow)}
- .accel{fill:#eff6f7;stroke:#5486a0;stroke-width:2.2;stroke-dasharray:8 6;filter:url(#shadow)}
- .advisory{fill:#fff0e8;stroke:#e36a32;stroke-width:2.4;filter:url(#shadow)}
- .operator{fill:#1b2730;stroke:#1b2730;stroke-width:2;filter:url(#shadow)}
- .arr{fill:none;stroke:#4b6678;stroke-width:3;marker-end:url(#arrow)}
- .tarr{fill:none;stroke:#168b83;stroke-width:3.2;marker-end:url(#tealArrow)}
- .oarr{fill:none;stroke:#e36a32;stroke-width:3.2;marker-end:url(#orangeArrow)}
- .white{fill:#fff}.whiteSub{fill:#d1dde2}
+ .hardware{fill:#fff5e9;stroke:#d4a15e;stroke-width:2.2;filter:url(#shadow)}
+ .vision{fill:#e8f5f2;stroke:#168b83;stroke-width:2.2;filter:url(#shadow)}
+ .accelerated{fill:#eff5f7;stroke:#5a879d;stroke-width:2.2;stroke-dasharray:8 6;filter:url(#shadow)}
+ .record{fill:#edf2f8;stroke:#6486a2;stroke-width:2.2;filter:url(#shadow)}
+ .advisory{fill:#fff0e8;stroke:#e36b35;stroke-width:2.4;filter:url(#shadow)}
+ .operator{fill:#1c2a33;stroke:#1c2a33;stroke-width:2;filter:url(#shadow)}
+ .arr{fill:none;stroke:#526b79;stroke-width:3;marker-end:url(#arrow)}
+ .tarr{fill:none;stroke:#13877f;stroke-width:3.2;marker-end:url(#teal)}
+ .oarr{fill:none;stroke:#e36b35;stroke-width:3.2;marker-end:url(#orange)}
+ .dash{stroke-dasharray:9 7}
+ .white{fill:#fff}.pale{fill:#d4e1e6}
  </style>
 </defs>
-<rect width="1600" height="1220" rx="28" fill="url(#bg)"/>
-<text x="64" y="66" class="ey">EDGE-AI PCB AUTOMATED OPTICAL INSPECTION</text>
-<text x="64" y="114" class="title">Physical station · Vision pipeline · Advisory pipeline</text>
-<text x="64" y="147" class="sub">Board arrival triggers illuminated image capture; vision localizes defects; Llama explains structured findings.</text>
+<rect width="1600" height="1280" rx="28" fill="url(#bg)"/>
+<text x="64" y="68" class="ey">EDGE-AI PCB AUTOMATED OPTICAL INSPECTION</text>
+<text x="64" y="118" class="title">Physical station · Vision runtime · Advisory runtime</text>
+<text x="64" y="151" class="sub">A sensor-triggered image capture feeds two independent, on-device inference pipelines.</text>
 
-<text x="64" y="208" class="ey">01 — PHYSICAL INSPECTION AND IMAGE ACQUISITION</text>
+<text x="64" y="208" class="ey">01 / PHYSICAL INSPECTION AND IMAGE ACQUISITION</text>
 <g>
- <rect class="physical" x="64" y="230" width="310" height="124" rx="16"/>
- <text x="90" y="272" class="head">Conveyor</text>
- <text x="90" y="304" class="body">Moves PCB into</text><text x="90" y="329" class="body">the inspection zone</text>
- <rect class="physical" x="414" y="230" width="310" height="124" rx="16"/>
- <text x="440" y="272" class="head">IR presence sensor</text>
- <text x="440" y="304" class="body">Detects PCB arrival</text><text x="440" y="329" class="body">and triggers capture</text>
- <rect class="physical" x="764" y="230" width="310" height="124" rx="16"/>
- <text x="790" y="272" class="head">External LED strip</text>
- <text x="790" y="304" class="body">Illuminates the PCB</text><text x="790" y="329" class="body">through a driver stage</text>
- <rect class="physical" x="1114" y="230" width="422" height="124" rx="16"/>
- <text x="1140" y="272" class="head">Inspection camera</text>
- <text x="1140" y="304" class="body">Captures the illuminated</text><text x="1140" y="329" class="body">PCB image for edge processing</text>
- <path class="arr" d="M374 292 H408"/><path class="arr" d="M724 292 H758"/><path class="arr" d="M1074 292 H1108"/>
+ <rect class="hardware" x="64" y="230" width="300" height="124" rx="16"/>
+ <text x="88" y="272" class="head">Conveyor assembly</text>
+ <text x="88" y="305" class="body">Transports PCB into</text><text x="88" y="329" class="body">the inspection zone</text>
+ <rect class="hardware" x="398" y="230" width="300" height="124" rx="16"/>
+ <text x="422" y="272" class="head">IR presence sensor</text>
+ <text x="422" y="305" class="body">Detects PCB arrival</text><text x="422" y="329" class="body">and triggers the cycle</text>
+ <rect class="hardware" x="732" y="230" width="300" height="124" rx="16"/>
+ <text x="756" y="272" class="head">External LED strip</text>
+ <text x="756" y="305" class="body">Illuminates through</text><text x="756" y="329" class="body">an external driver stage</text>
+ <rect class="hardware" x="1066" y="230" width="470" height="124" rx="16"/>
+ <text x="1090" y="272" class="head">Inspection camera</text>
+ <text x="1090" y="305" class="body">Captures the illuminated PCB frame</text><text x="1090" y="329" class="body">USB/UVC or CSI camera</text>
+ <path class="arr" d="M364 292 H392"/><path class="arr" d="M698 292 H726"/><path class="arr" d="M1032 292 H1060"/>
 </g>
-<path class="arr" d="M1325 354 V398 H800 V430"/>
-<rect class="node" x="500" y="434" width="600" height="88" rx="16"/>
-<text x="800" y="470" text-anchor="middle" class="head">02 — OpenCV preprocessing</text>
-<text x="800" y="499" text-anchor="middle" class="body">Frame validation · resize · color conversion · normalization</text>
-<path class="tarr" d="M800 522 V564"/>
-<rect class="vision" x="500" y="568" width="600" height="94" rx="16"/>
-<text x="800" y="605" text-anchor="middle" class="head">03 — YOLOv8 Nano vision model</text>
-<text x="800" y="635" text-anchor="middle" class="body">Detect · classify · localize the three target PCB defect classes</text>
-<path class="tarr" d="M800 662 V700"/>
-<text x="800" y="694" class="small" text-anchor="middle">Alternative vision execution paths — select according to installed hardware</text>
+
+<path class="arr" d="M1300 354 V398 H800 V430"/>
+<rect class="node" x="500" y="434" width="600" height="86" rx="16"/>
+<text x="800" y="470" class="head" text-anchor="middle">02 / OpenCV preprocessing</text>
+<text x="800" y="497" class="body" text-anchor="middle">Frame validation · Resize · RGB conversion · Normalization</text>
+
+<path class="tarr" d="M800 520 V564"/>
+<text x="800" y="592" class="ey" text-anchor="middle">03 / VISION INFERENCE — TWO ALTERNATIVE EXECUTION PATHS</text>
 <g>
- <rect class="vision" x="155" y="728" width="590" height="130" rx="18"/>
- <text x="185" y="770" class="head">Vision runtime A — Pi CPU</text>
- <text x="185" y="805" class="body">ONNX Runtime on Raspberry Pi 5 ARM CPU</text>
- <text x="185" y="835" class="small">Base deployment path · no accelerator required</text>
- <rect class="accel" x="855" y="728" width="590" height="130" rx="18"/>
- <text x="885" y="770" class="head">Vision runtime B — Hailo NPU (optional)</text>
- <text x="885" y="805" class="body">HailoRT · Hailo NPU · AI HAT+ / AI HAT+ 2</text>
- <text x="885" y="835" class="small">Optional hardware acceleration for the vision model</text>
- <path class="tarr" d="M800 662 V692 H450 V722"/>
- <path class="tarr" d="M800 662 V692 H1150 V722"/>
+ <rect class="vision" x="125" y="620" width="625" height="150" rx="18"/>
+ <text x="158" y="663" class="head">Base vision path — Raspberry Pi CPU</text>
+ <text x="158" y="700" class="body">YOLOv8 Nano · ONNX Runtime</text>
+ <text x="158" y="732" class="small">Local inference on the Pi 5 ARM CPU</text>
+ <rect class="accelerated" x="850" y="620" width="625" height="150" rx="18"/>
+ <text x="883" y="663" class="head">Optional vision path — Hailo NPU</text>
+ <text x="883" y="700" class="body">YOLO-family model · HailoRT · AI HAT+ / AI HAT+ 2</text>
+ <text x="883" y="732" class="small">Vision acceleration when the Hailo hardware is installed</text>
 </g>
-<path class="tarr" d="M450 858 V892 H800 V922"/>
-<path class="tarr" d="M1150 858 V892 H800 V922"/>
-<rect class="vision" x="500" y="926" width="600" height="104" rx="17"/>
-<text x="800" y="966" text-anchor="middle" class="head">04 — Structured defect record</text>
-<text x="800" y="998" text-anchor="middle" class="body">Type · severity · location · confidence · board ID · timestamp</text>
-<path class="oarr" d="M800 1030 V1063"/>
-<rect class="advisory" x="500" y="1067" width="600" height="98" rx="17"/>
-<text x="800" y="1104" text-anchor="middle" class="head">05 — Llama 3.2 Instruct · ExecuTorch</text>
-<text x="800" y="1134" text-anchor="middle" class="body">Pi ARM CPU · explanations · operator actions · inspection log text</text>
-<path class="oarr" d="M1100 1116 H1190"/>
-<rect class="operator" x="1195" y="1067" width="340" height="98" rx="17"/>
-<text x="1365" y="1104" text-anchor="middle" class="head white">06 — Operator UI</text>
-<text x="1365" y="1134" text-anchor="middle" class="small whiteSub">Alerts · advice · event history</text>
-<text x="64" y="1187" class="small">Hailo accelerates vision only. Llama advisory remains a separate ExecuTorch process on the Pi ARM CPU.</text>
+
+<path class="tarr" d="M438 770 V812 H800 V840"/>
+<path class="tarr" d="M1162 770 V812 H800 V840"/>
+<rect class="record" x="460" y="844" width="680" height="112" rx="18"/>
+<text x="800" y="886" class="head" text-anchor="middle">04 / Structured defect record</text>
+<text x="800" y="918" class="body" text-anchor="middle">Type · Severity · Location · Confidence · Board ID · Timestamp</text>
+<text x="800" y="940" class="small" text-anchor="middle">Annotated image and local JSON event</text>
+
+<path class="oarr" d="M800 956 V1000"/>
+<rect class="advisory" x="460" y="1004" width="680" height="128" rx="18"/>
+<text x="800" y="1048" class="head" text-anchor="middle">05 / Mandatory Llama advisory — ExecuTorch</text>
+<text x="800" y="1080" class="body" text-anchor="middle">Llama 3.2 Instruct 1B / 3B · Raspberry Pi 5 ARM CPU</text>
+<text x="800" y="1107" class="small" text-anchor="middle">Text-only structured input · Explanation · Verification actions · Log entry</text>
+
+<path class="oarr" d="M800 1132 V1168 H450 V1198"/>
+<path class="oarr" d="M800 1168 H1150 V1198"/>
+<rect class="operator" x="125" y="1202" width="650" height="58" rx="14"/>
+<text x="450" y="1238" class="head white" text-anchor="middle">06 / Operator interface · Alerts · Advisory · Event history</text>
+<rect class="record" x="825" y="1202" width="650" height="58" rx="14"/>
+<text x="1150" y="1238" class="head" text-anchor="middle">Local JSON log · Optional Firebase synchronization</text>
+<text x="64" y="1270" class="small">Vision and advisory execute locally. Hailo accelerates vision only; it does not replace ExecuTorch.</text>
 </svg>

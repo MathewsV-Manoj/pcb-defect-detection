@@ -1,36 +1,75 @@
-# On-device Llama advisory
+# On-device Llama advisory — ExecuTorch
 
-The operator advisory is a text-only Llama pipeline designed to run on the Raspberry Pi 5 ARM CPU through ExecuTorch. It is independent of the vision runtime, which runs through ONNX Runtime on the CPU or optionally HailoRT on a Hailo NPU.
+## Role in the inspection system
 
-## Runtime implementation
+The advisory pipeline is a required component of the complete PCB inspection workflow. It runs locally on the Raspberry Pi 5 ARM CPU using ExecuTorch and a Llama 3.2 Instruct 1B or 3B model.
 
-- `prompt.py` builds the advisory prompt from board metadata and structured detector findings.
-- `run_executorch.py` invokes the ExecuTorch LLM Python runner and writes advisory text with runtime telemetry.
-- `../tests/test_advisory_contract.py` verifies that defect type, severity and location are included while image payloads are excluded.
+Vision and advisory inference are separate:
 
-The ExecuTorch runner uses text inputs only. It receives defect type, severity, location, confidence, board ID and timestamp. It does not receive the PCB image.
+- The vision runtime detects, classifies and localizes PCB defects.
+- The advisory runtime explains the structured findings, recommends operator verification actions and generates log text.
+- The advisory does not receive image pixels or a camera frame.
 
-## Python runner build
+The vision runtime may be ONNX Runtime on the Pi CPU or an optional HailoRT vision path. Hailo does not replace the ExecuTorch advisory.
 
-The ExecuTorch LLM Runner Python bindings are experimental. They are provided by the ExecuTorch source build, not by the basic runtime package alone. The source build enables `EXECUTORCH_BUILD_PYBIND=ON` or uses the ExecuTorch install script that builds Python bindings. The installed runner module must expose the LLM Runner classes used by `run_executorch.py`.
+## Input contract
 
-The runner source uses `MultimodalRunner` with text inputs only. It does not call `make_image_input`, load image tensors or pass the PCB frame to the Llama model.
+`prompt.py` constructs the Llama prompt from:
 
-## Model
+- Board ID and inspection timestamp.
+- Defect type.
+- Assigned severity.
+- Image-coordinate bounding box and normalized location.
+- Detector confidence.
 
-The reference model family is Llama 3.2 Instruct 1B or 3B. The `.pte` model and matching tokenizer binary are separate deployment artifacts. They are not bundled in the source checkout, and no Raspberry Pi inference benchmark is asserted here.
-
-The runner uses the ExecuTorch LLM Python bindings. The documented API provides `MultimodalRunner`, `GenerationConfig`, `make_text_input` and text-only generation. The runner supplies text inputs only and does not call image-input helpers.
+No image, image path or pixel tensor is included.
 
 ## Advisory output
 
-The model is prompted to return a concise explanation, verification actions, a severity note and an inspection log entry. The advisory is stored separately from the original detection array. It cannot add, remove, relabel or suppress detector findings, infer severity from confidence, or make an independent PASS/REJECT decision.
+The model is prompted to return JSON with four fields:
 
-## Runtime measurements
+| Key | Content |
+|---|---|
+| `explanation` | Concise explanation of the structured finding |
+| `recommended_actions` | Operator verification steps |
+| `severity_note` | Severity context, including human review when severity is UNASSESSED |
+| `log_entry` | Human-readable inspection log text |
 
-`run_executorch.py` records total response time and time to first generated token. Generation statistics exposed by the installed runner are retained in the JSON result. Tokens per second and peak memory are assessed separately using target-device profiling.
+The advisory is bounded by the inspection record. It cannot add, remove, relabel or suppress detections, infer severity from confidence, or independently issue a PASS/REJECT decision. The detector output remains unchanged.
+
+## Runtime implementation
+
+| File | Responsibility |
+|---|---|
+| `prompt.py` | Builds the text-only structured prompt |
+| `run_executorch.py` | Loads the ExecuTorch model and tokenizer, runs text generation and captures telemetry |
+| `../raspberry_pi/run_inspection.py` | Calls the advisory after vision inference and appends the result to the local inspection event |
+
+The runner uses the ExecuTorch LLM Runner Python bindings and text input. The binding API is build-dependent; the ExecuTorch build must expose the runner classes imported by `run_executorch.py`.
+
+## Model packaging
+
+The reference model family is Llama 3.2 Instruct 1B or 3B. The exported ExecuTorch `.pte` model and matching tokenizer binary are separate deployment artifacts and are not stored in the public source repository. The model package and tokenizer must be a matched pair for the runner.
+
+Fine-tuning is not required for the structured advisory workflow. A pretrained Instruct model with a controlled prompt is the reference configuration.
+
+## Runtime telemetry
+
+The runner records:
+
+- Time to first generated token.
+- Total response time.
+- Generated-token statistics exposed by the ExecuTorch runner.
+- Tokens per second when the installed runner exposes compatible timing statistics.
+- Process peak resident memory where supported.
+
+These measurements are captured on the target Pi 5 for advisory benchmarking. They are not inferred from workstation performance.
+
+## Offline execution
+
+The advisory model runs locally on the Pi. Internet access is not part of the inference path; model and tokenizer assets are present on the device before an inspection session begins.
 
 ## Runtime references
 
 - [ExecuTorch LLM Runner Python API](https://github.com/pytorch/executorch/tree/main/extension/llm/runner)
-- [ExecuTorch Llama 3.2 model support and export workflow](https://github.com/pytorch/executorch/tree/main/examples/models/llama)
+- [ExecuTorch Llama model support and export workflow](https://github.com/pytorch/executorch/tree/main/examples/models/llama)
