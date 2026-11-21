@@ -139,8 +139,8 @@ python raspberry_pi/benchmark_onnx.py \
 | Peak RAM | ____________________ | Benchmark JSON |
 | CPU temperature | ____________________ | Thermal reading |
 | Full capture-to-result time | ____________________ | Timed physical cycles |
-| Llama time to first token | ____________________ | Python binding telemetry only; C++ CLI path leaves null |
-| Llama tokens per second | ____________________ | Only record when runner exposes measured token counts |
+| Llama time to first token | ____________________ | ExecuTorch PyTorchObserver or Python binding telemetry; otherwise null |
+| Llama tokens per second | ____________________ | Parsed from generated-token count and measured inference interval; otherwise null |
 | Successful cycles / attempted cycles | ____________________ | Station log |
 | Power | ____________________ | External power meter, if measured |
 
