@@ -19,7 +19,7 @@ This checklist is specific to the Bharat AI-SoC Challenge 2026–27, Problem Sta
 | ExecuTorch on-device runtime | Production coordinator invokes the ExecuTorch C++ llama_main runner; Pi 5 build script is committed | Build on Linux x86_64, copy the local runtime to the Pi and verify the runner there |
 | Arm-based edge platform | Raspberry Pi 5 CPU deployment path | Described in source; target-device commissioning is not recorded |
 | Detect visual defects | Three-class YOLO detector source and annotated-image output | Model artifacts and held-out detection evidence are absent |
-| Classify defect type and severity | Three target classes; event severity is `UNASSESSED` | Severity policy is not implemented or validated |
+| Classify defect type and severity | Three target classes with a configurable type-based screening severity policy | Provisional rules are implemented; board-specific QA validation/approval remains required |
 | Actionable operator guidance | Mandatory structured Llama advisory in the coordinator and dashboard | Verify generated four-field JSON from the actual Pi runner; detector data remains authoritative |
 | Inspection logging | Local JSON events, annotated images and history endpoint | Source is present; physical repeated-cycle validation is outstanding |
 | Edge operation without cloud dependence | Local capture, detector and advisory path; Firebase mirrors records only when configured | Offline operation must be demonstrated on the Pi |
@@ -44,15 +44,17 @@ Do not use training images as evidence of generalization. Do not map an upstream
 
 ## Severity and decision wording
 
-The current event uses `UNASSESSED` for severity. Do not replace this with LOW/MEDIUM/HIGH until a board-specific rule based on defect type, physical extent and board function has been defined and checked. Detector confidence is not severity.
+The detector applies a provisional type-based priority rule: missing hole = MEDIUM, open circuit = HIGH, short circuit = HIGH. The rationale and provisional status are stored with each event. This is an initial screening priority, not a board-specific electrical risk assessment. A qualified project/QA owner must validate or revise it against the actual board design. Detector confidence is not severity.
 
 The dashboard must describe an empty detection list as “No configured target defect detected in this frame”. It must not call the board “defect-free”.
 
 ## Raspberry Pi commissioning
 
-Run the checks on the actual Raspberry Pi 5 with the final model assets installed.
-The deployment recipe is committed; the licensed Llama package and compiled runner
-must be fetched/built locally before the test sequence:
+Run the checks on the actual Raspberry Pi 5. A one-command provisioner now installs dependencies, downloads and exports the YOLO baseline, downloads the Llama PTE/tokenizer, builds the ExecuTorch runner against the Pi's own sysroot and runs software smoke tests:
+
+    bash scripts/provision_pi5.sh
+
+The following manual commands are retained for diagnosis or re-installation:
 
     python -m pip install "huggingface_hub>=0.30,<2"
     hf auth login
