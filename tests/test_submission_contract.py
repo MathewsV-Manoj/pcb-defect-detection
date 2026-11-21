@@ -58,6 +58,12 @@ class SubmissionContractTests(unittest.TestCase):
         finally:
             script_path.unlink(missing_ok=True)
 
+    def test_dashboard_distinguishes_pending_inspection_from_no_defect_result(self):
+        html = (ROOT / "dashboard" / "index.html").read_text(encoding="utf-8")
+        self.assertIn("Inspection has not been run for this captured frame.", html)
+        self.assertIn("No configured target defects detected in this frame.", html)
+        self.assertIn('status.state==="RUNNING_INSPECTION"', html)
+
     def test_dashboard_exposes_station_and_review_fields_without_demo_tools(self):
         html = (ROOT / "dashboard" / "index.html").read_text(encoding="utf-8")
         for marker in (
