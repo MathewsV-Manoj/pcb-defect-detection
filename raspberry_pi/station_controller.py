@@ -49,8 +49,8 @@ def main() -> int:
         )
         return 2
 
-    if not INFERENCE.is_file():
-        print(f"Inference entry point not found: {INFERENCE}", file=sys.stderr)
+    if not INSPECTION.is_file():
+        print(f"Inspection coordinator not found: {INSPECTION}", file=sys.stderr)
         return 2
 
     ir_pin = required_gpio("PCB_IR_GPIO")
