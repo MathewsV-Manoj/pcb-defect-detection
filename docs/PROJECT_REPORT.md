@@ -5,7 +5,7 @@
 
 This project develops a conveyor-fed optical inspection station for printed circuit boards. A Raspberry Pi 5 controls image capture and runs the inspection software locally. The system is designed to identify three visible defect classes: open circuit, short circuit and missing hole.
 
-The physical station uses a conveyor, an IR presence sensor, a camera and an LED strip driven through an external LED driver. The operator uses a laptop browser on the same local network to review the captured frame and request inspection. The detector and advisory run on the Raspberry Pi; the browser presents results and does not perform inference.
+The physical station uses a conveyor, an IR presence sensor, a camera and an LED strip driven through an external LED driver. The operator uses a laptop browser on the same local network to review the captured frame and request inspection. The detector and advisory are configured to run on the Raspberry Pi CPU; the browser presents results and does not perform inference.
 
 ## 2. Physical station sequence
 
@@ -14,6 +14,12 @@ At the beginning of a session, the operator holds a hand in front of the IR sens
 A PCB then travels on the conveyor. When the board activates the IR sensor at the camera trigger point, the Raspberry Pi switches on the LED driver, waits for the configured settling interval and captures a frame. The frame is saved locally and made available to the operator page.
 
 The IR sensor is a binary presence detector. It does not calculate the exact PCB position in the camera image. That relationship depends on the mechanical placement of the conveyor, sensor and camera.
+
+### Local inference and offline operation
+
+The production inference path is on-device. OpenCV preprocessing and YOLO inference execute on the Raspberry Pi 5 using ONNX Runtime's CPU execution provider. The text-only Llama 3.2 1B Instruct SpinQuant model is invoked through the ExecuTorch C++ `llama_main` runner on the Pi CPU. The dashboard is static HTML/JavaScript served by the Pi; the browser is a remote display/control client on the private LAN and does not run model inference. The Llama prompt contains the structured event, not the PCB image.
+
+The default `PCB_FIREBASE_PUBLISH=false` setting keeps the event history local. Firebase, when deliberately enabled, is only an optional HTTPS record-replication destination. It is not on the inference path. The model and runtime assets must first be downloaded/built and copied to the Pi; after provisioning, the inference path is designed to run without internet access. Offline operation has not been recorded as a passed hardware test until the final Pi completes an inspection with WAN disconnected and the operator browser still connected on the local LAN. See [Local execution and performance record](LOCAL_EXECUTION_AND_PERFORMANCE.md).
 
 ## 3. Operator interface and software workflow
 
@@ -24,14 +30,14 @@ The page sends a same-origin request to `POST /api/run-inspection`. The Pi then:
 1. reads the captured frame;
 2. applies OpenCV letterboxing and BGR-to-RGB conversion;
 3. scales pixel values to float32 in the [0, 1] range and arranges the input as NCHW;
-4. runs the YOLOv8 Nano ONNX detector using ONNX Runtime on the Pi CPU;
+4. runs the configured YOLO ONNX detector using ONNX Runtime with the CPU execution provider on the Pi CPU;
 5. applies confidence filtering and class-wise non-maximum suppression;
 6. maps the retained boxes back to original image coordinates;
 7. saves an annotated image and structured inspection-event JSON;
 8. sends the structured event, not the image, to the ExecuTorch text runner for the operator advisory;
 9. displays the detector result, annotated image and advisory on the browser page.
 
-The Pi keeps local inspection records. When Firebase synchronization is configured, the completed event is copied to Realtime Database paths `/inspections/{record_id}` and `/live`. Firebase carries records; it does not execute the detector or the advisory model.
+The Pi keeps local inspection records. Firebase synchronization is disabled by default. When explicitly enabled, the completed event is copied to Realtime Database paths `/inspections/{record_id}` and `/live`. Firebase carries records only; it does not execute the detector or the advisory model.
 
 ## 4. Vision model and class mapping
 
@@ -43,7 +49,7 @@ The deployment class order is fixed across the annotator, dataset importer, YOLO
 | 1 | `open_circuit` | A visible break or discontinuity in a conductive track |
 | 2 | `short_circuit` | An unintended bridge between separate conductive paths |
 
-The ONNX input contract is one 640 × 640 RGB image, float32 normalized to [0, 1], with shape `[1, 3, 640, 640]`. Letterboxing preserves the source aspect ratio. The Pi decoder expects raw YOLO output for four box coordinates and three class scores, without embedded NMS.
+The configured YOLO ONNX input contract is one 640 × 640 RGB image, float32 normalized to [0, 1], with shape `[1, 3, 640, 640]`. Letterboxing preserves the source aspect ratio. For a three-class project checkpoint, the Pi decoder expects raw YOLO output for four box coordinates and three class scores, without embedded NMS. The separately documented six-class YOLOv8s baseline is decoded using its sidecar class metadata and maps only the three target classes.
 
 Source annotation names are checked before conversion. DeepPCB open/short annotations can be mapped only after checking their original class IDs. Its `pin-hole` annotation is not treated as a missing drill hole. A different dataset's class name is not sufficient evidence that its label has the same physical meaning.
 
