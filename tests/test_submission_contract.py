@@ -75,6 +75,15 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("run_executorch.py", coordinator)
         self.assertIn("publish_event(event)", coordinator)
 
+    def test_exporter_produces_pi_onnx_and_supplementary_tflite(self):
+        exporter = (ROOT / "pcb_engine_kit" / "train_export.py").read_text(encoding="utf-8")
+        self.assertIn('"export-onnx"', exporter)
+        self.assertIn('"export-tflite"', exporter)
+        self.assertIn('format="onnx"', exporter)
+        self.assertIn('nms=False', exporter)
+        self.assertIn('"best.onnx"', exporter)
+        self.assertIn('"detector.tflite"', exporter)
+
     def test_text_only_llama_uses_text_llm_runner_and_chat_template(self):
         runner = (ROOT / "llm_advisory" / "run_executorch.py").read_text(encoding="utf-8")
         prompt = (ROOT / "llm_advisory" / "prompt.py").read_text(encoding="utf-8")
