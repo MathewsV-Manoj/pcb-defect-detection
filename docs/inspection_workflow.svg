@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1820" viewBox="0 0 1800 1820" role="img" aria-labelledby="title desc">
-<title id="title">Operator-controlled Raspberry Pi PCB inspection workflow</title>
-<desc id="desc">The operator holds a hand in front of the IR sensor for three seconds to arm the station, releases it, loads the PCB on a conveyor and the conveyor moves it under the camera. The IR sensor confirms board position. An external LED strip illuminates the board and the camera captures an image. The Raspberry Pi serves that image to a laptop browser. The operator reviews it and clicks Run Inspection, which sends a command to the Raspberry Pi. The Pi preprocesses the RGB image with OpenCV, runs YOLO on its CPU or optional Hailo NPU, creates a structured defect record, runs a separate Llama ExecuTorch advisory on the Pi ARM CPU, and returns results to the browser. Firebase synchronization is optional.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1760" viewBox="0 0 1800 1760" role="img" aria-labelledby="title desc">
+<title id="title">Operator-controlled Raspberry Pi PCB inspection architecture</title>
+<desc id="desc">A hand is held in front of the IR sensor for three seconds to arm the station. After release the PCB is loaded onto the conveyor and carried to the camera. The IR sensor confirms board position; the external LED strip illuminates it and the camera captures a frame. The Pi serves the image to the laptop browser. The operator reviews it and clicks Run Inspection, which sends a command to the Pi. OpenCV preprocesses the image. YOLOv8 Nano runs through ONNX Runtime on the Pi CPU or optionally HailoRT on a Hailo NPU. The detections form a structured record. A separate Llama ExecuTorch advisory runs on the Pi ARM CPU and results return to the operator UI. Firebase synchronization is optional.</desc>
 <defs>
  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fbfcfd"/><stop offset="1" stop-color="#eaf0f3"/></linearGradient>
  <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#142a38" flood-opacity=".11"/></filter>
@@ -26,7 +26,7 @@
  .white{fill:#fff}.pale{fill:#d4e1e6}
  </style>
 </defs>
-<rect width="1800" height="1820" rx="28" fill="url(#bg)"/>
+<rect width="1800" height="1760" rx="28" fill="url(#bg)"/>
 <text x="68" y="72" class="ey">EDGE-AI PCB AUTOMATED OPTICAL INSPECTION</text>
 <text x="68" y="124" class="title">Physical station → operator command → Pi edge inference</text>
 <text x="68" y="158" class="sub">The laptop reviews and initiates; the Raspberry Pi captures, processes and returns the inspection result.</text>
@@ -73,29 +73,26 @@
 <text x="900" y="1097" class="head" text-anchor="middle">06 / OpenCV preprocessing on Raspberry Pi</text>
 <text x="900" y="1129" class="body" text-anchor="middle">Letterbox and pad 640×640 · BGR→RGB · float32 normalize [0,1] · NCHW</text>
 <path class="tarr" d="M900 1166 V1206"/>
-<rect class="vision" x="500" y="1210" width="800" height="100" rx="17"/>
-<text x="900" y="1250" class="head" text-anchor="middle">07 / YOLOv8 Nano defect detection</text>
-<text x="900" y="1281" class="body" text-anchor="middle">Localize open circuit · short circuit · missing hole</text>
-<path class="tarr" d="M900 1310 V1348"/>
+<text x="900" y="1200" class="ey" text-anchor="middle">07 / VISION MODEL EXECUTION — CHOOSE THE AVAILABLE BACKEND</text>
 <g>
- <rect class="vision" x="120" y="1352" width="720" height="116" rx="17"/>
- <text x="480" y="1396" class="head" text-anchor="middle">Vision runtime — base path</text>
- <text x="480" y="1428" class="body" text-anchor="middle">ONNX Runtime · Raspberry Pi 5 ARM CPU</text>
- <rect class="accelerated" x="960" y="1352" width="720" height="116" rx="17"/>
- <text x="1320" y="1396" class="head" text-anchor="middle">Vision runtime — optional accelerator</text>
- <text x="1320" y="1428" class="body" text-anchor="middle">HailoRT · Hailo NPU · AI HAT+ / AI HAT+ 2</text>
+ <rect class="vision" x="120" y="1232" width="720" height="116" rx="17"/>
+ <text x="480" y="1276" class="head" text-anchor="middle">Base path — YOLOv8 Nano + ONNX Runtime</text>
+ <text x="480" y="1310" class="body" text-anchor="middle">Raspberry Pi 5 ARM CPU</text>
+ <rect class="accelerated" x="960" y="1232" width="720" height="116" rx="17"/>
+ <text x="1320" y="1276" class="head" text-anchor="middle">Optional path — YOLO + HailoRT</text>
+ <text x="1320" y="1310" class="body" text-anchor="middle">Hailo NPU through AI HAT+ / AI HAT+ 2</text>
 </g>
-<path class="tarr" d="M480 1468 V1500 H900 V1522"/>
-<path class="tarr" d="M1320 1468 V1500 H900 V1522"/>
-<rect class="record" x="500" y="1526" width="800" height="102" rx="17"/>
-<text x="900" y="1566" class="head" text-anchor="middle">08 / Structured defect record</text>
-<text x="900" y="1598" class="body" text-anchor="middle">Type · Severity · Location · Confidence · Board ID · Timestamp</text>
-<path class="oarr" d="M900 1628 V1665"/>
-<rect class="advisory" x="500" y="1669" width="800" height="98" rx="17"/>
-<text x="900" y="1709" class="head" text-anchor="middle">09 / Llama 3.2 Instruct + ExecuTorch</text>
-<text x="900" y="1740" class="body" text-anchor="middle">Separate on-device advisory on Pi ARM CPU · explanation · actions · log text</text>
-<path class="oarr" d="M900 1767 V1790 H480"/>
-<path class="arr" d="M900 1790 H1320"/>
-<text x="480" y="1810" class="small" text-anchor="middle">Result returned to operator UI</text>
-<text x="1320" y="1810" class="small" text-anchor="middle">Local JSON · optional Firebase synchronization</text>
+<path class="tarr" d="M480 1348 V1380 H900 V1402"/>
+<path class="tarr" d="M1320 1348 V1380 H900 V1402"/>
+<rect class="record" x="500" y="1406" width="800" height="98" rx="17"/>
+<text x="900" y="1445" class="head" text-anchor="middle">08 / Structured defect record</text>
+<text x="900" y="1476" class="body" text-anchor="middle">Type · Severity · Location · Confidence · Board ID · Timestamp</text>
+<path class="oarr" d="M900 1504 V1542"/>
+<rect class="advisory" x="500" y="1546" width="800" height="108" rx="17"/>
+<text x="900" y="1588" class="head" text-anchor="middle">09 / Llama 3.2 Instruct + ExecuTorch</text>
+<text x="900" y="1620" class="body" text-anchor="middle">Separate on-device advisory on Pi ARM CPU · explanation · actions · log text</text>
+<path class="oarr" d="M900 1654 V1692"/>
+<rect class="operator" x="260" y="1696" width="1280" height="52" rx="14"/>
+<text x="900" y="1729" class="head white" text-anchor="middle">10 / Results returned to operator UI · Annotated image · Alert · Advisory · Inspection history</text>
+<text x="68" y="1749" class="small">Local JSON records are retained on the Pi. Firebase synchronization is optional and does not run either model.</text>
 </svg>
