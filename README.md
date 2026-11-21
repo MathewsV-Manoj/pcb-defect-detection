@@ -12,7 +12,7 @@ The three target defect classes are **open circuit**, **short circuit** and **mi
 - **Edge platform:** Raspberry Pi 5.
 - **Vision pipeline:** OpenCV preprocessing and YOLOv8 Nano object detection using an ONNX Runtime CPU path.
 - **Accelerated vision option:** Hailo NPU through HailoRT and an AI HAT+/AI HAT+ 2 when that accelerator is installed. The CPU path remains a complete deployment option.
-- **Advisory pipeline:** Llama 3.2 Instruct (1B or 3B class) through ExecuTorch on the Raspberry Pi ARM CPU. This is separate from the vision runtime and operates on structured findings, not raw pixels.
+- **Advisory pipeline:** Llama 3.2 Instruct (1B or 3B class) through ExecuTorch on the Raspberry Pi ARM CPU. The repository contains a text-only runner and structured prompt builder; the model package is deployed separately. This is independent of the vision runtime and receives no raw pixels.
 - **Inspection record:** defect type, severity field, location/bounding box, confidence, board ID, timestamp and runtime metadata.
 - **Operator interface:** inspection alerts, advisory text and event history, with Firebase Realtime Database used for record synchronization.
 - **Demonstration:** the physical conveyor, IR arrival sensing, LED illumination, image capture and inspection interface are shown in the project demonstration.
@@ -100,7 +100,7 @@ The advisory receives only the defect record fields: type, severity, location, c
 
 The Llama model does not inspect the PCB image, detect or classify defects, change model confidence, add or suppress detections, or independently determine a PASS/REJECT result. The vision pipeline remains the source of visual evidence.
 
-The repository includes the structured prompt builder in [`llm_advisory/prompt.py`](llm_advisory/prompt.py). The ExecuTorch model package and quantized model binary are not stored in this source repository; the runtime and model artifact are separate deployment assets.
+The repository includes the structured prompt builder in [`llm_advisory/prompt.py`](llm_advisory/prompt.py) and the inference entry point in [`llm_advisory/run_executorch.py`](llm_advisory/run_executorch.py). The ExecuTorch `.pte` model and matching tokenizer binary are separate deployment assets and are not included in this source checkout.
 
 ## 6. Operator interface and data layer
 
@@ -136,16 +136,19 @@ No benchmark figure is included unless it is tied to the exact dataset split, ch
 |---|---|
 | `raspberry_pi/` | ONNX image/camera inference, IR-triggered station controller and Firebase publisher |
 | `dashboard/` | Operator dashboard source |
-| `llm_advisory/` | Structured Llama prompt builder and advisory boundary |
+| `llm_advisory/` | Structured prompt builder and text-only ExecuTorch runner |
 | `schemas/` | Inspection-event JSON schema and example |
 | `models/` | Class map and model release metadata |
 | `datasets/` | Dataset provenance and source manifest |
+| `pcb_engine_kit/` | Annotation conversion, YOLO train/export utilities, and queued-image worker |
+| `training/` | Example dataset configuration |
+| `tests/` | Advisory-boundary and software contract tests |
 | `firebase/` | Example Realtime Database security rules |
 | `docs/` | Project report, system architecture and implementation record |
 | `demo_video/` | Demonstration scope for the physical inspection station and operator workflow |
 
 ## 9. Demonstration
 
-The project demonstration covers the physical conveyor inspection station, PCB arrival detection through the IR sensor, external LED-strip illumination, camera acquisition, visual inspection output and operator-facing result workflow. The video is the visual record of the physical build and its operation.
+The project demonstration covers the physical conveyor inspection station, PCB arrival detection through the IR sensor, external LED-strip illumination, camera acquisition, visual inspection output and operator-facing result workflow. The demonstration video is a separate submission media asset; the video file itself is not present in this source checkout.
 
 **Repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection
