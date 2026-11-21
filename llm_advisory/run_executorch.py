@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import resource
 import sys
 import time
 from pathlib import Path
@@ -114,6 +115,19 @@ def run_advisory(
         result["advisory"] = json.loads(advisory_text)
     except json.JSONDecodeError:
         result["advisory"] = None
+
+    try:
+        result["process_peak_rss_kb"] = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+    except (AttributeError, OSError):
+        result["process_peak_rss_kb"] = None
+
+    generated = stats.get("num_generated_tokens")
+    start_ms = stats.get("inference_start_ms")
+    end_ms = stats.get("inference_end_ms")
+    if generated and start_ms is not None and end_ms is not None and end_ms > start_ms:
+        result["tokens_per_second"] = round(float(generated) * 1000.0 / (end_ms - start_ms), 2)
+    else:
+        result["tokens_per_second"] = None
     return result
 
 
