@@ -37,48 +37,69 @@ def decode(output, original_shape, scale, pad, conf=0.25, iou=0.45):
         raise RuntimeError(f"Expected 7 values per anchor (4 boxes + 3 classes), got {pred.shape}")
     if not np.isfinite(pred).all():
         raise RuntimeError("ONNX output contains NaN/Inf")
+
     xywh = pred[:, :4]
     class_scores = pred[:, 4:7]
     class_ids = class_scores.argmax(axis=1)
     scores = class_scores.max(axis=1)
-    keep = scores >= conf
+    keep = (scores >= conf) & (xywh[:, 2] > 0) & (xywh[:, 3] > 0)
     xywh, scores, class_ids = xywh[keep], scores[keep], class_ids[keep]
     if not len(scores):
         return []
-    boxes = [[int(cx - bw / 2), int(cy - bh / 2), int(bw), int(bh)] for cx, cy, bw, bh in xywh]
-    indices = cv2.dnn.NMSBoxes(boxes, scores.tolist(), conf, iou)
-    if indices is None or len(indices) == 0:
-        return []
-    indices = np.asarray(indices).reshape(-1)
+
+    # NMS must be run separately for each class. A class-agnostic pass can
+    # suppress a nearby short-circuit box because an open-circuit box scored higher.
+    boxes = [
+        [
+            int(round(cx - bw / 2)),
+            int(round(cy - bh / 2)),
+            max(1, int(round(bw))),
+            max(1, int(round(bh))),
+        ]
+        for cx, cy, bw, bh in xywh
+    ]
+
     h, w = original_shape
     px, py = pad
     found = []
-    for i in indices:
-        cx, cy, bw, bh = xywh[i]
-        x1 = float(np.clip((cx - bw / 2 - px) / scale, 0, w - 1))
-        y1 = float(np.clip((cy - bh / 2 - py) / scale, 0, h - 1))
-        x2 = float(np.clip((cx + bw / 2 - px) / scale, 0, w - 1))
-        y2 = float(np.clip((cy + bh / 2 - py) / scale, 0, h - 1))
-        cid = int(class_ids[i])
-        bbox = [round(x1, 2), round(y1, 2), round(x2, 2), round(y2, 2)]
-        found.append({
-            "class_id": cid,
-            "class_name": CLASS_NAMES[cid],
-            "confidence": float(scores[i]),
-            "bbox_xyxy": bbox,
-            "severity": "UNASSESSED",
-            "severity_basis": "No board-specific impact profile is configured for this inspection.",
-            "location": {
-                "bbox_xyxy": bbox,
-                "center_normalized": [
-                    round(((x1 + x2) / 2) / w, 6),
-                    round(((y1 + y2) / 2) / h, 6),
-                ],
-                "zone": None,
-            },
-        })
-    return found
+    for cid in range(len(CLASS_NAMES)):
+        positions = np.flatnonzero(class_ids == cid)
+        if not len(positions):
+            continue
+        class_boxes = [boxes[int(position)] for position in positions]
+        class_scores_for_nms = [float(scores[int(position)]) for position in positions]
+        kept = cv2.dnn.NMSBoxes(class_boxes, class_scores_for_nms, conf, iou)
+        if kept is None or len(kept) == 0:
+            continue
 
+        for local_index in np.asarray(kept).reshape(-1):
+            i = int(positions[int(local_index)])
+            cx, cy, bw, bh = xywh[i]
+            x1 = float(np.clip((cx - bw / 2 - px) / scale, 0, w - 1))
+            y1 = float(np.clip((cy - bh / 2 - py) / scale, 0, h - 1))
+            x2 = float(np.clip((cx + bw / 2 - px) / scale, 0, w - 1))
+            y2 = float(np.clip((cy + bh / 2 - py) / scale, 0, h - 1))
+            if x2 <= x1 or y2 <= y1:
+                continue
+
+            bbox = [round(x1, 2), round(y1, 2), round(x2, 2), round(y2, 2)]
+            found.append({
+                "class_id": cid,
+                "class_name": CLASS_NAMES[cid],
+                "confidence": float(scores[i]),
+                "bbox_xyxy": bbox,
+                "severity": "UNASSESSED",
+                "severity_basis": "No board-specific impact profile is configured for this inspection.",
+                "location": {
+                    "bbox_xyxy": bbox,
+                    "center_normalized": [
+                        round(((x1 + x2) / 2) / w, 6),
+                        round(((y1 + y2) / 2) / h, 6),
+                    ],
+                    "zone": None,
+                },
+            })
+    return found
 
 def read_frame(args):
     if args.source:
@@ -143,8 +164,14 @@ def main():
         meta = inputs[0]
         if len(meta.shape) != 4:
             raise RuntimeError(f"Expected rank-4 input, got {meta.shape}")
-        if meta.shape[1] not in (3, "3", None):
+        if meta.shape[1] not in (3, "3"):
             raise RuntimeError(f"Expected NCHW input [1,3,640,640], got {meta.shape}")
+        if meta.shape[2:] != [SIZE, SIZE]:
+            raise RuntimeError(f"Expected {SIZE}x{SIZE} input, got {meta.shape}")
+        if meta.type != "tensor(float)":
+            raise RuntimeError(f"Expected float32 ONNX input, got {meta.type}")
+        if len(session.get_outputs()) != 1:
+            raise RuntimeError("Expected one raw YOLO output tensor")
 
         # Current detector preprocessing: letterbox -> BGR-to-RGB -> float32 [0,1] -> NCHW.
         # It deliberately remains a 3-channel input; grayscale is not used by this model contract.
