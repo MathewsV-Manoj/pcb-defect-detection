@@ -101,8 +101,15 @@ def main() -> int:
         return vision_run.returncode
 
     event = read_json(event_path)
-    model_path = resolve_path(os.getenv("PCB_LLAMA_MODEL_PATH", ""))
-    tokenizer_path = resolve_path(os.getenv("PCB_LLAMA_TOKENIZER_PATH", ""))
+    default_model = "models/llama/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte"
+    default_tokenizer = "models/llama/tokenizer.model"
+    default_runner = "models/llama/runtime/llama_main"
+    model_value = os.getenv("PCB_LLAMA_MODEL_PATH", "").strip() or default_model
+    tokenizer_value = os.getenv("PCB_LLAMA_TOKENIZER_PATH", "").strip() or default_tokenizer
+    runner_value = os.getenv("PCB_LLAMA_RUNNER_PATH", "").strip() or default_runner
+    model_path = resolve_path(model_value)
+    tokenizer_path = resolve_path(tokenizer_value)
+    runner_path = resolve_path(runner_value)
     require_advisory = env_bool("PCB_LLAMA_REQUIRED", True)
     advisory_result_path = event_path.with_name(event_path.stem + "_advisory.json")
 
@@ -129,6 +136,10 @@ def main() -> int:
             "--event", str(event_path),
             "--model", str(model_path),
             "--tokenizer", str(tokenizer_path),
+            "--runner", str(runner_path),
+            "--backend", os.getenv("PCB_LLAMA_BACKEND", "cli"),
+            "--seq-len", os.getenv("PCB_LLAMA_SEQ_LEN", "1024"),
+            "--timeout-seconds", os.getenv("PCB_LLAMA_TIMEOUT_SECONDS", "180"),
             "--output", str(advisory_result_path),
         ]
         advisory_run = subprocess.run(advisory_command, cwd=ROOT, check=False)
