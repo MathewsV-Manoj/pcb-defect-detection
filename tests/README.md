@@ -1,12 +1,7 @@
-# Hardware acceptance and software verification
+# Software contract tests
 
-Before enabling the conveyor:
-- Run inference on a small labelled validation set.
-- Check class ID → class name mapping.
-- Confirm boxes align with the original image after letterbox reversal.
-- Test no detections, multiple detections and confidence/NMS threshold changes.
-- Confirm failed inference never publishes PASS.
-- Verify Firebase rejects unauthenticated access.
-- Verify the physical stop mechanism independently of software.
+The included dependency-free tests cover:
+- Atomic publication of a completed image into the processing queue.
+- Rejection of archive paths that attempt directory traversal.
 
-Use approved project images and expected labels. No model metrics or expected sample predictions are fabricated in this repository.
+These tests do not represent camera, model, GPIO, conveyor, Firebase-security or Raspberry Pi performance validation.
