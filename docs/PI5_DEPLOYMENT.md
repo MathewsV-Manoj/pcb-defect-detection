@@ -1,159 +1,127 @@
-# Raspberry Pi 5 station service and deployment
+# Set up the Raspberry Pi station
 
-## Service architecture
+This guide covers the Pi-hosted website, sensor control, camera capture and local inspection process. Complete the GPIO and model checks before trying the full conveyor sequence.
 
-`raspberry_pi/station_controller.py` runs the IR state machine, camera capture, Pi-hosted HTTP service and operator-triggered inference launch. The operator opens the web page from a laptop browser using the Raspberry Pi's IP address. The website and its API are served by the Pi.
+## 1. Install the station software
 
-The operator button sends a command to the Pi; image processing and both model pipelines run locally on the Pi.
+Use 64-bit Raspberry Pi OS. From the repository root:
 
-## Physical operating sequence
-
-1. At station startup, hold a hand in front of the IR sensor for approximately three seconds.
-2. The station enters a latched armed state.
-3. Release the sensor and place the PCB on the conveyor.
-4. The conveyor transports the PCB to the camera position.
-5. The next active transition on the IR input identifies the board at the camera position.
-6. The station enables the external LED driver, waits for the configured settle time and captures a frame.
-7. The Pi serves the captured frame to the browser for visual verification.
-8. The operator clicks **Run inspection on Raspberry Pi**.
-9. The browser sends `POST /api/run-inspection`; the Pi processes the stored image and returns the result to the dashboard.
-
-The sensor is configured with a three-second hold event. A short activation that ends before the hold interval does not arm the station. After a successful hold, release is required before the next IR activation can be treated as PCB arrival. The armed state persists after each completed inspection, so subsequent boards do not require another hand-hold. Restarting the station controller resets the arming state.
-
-## Runtime components
-
-| Component | Implementation |
-|---|---|
-| IR arming and board-position state | gpiozero `Button` with a three-second hold event |
-| Illumination | gpiozero output controlling an external LED driver |
-| Camera capture | OpenCV UVC capture or Picamera2 CSI capture |
-| Pi-hosted website and API | Python standard-library `ThreadingHTTPServer` |
-| Preprocessing | OpenCV letterbox, BGR-to-RGB conversion, float32 normalization, NCHW |
-| Base vision runtime | YOLOv8 Nano through ONNX Runtime CPU |
-| Optional vision acceleration | HailoRT on Hailo NPU / AI HAT+ / AI HAT+ 2 |
-| Advisory runtime | Llama 3.2 Instruct through ExecuTorch on Pi ARM CPU |
-| Event log | Local JSON and annotated image |
-| Optional synchronization | Firebase Realtime Database |
-
-Hailo is a vision accelerator option only. The Llama advisory remains a separate ExecuTorch pipeline on the Pi ARM CPU.
-
-## Operator API
-
-| Method and path | Function |
-|---|---|
-| `GET /` | Serve `dashboard/index.html` |
-| `GET /api/health` | Return service health |
-| `GET /api/status` | Return arming, IR, illumination, capture and inspection state |
-| `GET /api/capture.jpg` | Serve the saved raw capture |
-| `GET /api/annotated.jpg` | Serve the annotated result after inference |
-| `GET /api/history` | Return recent local inspection events |
-| `POST /api/run-inspection` | Launch the inspection coordinator on the captured frame |
-
-The API is served from the same origin as the dashboard, so the browser can call it without a separate backend or CORS configuration. The station service is intended for a trusted private network and must not be port-forwarded or exposed directly to the public internet.
-
-## Image preprocessing
-
-The current YOLO contract uses a three-channel 640 × 640 RGB input. OpenCV letterboxes and pads the frame, converts BGR to RGB, normalizes float32 values to `[0,1]` and arranges the input as NCHW. The inference code does not perform grayscale conversion or a separate handcrafted line-continuity/edge-detection pass. The learned YOLO model localizes the configured defect classes from the three-channel image.
-
-## Installation
-
-On 64-bit Raspberry Pi OS:
-
-```bash
+~~~bash
 sudo apt update
 sudo apt install -y python3-venv python3-pip python3-opencv python3-gpiozero
-```
 
-For a CSI camera, install the Raspberry Pi OS camera package:
-
-```bash
+# Only for a CSI camera:
 sudo apt install -y python3-picamera2
-
-git clone https://github.com/MathewsV-Manoj/pcb-defect-detection.git
-cd pcb-defect-detection
 
 python3 -m venv --system-site-packages .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r raspberry_pi/requirements.txt
+~~~
 
+## 2. Set the hardware values
+
+Copy the example environment file and edit it:
+
+~~~bash
 cp raspberry_pi/.env.example raspberry_pi/.env
 nano raspberry_pi/.env
+~~~
 
-# Export the settings into the station process environment.
+Set the BCM GPIO numbers to match the actual wiring. Check the IR sensor's output polarity and whether it needs a pull-up. Set the LED driver polarity and camera mode. Do not use the example values as a wiring diagram.
+
+The IR output must be compatible with the Pi's 3.3 V GPIO. The LED strip needs an external driver and supply; the Pi pin is only the driver's logic input.
+
+The controller reads environment variables. It does not load the .env file itself. From the repository root, export the values before launching the service:
+
+~~~bash
 set -a
 source raspberry_pi/.env
 set +a
-```
-
-Set the actual BCM GPIO values, sensor and driver polarity, camera mode, detector path and ExecuTorch model/tokenizer paths in the environment file. The station controller reads operating configuration from the process environment; it does not parse `.env` itself. The LED strip must be supplied through its external driver and a suitable power source. The IR output must be electrically compatible with the Pi's 3.3 V GPIO interface.
-
-Launch the service from the repository root in the same terminal where the environment was exported:
-
-```bash
 python raspberry_pi/station_controller.py --host 0.0.0.0 --port 8080
-```
+~~~
 
-From the laptop browser on the same trusted LAN, open:
+Open http://<RASPBERRY_PI_IP>:8080/ from a laptop on the same private network. Run hostname -I on the Pi to find its address.
 
-```text
-http://<RASPBERRY_PI_IP>:8080/
-```
+## 3. Check the service
 
-The Pi address can be read on the device with `hostname -I`.
+From another terminal on the Pi:
 
-## Vision and advisory execution
+~~~bash
+curl -fsS http://127.0.0.1:8080/api/health
+curl -fsS http://127.0.0.1:8080/api/status
+~~~
 
-After the operator command, the station service invokes `raspberry_pi/run_inspection.py` with the captured image path. The coordinator runs:
+The page should show the station waiting for the initial three-second hand hold. After the hand is removed, it should stay armed for the session. The next IR activation starts a capture cycle. It should not ask for the three-second hold again until the controller is restarted.
 
-1. OpenCV image preprocessing and YOLOv8 Nano ONNX inference.
-2. Detection decoding, class mapping, bounding-box remapping and annotation.
-3. Structured event creation and local JSON storage.
-4. `llm_advisory/run_executorch.py` with the text-only findings prompt.
-5. Advisory and runtime telemetry insertion into the event.
-6. Optional Firebase publication when enabled.
+The camera-position IR event confirms presence at the sensor. It does not measure exact image alignment; that depends on the mechanical position of the board and camera.
 
-## ExecuTorch Python LLM runner
+## 4. Install the vision model
 
-The inspection coordinator in this repository uses ExecuTorch's Python `TextLLMRunner` binding. This is a text-only runner; the advisory receives structured detector findings and no image pixels.
+The station expects models/best.onnx. Export it from the final three-class YOLO checkpoint using the instructions in pcb_engine_kit/README.md. Copy both best.onnx and its best.onnx.json metadata file into the models folder on the Pi.
 
-The Python runner binding must be built/installed for the Raspberry Pi's ARM64 Python environment. The ExecuTorch LLM Runner documentation specifies `EXECUTORCH_BUILD_PYBIND=ON` for the Python extension and requires the LLM custom-op and quantized-kernel registration imports. A source-build example is:
+The model must use this class order:
 
-```bash
-git clone https://github.com/pytorch/executorch.git
-cd executorch
-bash install_executorch.sh
-```
+~~~text
+0 missing_hole
+1 open_circuit
+2 short_circuit
+~~~
 
-The exact ExecuTorch commit/tag, Python version, compiler and model-export configuration must be recorded together for a reproducible deployment. Verify the imports in the Pi's station virtual environment:
+Before trying the camera, test one image with the ONNX model:
 
-```bash
-python - <<'PY'
-from executorch.extension.llm.custom_ops import custom_ops
-from executorch.kernels import quantized
-from executorch.extension.llm.runner import GenerationConfig, TextLLMRunner
-print("ExecuTorch TextLLMRunner bindings are available")
-PY
-```
+~~~bash
+python raspberry_pi/inspect_image.py \
+  --source /path/to/pcb_image.jpg \
+  --weights models/best.onnx \
+  --output /tmp/pcb_event.json \
+  --annotated /tmp/pcb_annotated.jpg
+~~~
 
-This repository uses the Python `TextLLMRunner` API, not the C++ `llama_main` executable used by the upstream Raspberry Pi tutorial. The Python LLM Runner API is experimental; its installed binding must match the model package and tokenizer. See the [ExecuTorch LLM Runner README](https://github.com/pytorch/executorch/tree/main/extension/llm/runner) and [Raspberry Pi Llama deployment tutorial](https://docs.pytorch.org/executorch/stable/raspberry_pi_llama_tutorial.html).
+Inspect the JSON and annotated image. A no-detection result only means that the three configured classes were not detected in that frame.
 
-The complete run requires `models/best.onnx`, an ExecuTorch Llama `.pte` model and its matching tokenizer. `llm_advisory/run_executorch.py` uses the text-only `TextLLMRunner` Python binding, plus the LLM custom-op and quantized-kernel registrations required by the exported model. The `.pte`, tokenizer and runtime binding build must be a verified compatible set on ARM64. If the advisory assets are absent or the runner fails, the UI reports that the vision result is available but the required advisory did not complete. A vision-only commissioning run is not the full submission workflow.
+## 5. Install the Llama advisory
 
-## Local records and optional Firebase
+The complete inspection sequence also needs an ExecuTorch .pte file and its matching tokenizer. The repository does not contain either file. Follow llm_advisory/README.md to obtain the Llama 3.2 Instruct files, export the model and build the Python TextLLMRunner support for the same ExecuTorch revision.
 
-The raw captured frame, annotated frame, event JSON and advisory JSON are stored under the configured `PCB_OUTPUT_DIR`. The dashboard reads current status and history from the Pi station API. Firebase synchronization can be enabled after configuring its URL and authentication; it is not required for the laptop-to-Pi run button and it does not perform inference.
+Set the two paths in raspberry_pi/.env:
 
-## Performance measurement
+~~~text
+PCB_LLAMA_MODEL_PATH=/absolute/path/to/model.pte
+PCB_LLAMA_TOKENIZER_PATH=/absolute/path/to/tokenizer.bin
+PCB_LLAMA_REQUIRED=true
+~~~
 
-Vision and advisory metrics are measured independently on the Raspberry Pi 5:
+The Python runner API is experimental. Check the Python bindings, operator registrations, exported model and tokenizer together on this Pi before running the full station. Do not assume that a model that runs on a workstation will run on the Pi unchanged.
 
-| Vision | Advisory |
-|---|---|
-| Per-class precision, recall and F1 | Time to first token |
-| FPS and per-image inference latency | Tokens per second |
-| IR trigger to event latency | Total response time |
-| Peak RAM, power and temperature | Peak RAM, power and temperature |
-| Capture/inference reliability | Response validity and consistency |
+## 6. Run the complete sequence
 
-Each measurement is tied to the Pi RAM configuration, OS, runtime versions, model hashes, input size, dataset version and held-out split.
+1. Start the station service.
+2. At session start, hold a hand in front of the IR sensor for about three seconds and release it.
+3. Place a PCB on the conveyor.
+4. Check that the LED turns on during capture and then turns off.
+5. Confirm that the latest frame appears in the laptop browser.
+6. Check the board and camera view, then press Run inspection on Raspberry Pi.
+7. Confirm that the detector output and advisory appear and that a local event JSON is written.
+8. Move the next PCB into the trigger position. The station should capture it without another hand-hold.
+
+Keep Firebase disabled until the local process works. Firebase only copies the event record; the models always run on the Pi.
+
+## 7. Record the target-device results
+
+Run the ONNX runtime benchmark with representative held-out images:
+
+~~~bash
+python raspberry_pi/benchmark_onnx.py \
+  --model models/best.onnx \
+  --images /path/to/held_out_images \
+  --warmup 5 \
+  --threads 2 \
+  --out docs/results/pi_onnx_benchmark.json
+~~~
+
+The benchmark reports preprocessing, ONNX inference and post-processing times, p50/p95 latency, sequential FPS, peak process memory and thermal readings. It does not measure the camera-to-result time, Llama speed, power or detection accuracy. Measure those separately and record the equipment and method used.
+
+Use docs/PI5_COMMISSIONING.md to record the GPIO assignments, repeated capture tests, model identity, runtime versions and measured results. Do not mark a physical test as passed until it has been run on the actual station.
+
+The station service is intended for a trusted local network. Do not port-forward it or expose it directly to the public internet.
