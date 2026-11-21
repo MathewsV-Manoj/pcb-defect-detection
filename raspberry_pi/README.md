@@ -1,6 +1,6 @@
 # Raspberry Pi 5 station software
 
-The station controller provides the IR arming state machine, board-position capture trigger, illumination control, Pi-hosted web/API service and operator-triggered inspection launch.
+The station controller provides the IR arming state machine, board-position capture trigger, illumination control, Pi-hosted web/API service and operator-triggered inspection launch. The three-second hand-presence hold arms the station once per controller session; the armed state persists across subsequent PCB inspections.
 
 ## Operating sequence
 
@@ -15,7 +15,7 @@ The station controller provides the IR arming state machine, board-position capt
 
 ## Processing sequence
 
-The station controller captures the board image before inference. The inspection coordinator then performs OpenCV preprocessing, YOLO ONNX inference, detection decoding and annotation, structured event creation, text-only Llama/ExecuTorch advisory generation and optional Firebase publication.
+The station controller captures the board image before inference. The inspection coordinator then performs OpenCV preprocessing, YOLO ONNX inference, detection decoding and annotation, structured event creation, text-only Llama/ExecuTorch advisory generation and optional Firebase publication. A completed or advisory-incomplete cycle leaves the station armed so that the next IR activation can capture the next PCB.
 
 The current OpenCV detector preprocessing is letterbox resize/padding, BGR-to-RGB conversion, float32 normalization to `[0,1]` and NCHW tensor creation. The three-channel YOLO path does not use grayscale conversion or a separate handcrafted trace-detection algorithm.
 
