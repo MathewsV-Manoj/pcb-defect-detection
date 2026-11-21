@@ -22,7 +22,7 @@ jobs:
           python-version: "3.11"
 
       - name: Compile Python source
-        run: python -m compileall -q raspberry_pi llm_advisory pcb_engine_kit tests
+        run: python -m compileall -q raspberry_pi llm_advisory pcb_engine_kit scripts tests
 
       - name: Run repository contract suite
         run: python -m unittest discover -s tests -v
