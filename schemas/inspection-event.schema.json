@@ -2,31 +2,185 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "PCB inspection event",
   "type": "object",
-  "required": ["record_id", "board_id", "timestamp", "decision", "source", "detections"],
+  "required": [
+    "record_id",
+    "board_id",
+    "timestamp",
+    "decision",
+    "source",
+    "detections"
+  ],
   "properties": {
-    "record_id": {"type": "string"},
-    "board_id": {"type": "string"},
-    "timestamp": {"type": "string", "format": "date-time"},
-    "decision": {"enum": ["REVIEW", "NO_TARGET_DEFECT_DETECTED", "ERROR"]},
-    "source": {"enum": ["LIVE", "IMAGE_INFERENCE", "SIMULATION"]},
-    "model_file": {"type": ["string", "null"]},
-    "model_class_order": {"type": "array", "items": {"type": "string"}},
-    "inference_latency_ms": {"type": ["number", "null"], "minimum": 0},
+    "record_id": {
+      "type": "string"
+    },
+    "board_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "decision": {
+      "enum": [
+        "REVIEW",
+        "NO_TARGET_DEFECT_DETECTED",
+        "ERROR"
+      ]
+    },
+    "source": {
+      "enum": [
+        "LIVE",
+        "IMAGE_INFERENCE",
+        "SIMULATION"
+      ]
+    },
+    "model_file": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "model_class_order": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "inference_latency_ms": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "station": {
+      "type": "object",
+      "properties": {
+        "ir_sensor_status": {
+          "enum": [
+            "TRIGGERED",
+            "CLEAR",
+            "UNKNOWN"
+          ]
+        },
+        "illumination_status": {
+          "enum": [
+            "ON",
+            "OFF",
+            "UNKNOWN"
+          ]
+        },
+        "camera_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
     "detections": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["class_id", "class_name", "confidence", "bbox_xyxy"],
+        "required": [
+          "class_id",
+          "class_name",
+          "confidence",
+          "bbox_xyxy",
+          "severity",
+          "location"
+        ],
         "properties": {
-          "class_id": {"type": "integer", "minimum": 0, "maximum": 2},
-          "class_name": {"enum": ["missing_hole", "open_circuit", "short_circuit"]},
-          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
-          "bbox_xyxy": {"type": "array", "items": {"type": "number"}, "minItems": 4, "maxItems": 4}
-        }
+          "class_id": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "class_name": {
+            "enum": [
+              "missing_hole",
+              "open_circuit",
+              "short_circuit"
+            ]
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "bbox_xyxy": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          },
+          "severity": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH",
+              "UNASSESSED"
+            ]
+          },
+          "severity_basis": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "location": {
+            "type": "object",
+            "required": [
+              "bbox_xyxy",
+              "center_normalized"
+            ],
+            "properties": {
+              "bbox_xyxy": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 4,
+                "maxItems": 4
+              },
+              "center_normalized": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "zone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
       }
     },
-    "advisory": {"type": ["string", "null"]},
-    "note": {"type": ["string", "null"]}
+    "advisory": {
+      "type": [
+        "string",
+        "object",
+        "null"
+      ]
+    },
+    "note": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
   },
   "additionalProperties": true
 }
