@@ -42,6 +42,14 @@ class AdvisoryPromptContractTests(unittest.TestCase):
         self.assertNotIn('"image"', prompt)
         self.assertNotIn('"image_path"', prompt)
 
+    def test_prompt_uses_llama_3_instruct_roles_and_read_only_evidence(self):
+        prompt = build_prompt({"board_id": "PCB-TEST-03", "detections": []})
+        self.assertTrue(prompt.startswith("<|begin_of_text|>"))
+        self.assertIn("<|start_header_id|>system<|end_header_id|>", prompt)
+        self.assertIn("<|start_header_id|>user<|end_header_id|>", prompt)
+        self.assertTrue(prompt.endswith("<|start_header_id|>assistant<|end_header_id|>\\n"))
+        self.assertIn("read-only evidence", prompt)
+
 
 if __name__ == "__main__":
     unittest.main()
