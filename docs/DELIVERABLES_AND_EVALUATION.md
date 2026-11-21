@@ -15,15 +15,15 @@ This checklist is specific to the Bharat AI-SoC Challenge 2026–27, Problem Sta
 
 | Challenge requirement | Project implementation | Status |
 |---|---|---|
-| Llama-family reasoning/advisory model | Text-only structured advisory prompt and ExecuTorch runner source | Not complete: `.pte` model and matching tokenizer are absent |
-| ExecuTorch on-device runtime | `llm_advisory/run_executorch.py` uses `TextLLMRunner` | Not complete: runtime/model/tokenizer have not been verified on the Pi |
+| Llama-family reasoning/advisory model | Pinned Llama 3.2 1B Instruct SpinQuant INT4/EO8 package downloader, tokenizer pair and structured advisory prompt | Deployment recipe committed; download and target smoke test still required |
+| ExecuTorch on-device runtime | Production coordinator invokes the ExecuTorch C++ llama_main runner; Pi 5 build script is committed | Build on Linux x86_64, copy the local runtime to the Pi and verify the runner there |
 | Arm-based edge platform | Raspberry Pi 5 CPU deployment path | Described in source; target-device commissioning is not recorded |
 | Detect visual defects | Three-class YOLO detector source and annotated-image output | Model artifacts and held-out detection evidence are absent |
 | Classify defect type and severity | Three target classes; event severity is `UNASSESSED` | Severity policy is not implemented or validated |
-| Actionable operator guidance | Structured Llama advisory source and dashboard field | Not complete until the Llama model/runtime is installed and tested |
+| Actionable operator guidance | Mandatory structured Llama advisory in the coordinator and dashboard | Verify generated four-field JSON from the actual Pi runner; detector data remains authoritative |
 | Inspection logging | Local JSON events, annotated images and history endpoint | Source is present; physical repeated-cycle validation is outstanding |
 | Edge operation without cloud dependence | Local capture, detector and advisory path; Firebase mirrors records only when configured | Offline operation must be demonstrated on the Pi |
-| Real-time operation | Pi-side ONNX benchmark script | No benchmark results are committed; do not claim real-time performance yet |
+| Real-time operation | Pi-side ONNX detector benchmark and full still-image vision-plus-Llama pipeline benchmark | Scripts are committed; execute on target Pi and compare measured percentiles to the separately cited external references |
 
 The PS5 hardware list includes a Raspberry Pi 5 CPU-only configuration. The project's documented station path is ONNX Runtime on the Raspberry Pi CPU.
 
@@ -50,7 +50,20 @@ The dashboard must describe an empty detection list as “No configured target d
 
 ## Raspberry Pi commissioning
 
-Run the checks on the actual Raspberry Pi 5 with the final model assets installed:
+Run the checks on the actual Raspberry Pi 5 with the final model assets installed.
+The deployment recipe is committed; the licensed Llama package and compiled runner
+must be fetched/built locally before the test sequence:
+
+    python -m pip install "huggingface_hub>=0.30,<2"
+    hf auth login
+    python llm_advisory/download_model.py
+
+Build the official runner on a Linux x86_64 host and copy models/llama/runtime
+to the Pi:
+
+    bash llm_advisory/build_pi5_runner.sh
+
+Then:
 
 1. Confirm the GPIO pins and sensor/driver polarity against the physical wiring.
 2. Confirm the three-second initial arming sequence and armed state after release.
@@ -74,7 +87,7 @@ Measure on the Raspberry Pi, not on the training workstation:
 - p50 and p95 latency and sequential FPS;
 - peak RAM and CPU temperature;
 - complete capture-to-dashboard-result time;
-- Llama time to first token, generation speed, total response time and peak RAM;
+- Llama total response time and peak RAM; TTFT/tokens per second only where the selected runner emits those measurements (the production C++ wrapper currently leaves them null);
 - power only if measured with an appropriate external meter.
 
 For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method.
@@ -85,6 +98,6 @@ The official challenge page states that teams may have 1–3 members; student te
 
 ## Current assessment
 
-The source-code and documentation deliverables are present. A demonstration MP4 is committed. The project is **not yet submission-complete** because the required Llama/ExecuTorch model package is missing, the trained YOLO release artifacts and measured test evidence are absent, severity remains unassessed, and Raspberry Pi commissioning is not recorded. Do not mark these items complete without evidence.
+The source-code and documentation deliverables, pinned Llama/ExecuTorch deployment path, benchmark tooling and a demonstration MP4 are committed. The remaining release evidence is target-specific: downloaded Llama assets and a successful on-device smoke test; final YOLO artifacts and held-out metrics; physical commissioning; and a validated severity policy. Keep each item open until its evidence is recorded. Published reference values are not project measurements; see docs/REFERENCE_BENCHMARKS.md.
 
 Official challenge information: https://armbharatchallenge.com/
