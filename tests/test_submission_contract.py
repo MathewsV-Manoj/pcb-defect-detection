@@ -35,6 +35,7 @@ class SubmissionContractTests(unittest.TestCase):
             set(finding["required"])
         ))
         self.assertIn("station", schema["properties"])
+        self.assertIn("firebase_sync", schema["properties"])
         self.assertEqual(example["detections"][0]["severity"], "UNASSESSED")
         self.assertIn("center_normalized", example["detections"][0]["location"])
 
