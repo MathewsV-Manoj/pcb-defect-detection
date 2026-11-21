@@ -1,7 +1,9 @@
 # Software contract tests
 
-The included dependency-free tests cover:
-- Atomic publication of a completed image into the processing queue.
+The repository includes automated checks for:
+
+- Structured Llama advisory input: defect type, severity and location are included, while image data and image paths are excluded.
+- Atomic image submission into the queued-image workflow.
 - Rejection of archive paths that attempt directory traversal.
 
-These tests do not represent camera, model, GPIO, conveyor, Firebase-security or Raspberry Pi performance validation.
+The GitHub Actions workflow runs Python compilation and both test groups on pushes and pull requests to the main branch. These software checks do not represent Raspberry Pi 5 performance measurements or physical camera/conveyor commissioning.
