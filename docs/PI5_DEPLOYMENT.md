@@ -8,8 +8,8 @@ The operator button sends a command to the Pi; image processing and both model p
 
 ## Physical operating sequence
 
-1. Hold a hand in front of the IR sensor for approximately three seconds.
-2. The station enters the armed state.
+1. At station startup, hold a hand in front of the IR sensor for approximately three seconds.
+2. The station enters a latched armed state.
 3. Release the sensor and place the PCB on the conveyor.
 4. The conveyor transports the PCB to the camera position.
 5. The next active transition on the IR input identifies the board at the camera position.
@@ -18,7 +18,7 @@ The operator button sends a command to the Pi; image processing and both model p
 8. The operator clicks **Run inspection on Raspberry Pi**.
 9. The browser sends `POST /api/run-inspection`; the Pi processes the stored image and returns the result to the dashboard.
 
-The sensor is configured with a three-second hold event. A short activation that ends before the hold interval does not arm the station. After a successful hold, release is required before the next IR activation can be treated as PCB arrival.
+The sensor is configured with a three-second hold event. A short activation that ends before the hold interval does not arm the station. After a successful hold, release is required before the next IR activation can be treated as PCB arrival. The armed state persists after each completed inspection, so subsequent boards do not require another hand-hold. Restarting the station controller resets the arming state.
 
 ## Runtime components
 
