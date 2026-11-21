@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """One-image/one-frame YOLOv8 ONNX inference for the 3-class PCB detector."""
 from __future__ import annotations
-import argparse, json, sys, time, uuid
+import argparse, json, os, sys, time, uuid
 from datetime import datetime, timezone
 from pathlib import Path
 import cv2
@@ -56,9 +56,23 @@ def decode(output, original_shape, scale, pad, conf=0.25, iou=0.45):
         x2 = float(np.clip((cx+bw/2-px)/scale, 0, w-1))
         y2 = float(np.clip((cy+bh/2-py)/scale, 0, h-1))
         cid = int(class_ids[i])
-        found.append({"class_id":cid, "class_name":CLASS_NAMES[cid],
-                      "confidence":float(scores[i]),
-                      "bbox_xyxy":[round(x1,2),round(y1,2),round(x2,2),round(y2,2)]})
+        bbox = [round(x1,2), round(y1,2), round(x2,2), round(y2,2)]
+        found.append({
+            "class_id": cid,
+            "class_name": CLASS_NAMES[cid],
+            "confidence": float(scores[i]),
+            "bbox_xyxy": bbox,
+            "severity": "UNASSESSED",
+            "severity_basis": "No board-specific impact profile is configured for this inspection.",
+            "location": {
+                "bbox_xyxy": bbox,
+                "center_normalized": [
+                    round(((x1 + x2) / 2) / w, 6),
+                    round(((y1 + y2) / 2) / h, 6)
+                ],
+                "zone": None
+            }
+        })
     return found
 
 def read_frame(args):
@@ -122,6 +136,11 @@ def main():
             "model_class_order":CLASS_NAMES, "input_size":[SIZE,SIZE],
             "confidence_threshold":args.conf, "nms_iou_threshold":args.iou,
             "inference_latency_ms":round(latency,2), "detections":detections,
+            "station": {
+                "ir_sensor_status": os.getenv("PCB_IR_SENSOR_STATUS", "UNKNOWN"),
+                "illumination_status": os.getenv("PCB_ILLUMINATION_STATUS", "UNKNOWN"),
+                "camera_source": "picamera2" if args.picamera2 else ("usb_camera" if args.camera is not None else "image_file")
+            },
             "advisory":None,
             "note":"No target defect detected is not proof of a defect-free PCB."
         }
