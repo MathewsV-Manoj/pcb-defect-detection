@@ -1,19 +1,20 @@
-# Datasets and provenance
+# Dataset provenance
 
-No original training dataset archive or processed YOLO dataset was present in the accessible project files when this repository was assembled. This folder contains provenance templates, not images or labels.
+The project targets open-circuit, short-circuit and missing-hole detection on PCB images. Dataset suitability is assessed against those labels and the actual inspection-camera domain.
 
-## Sources mentioned in project records
-- DeepPCB: https://github.com/tangsanli5201/DeepPCB
-- Tiny-Defect-Detection-for-PCB: https://github.com/Ixiaohuihuihui/Tiny-Defect-Detection-for-PCB
-- Project discussion also mentioned Mendeley Mixed PCB Defect Dataset v4. Its exact version, URL, annotation mapping and terms must be verified against the training run.
+## Dataset references
 
-These are source candidates mentioned across different planning records, not proof that all were used in the final checkpoint. Confirm the final `data.yaml`, training log/args, download records and class mapping. DeepPCB's `pin-hole` label must not be relabelled as `missing_hole` without annotation-level evidence.
+| Dataset | Domain | Relevance to this project |
+|---|---|---|
+| DeepPCB | PCB defects | PCB-specific source reference for defect-detection experiments |
+| Tiny-Defect-Detection-for-PCB | PCB defects | PCB-specific source reference; annotation labels require mapping review |
+| MVTec AD | Industrial anomaly detection across multiple object/texture categories | General anomaly-detection reference; not a direct source of the three PCB defect labels |
+| NEU Surface Defect | Steel surface defects | General surface-inspection reference; not PCB imagery |
+| KolektorSDD | Electrical commutator surface cracks | Industrial defect reference; not PCB imagery |
+| Project camera captures | The assembled inspection station | Domain-specific evaluation and training material, subject to contributor permissions |
 
-## Redistribution checklist
-1. Read the current dataset license/terms.
-2. Confirm redistribution of images and converted labels is permitted.
-3. Record source, version/date, attribution and archive SHA-256.
-4. Keep project camera images separate and obtain permission from contributors.
-5. If redistribution is not allowed, publish source links and a reproducible download/import recipe instead.
+The committee-listed MVTec AD, NEU Surface Defect and KolektorSDD datasets are useful references for industrial anomaly detection, but their labels and image domains do not directly represent the three PCB target classes. PCB-specific data and project camera captures are required for task-aligned evaluation.
 
-Large datasets should use Git LFS or an approved dataset host where permitted. The repository ignores raw/processed data folders by default; only manifests and provenance docs belong in the initial commit.
+## Provenance policy
+
+The source manifest records dataset identity, source URL, license/terms, annotation classes and whether use in a specific checkpoint is verified. A source is not described as training data unless the exact training configuration and records establish that it was used. Raw datasets are not included in this repository.
