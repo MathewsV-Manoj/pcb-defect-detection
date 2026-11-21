@@ -12,6 +12,14 @@ import yaml
 from ultralytics import YOLO
 
 CLASS_ORDER = ["missing_hole", "open_circuit", "short_circuit"]
+UPSTREAM_BASELINE_CLASS_ORDER = [
+    "missing_hole", "mouse_bite", "open_circuit", "short", "spur", "spurious_copper"
+]
+UPSTREAM_BASELINE_CLASS_MAP = {
+    "missing_hole": "missing_hole",
+    "open_circuit": "open_circuit",
+    "short": "short_circuit",
+}
 
 
 def ordered_names(names: Any) -> list[str]:
@@ -86,9 +94,61 @@ def export_onnx(model: YOLO, out: Path, size: int) -> Path:
     return destination
 
 
+def export_upstream_baseline_onnx(model: YOLO, out: Path, size: int) -> Path:
+    """Export the attributed six-class Sulojan YOLOv8s baseline for Pi inference."""
+    source_names = ordered_names(model.names)
+    if source_names != UPSTREAM_BASELINE_CLASS_ORDER:
+        raise RuntimeError(
+            "This baseline exporter expects the Sulojan six-class order "
+            f"{UPSTREAM_BASELINE_CLASS_ORDER!r}, got {source_names!r}"
+        )
+    result = Path(
+        model.export(
+            format="onnx", imgsz=size, opset=17, simplify=False,
+            dynamic=False, batch=1, nms=False, device="cpu",
+        )
+    )
+    if not result.is_file():
+        raise RuntimeError(f"Ultralytics did not return a readable ONNX model path: {result}")
+    destination = out / "best.onnx"
+    if result.resolve() != destination.resolve():
+        shutil.copy2(result, destination)
+    digest = hashlib.sha256(destination.read_bytes()).hexdigest()
+    metadata = {
+        "format": "onnx",
+        "architecture": "YOLOv8s",
+        "origin": {
+            "publisher": "Sulojan Rajkumar",
+            "model_repository": "https://huggingface.co/Sulojan/pcb-defect-yolov8s",
+            "source_code": "https://github.com/Sulojan2027/PCB_Defect_Detect",
+            "upstream_file": "best.pt",
+            "upstream_file_sha256": "1acd655ce93a474f0ed00958ddd1079afb46c74868f916af6187bf63dad5bb3d",
+            "license_declared_by_model_repository": "MIT",
+            "upstream_model_metrics_document": "docs/PCB_UPSTREAM_BASELINE.md",
+        },
+        "class_order": source_names,
+        "target_class_order": CLASS_ORDER,
+        "target_class_map": UPSTREAM_BASELINE_CLASS_MAP,
+        "ignored_source_classes": ["mouse_bite", "spur", "spurious_copper"],
+        "input_size": [size, size],
+        "input": {
+            "color_order": "RGB", "layout": "NCHW", "dtype": "float32",
+            "normalization": "0_to_1", "resize": "letterbox",
+        },
+        "output_contract": "raw_yolov8_xywh_6_class_scores_no_nms",
+        "sha256": digest,
+        "validated_on_pi": False,
+        "warning": "Upstream model metrics are not this team's evaluation. Evaluate the project checkpoint on its own held-out boards.",
+    }
+    (out / "best.onnx.json").write_text(
+        json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
+    )
+    return destination
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("mode", choices=["train", "validate", "export-onnx"])
+    parser.add_argument("mode", choices=["train", "validate", "export-onnx", "export-upstream-onnx"])
     parser.add_argument("--data", help="YOLO dataset YAML")
     parser.add_argument("--weights", default="yolov8n.pt", help="Checkpoint or base YOLO weights")
     parser.add_argument("--size", type=int, default=640)
@@ -108,6 +168,20 @@ def main() -> int:
     if args.mode == "train":
         check_dataset_class_order(args.data)
         model = YOLO(args.weights)
+        source_names = ordered_names(model.names)
+        if source_names not in (CLASS_ORDER, UPSTREAM_BASELINE_CLASS_ORDER):
+            raise RuntimeError(
+                "Training initial checkpoint must use either the deployment three-class "
+                "order or the documented six-class PCB baseline order; "
+                f"got {source_names!r}"
+            )
+        if source_names == UPSTREAM_BASELINE_CLASS_ORDER:
+            print(
+                "Transfer-learning initialization: Sulojan Rajkumar's six-class "
+                "YOLOv8s PCB checkpoint. Ultralytics will adapt the detection head "
+                "to the supplied three-class dataset. The resulting checkpoint "
+                "must be evaluated as a new project model."
+            )
         model.train(
             data=args.data,
             imgsz=args.size,
@@ -134,6 +208,13 @@ def main() -> int:
         return 0
 
     model = YOLO(args.weights)
+    if args.mode == "export-upstream-onnx":
+        out = Path(args.out).expanduser().resolve()
+        out.mkdir(parents=True, exist_ok=True)
+        onnx_path = export_upstream_baseline_onnx(model, out, args.size)
+        print(f"Attributed six-class baseline ONNX export: {onnx_path}")
+        print("The Pi decoder maps only missing_hole, open_circuit and short to the configured three-class output.")
+        return 0
     check_checkpoint_class_order(model)
 
     if args.mode == "validate":
