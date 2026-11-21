@@ -48,7 +48,7 @@ the project test record.
 On the Pi, from the project root:
 
 ```bash
-export LD_LIBRARY_PATH="$PWD/models/llama/runtime:${LD_LIBRARY_PATH:-}"
+export LD_LIBRARY_PATH="$PWD/models/llama/runtime:$LD_LIBRARY_PATH"
 models/llama/runtime/llama_main --model_path=models/llama/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte \
   --tokenizer_path=models/llama/tokenizer.model --temperature=0 --seq_len=128 \
   --prompt="<|begin_of_text|><|start_header_id|>user<|end_header_id|>Reply with the JSON object: {\"ok\":true}<|eot_id|><|start_header_id|>assistant<|end_header_id|>"
