@@ -135,5 +135,39 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn('"COMPLETE"', controller)
 
 
+    def test_llama_model_and_execu_torch_pi5_deployment_are_pinned_and_required(self):
+        downloader = (ROOT / "llm_advisory" / "download_model.py").read_text(encoding="utf-8")
+        build = (ROOT / "llm_advisory" / "build_pi5_runner.sh").read_text(encoding="utf-8")
+        runner = (ROOT / "llm_advisory" / "run_executorch.py").read_text(encoding="utf-8")
+        coordinator = (ROOT / "raspberry_pi" / "run_inspection.py").read_text(encoding="utf-8")
+        env_example = (ROOT / "raspberry_pi" / ".env.example").read_text(encoding="utf-8")
+        manifest = json.loads((ROOT / "models" / "release_manifest.json").read_text(encoding="utf-8"))
+
+        self.assertIn("executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET", downloader)
+        self.assertIn("911221e0f49d3354cbd4697a9c09feee25cadec7", downloader)
+        self.assertIn("Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte", downloader)
+        self.assertIn("tokenizer.model", downloader)
+        self.assertIn("examples/raspberry_pi/setup.sh pi5", build)
+        self.assertIn("llama_main", build)
+        self.assertIn("executorch_cpp_llama_main", runner)
+        self.assertIn('"--prompt=', runner)
+        self.assertIn('os.getenv("PCB_LLAMA_REQUIRED", True)', coordinator)
+        self.assertIn("PCB_LLAMA_REQUIRED=true", env_example)
+        self.assertTrue(manifest["advisory"]["required_for_challenge"])
+        self.assertTrue(manifest["advisory"]["deployment_recipe_present"])
+        self.assertFalse(manifest["advisory"]["model_package_present"])
+        self.assertIn("models/llama/*", (ROOT / ".gitignore").read_text(encoding="utf-8"))
+
+    def test_external_benchmarks_are_explicitly_separate_from_project_measurements(self):
+        reference = (ROOT / "docs" / "REFERENCE_BENCHMARKS.md").read_text(encoding="utf-8")
+        pipeline = (ROOT / "raspberry_pi" / "benchmark_pipeline.py").read_text(encoding="utf-8")
+        self.assertIn("not project results", reference.lower())
+        self.assertIn("166.050 ms", reference)
+        self.assertIn("14.5 tokens/s", reference)
+        self.assertIn('"measurement_type": "still_image_vision_plus_executorch_advisory_pipeline"', pipeline)
+        self.assertIn('"power_watts": None', pipeline)
+        self.assertIn("physical camera", pipeline)
+
+
 if __name__ == "__main__":
     unittest.main()
