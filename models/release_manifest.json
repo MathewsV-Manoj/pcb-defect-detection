@@ -109,5 +109,29 @@
     "project_results_present": false,
     "project_accuracy_metrics_present": false,
     "power_measurement_present": false
+  },
+  "external_pretrained_baseline": {
+    "publisher": "Sulojan Rajkumar",
+    "model": "YOLOv8s PCB defect detector",
+    "repository": "https://huggingface.co/Sulojan/pcb-defect-yolov8s",
+    "source_repository": "https://github.com/Sulojan2027/PCB_Defect_Detect",
+    "file": "best.pt",
+    "sha256": "1acd655ce93a474f0ed00958ddd1079afb46c74868f916af6187bf63dad5bb3d",
+    "license_declared_by_model_card": "MIT",
+    "downloader": "models/pretrained/download_sulojan_pcb_yolov8s.py",
+    "upstream_metrics_document": "docs/PCB_UPSTREAM_BASELINE.md",
+    "downloaded_to_this_repo": false,
+    "converted_to_onnx": false,
+    "target_mapping": {
+      "missing_hole": "missing_hole",
+      "open_circuit": "open_circuit",
+      "short": "short_circuit"
+    },
+    "ignored_source_classes": [
+      "mouse_bite",
+      "spur",
+      "spurious_copper"
+    ],
+    "metrics_are_upstream_not_project_results": true
   }
 }
