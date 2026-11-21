@@ -63,6 +63,9 @@ On 64-bit Raspberry Pi OS:
 sudo apt update
 sudo apt install -y python3-venv python3-pip python3-opencv python3-gpiozero
 
+# Install this package only when the inspection camera is connected over CSI.
+sudo apt install -y python3-picamera2
+
 git clone https://github.com/MathewsV-Manoj/pcb-defect-detection.git
 cd pcb-defect-detection
 
@@ -73,16 +76,18 @@ python -m pip install -r raspberry_pi/requirements.txt
 
 cp raspberry_pi/.env.example raspberry_pi/.env
 nano raspberry_pi/.env
-```
 
-Set the actual BCM GPIO values, sensor and driver polarity, camera mode, detector path and ExecuTorch model/tokenizer paths in the environment file. The LED strip must be supplied through its external driver and a suitable power source. The IR output must be electrically compatible with the Pi's 3.3 V GPIO interface.
-
-Load the station environment and launch the service:
-
-```bash
+# Export the settings into the station process environment.
 set -a
 source raspberry_pi/.env
 set +a
+```
+
+Set the actual BCM GPIO values, sensor and driver polarity, camera mode, detector path and ExecuTorch model/tokenizer paths in the environment file. The station controller reads operating configuration from the process environment; it does not parse `.env` itself. The LED strip must be supplied through its external driver and a suitable power source. The IR output must be electrically compatible with the Pi's 3.3 V GPIO interface.
+
+Launch the service from the repository root in the same terminal where the environment was exported:
+
+```bash
 python raspberry_pi/station_controller.py --host 0.0.0.0 --port 8080
 ```
 
