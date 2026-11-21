@@ -12,12 +12,14 @@ The three target defect classes are **open circuit**, **short circuit** and **mi
 
 - **Physical inspection:** conveyor-based PCB transport, IR board-presence sensing, camera acquisition and external LED-strip illumination.
 - **Edge platform:** Raspberry Pi 5.
-- **Vision pipeline:** OpenCV preprocessing and YOLOv8 Nano object detection using an ONNX Runtime CPU path.
-- **Accelerated vision option:** Hailo NPU through HailoRT and an AI HAT+/AI HAT+ 2 when that accelerator is installed. The CPU path remains a complete deployment option.
+- **Vision pipeline:** OpenCV preprocessing and YOLOv8 Nano object detection using ONNX Runtime on the Raspberry Pi 5 CPU in the current source implementation.
+- **Optional accelerated vision architecture:** Hailo NPU through HailoRT and AI HAT+ / AI HAT+ 2. This is an optional committee-listed path; Hailo integration is not included in the current source checkout.
 - **Advisory pipeline:** Llama 3.2 Instruct (1B or 3B class) through ExecuTorch on the Raspberry Pi ARM CPU. The station orchestrator calls a text-only runner and structured prompt builder; the model package and matching tokenizer are deployed separately. This is independent of the vision runtime and receives no raw pixels.
 - **Inspection record:** defect type, severity field, location/bounding box, confidence, board ID, timestamp and runtime metadata.
 - **Operator interface:** inspection alerts, advisory text and event history, with Firebase Realtime Database used for record synchronization.
 - **Demonstration:** the physical conveyor, IR arrival sensing, LED illumination, image capture and inspection interface are shown in the project demonstration.
+
+**Technical resources:** [Project report](docs/PROJECT_REPORT.md) · [Raspberry Pi 5 deployment](docs/PI5_DEPLOYMENT.md) · [System architecture](docs/inspection_workflow.svg) · [Dataset provenance](datasets/README.md) · [Demonstration scope](demo_video/README.md)
 
 ## 1. Physical inspection station
 
