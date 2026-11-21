@@ -16,6 +16,9 @@
 - Local inspection history and optional Firebase Realtime Database synchronization.
 - Dataset import manifest, source manifest, annotation utility, YOLO training/export source and software tests.
 - Detector-only and full still-image pipeline benchmark scripts.
+
+- On-device execution architecture documented: OpenCV + ONNX Runtime CPU detector and Llama 3.2 1B + ExecuTorch C++ advisory on the Raspberry Pi 5; no cloud inference endpoint is configured.
+- Offline operating procedure and evaluator-facing explanation documented in `docs/LOCAL_EXECUTION_AND_PERFORMANCE.md`; Firebase record sync remains disabled by default.
 - Technical report, workflow diagram, deployment guide, evaluator checklist and committed demonstration MP4.
 
 ## Remaining work and evidence
@@ -66,6 +69,12 @@ This is the implementation path. It is not valid to say the model has already
 run on the team's device until steps 3–5 have been completed and evidence saved.
 The model receives the structured detection record only; it does not see the
 PCB image, alter detections, control actuators or make the final disposition.
+
+## Local execution requirement
+
+The configured inference algorithms execute on the Raspberry Pi 5 CPU: OpenCV preprocessing, YOLO through ONNX Runtime `CPUExecutionProvider`, and Llama through the ExecuTorch C++ runner. The browser is an operator terminal only. No cloud inference endpoint is configured. Firebase synchronization is disabled by default and, if enabled, carries records only.
+
+This describes the architecture in source code, not a completed offline test. Model files, tokenizer and compiled runner must be installed locally. Before claiming demonstrated offline execution, disconnect the WAN uplink, keep the Pi and browser connected on the same private LAN, run a full inspection and retain an event with `advisory_runtime.status = "COMPLETED"`. Follow [LOCAL_EXECUTION_AND_PERFORMANCE.md](LOCAL_EXECUTION_AND_PERFORMANCE.md).
 
 ## Performance reporting
 
