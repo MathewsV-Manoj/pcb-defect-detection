@@ -34,6 +34,7 @@ def export_onnx(model: YOLO, out: Path, size: int) -> Path:
             simplify=False,
             dynamic=False,
             batch=1,
+            nms=False,
             device="cpu",
         )
     )
