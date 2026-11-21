@@ -81,6 +81,14 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("run_executorch.py", coordinator)
         self.assertIn("publish_event(event)", coordinator)
 
+    def test_onnx_detector_runs_nms_separately_for_each_class(self):
+        source = (ROOT / "raspberry_pi" / "inspect_image.py").read_text(encoding="utf-8")
+        self.assertIn("for cid in range(len(CLASS_NAMES)):", source)
+        self.assertIn("positions = np.flatnonzero(class_ids == cid)", source)
+        self.assertIn("class_boxes = [boxes[int(position)] for position in positions]", source)
+        self.assertNotIn("NMSBoxes(boxes, scores.tolist()", source)
+        self.assertIn("len(session.get_outputs()) != 1", source)
+
     def test_exporter_produces_pi_onnx_and_supplementary_tflite(self):
         exporter = (ROOT / "pcb_engine_kit" / "train_export.py").read_text(encoding="utf-8")
         self.assertIn('"export-onnx"', exporter)
