@@ -45,7 +45,7 @@ The advisory is bounded by the inspection record. It cannot add, remove, relabel
 | `run_executorch.py` | Loads the ExecuTorch model and tokenizer, runs text generation and captures telemetry |
 | `../raspberry_pi/run_inspection.py` | Calls the advisory after vision inference and appends the result to the local inspection event |
 
-The runner uses the ExecuTorch LLM Runner Python bindings and text input. The binding API is build-dependent; the ExecuTorch build must expose the runner classes imported by `run_executorch.py`.
+The runner uses ExecuTorch's `TextLLMRunner`, which is the text-only runner for Llama-family models. The implementation imports the LLM custom-op and quantized-kernel registration modules before loading the model. The ExecuTorch build must expose the Python LLM runner bindings (`EXECUTORCH_BUILD_PYBIND=ON`) and the exported `.pte` model must match the runtime, tokenizer and registered operators.
 
 ## Model packaging
 
