@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "policy_name": "pcb_defect_type_screening_v1",
+  "status": "PROVISIONAL_REQUIRES_BOARD_LEVEL_VALIDATION",
+  "scope": "Initial type-based screening priority for the educational PCB inspection prototype. This is not a safety certification or a board-specific electrical risk assessment. A qualified project/QA owner must approve or change these values for the actual PCB design.",
+  "rules": {
+    "missing_hole": {
+      "severity": "MEDIUM",
+      "basis": "Provisional screening priority: a missing hole may affect mounting or mechanical alignment. Confirm the hole's function against the board drawing."
+    },
+    "open_circuit": {
+      "severity": "HIGH",
+      "basis": "Provisional screening priority: a track discontinuity may interrupt an electrical connection. Verify electrical continuity and the affected net."
+    },
+    "short_circuit": {
+      "severity": "HIGH",
+      "basis": "Provisional screening priority: an unintended conductive bridge may connect separate nets. Verify the affected nets and check for power-up risk."
+    }
+  },
+  "fallback": {
+    "severity": "UNASSESSED",
+    "basis": "No approved rule is configured for this defect class. Human review is required."
+  }
+}
