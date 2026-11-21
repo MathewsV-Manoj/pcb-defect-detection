@@ -131,13 +131,13 @@ No performance figures are asserted without the underlying test configuration an
 
 ## 10. Source repository
 
-- `raspberry_pi/` — IR-triggered station controller, vision inference, integrated advisory orchestration and Firebase event publishing.
+- `raspberry_pi/` — IR-triggered station controller, one-board inspection orchestration, vision inference and Firebase event publishing.
 - `dashboard/` — operator interface.
 - `llm_advisory/` — structured prompt builder.
 - `schemas/` — event contract and example.
 - `models/` — class map and release metadata.
 - `datasets/` — data provenance.
 - `docs/` — architecture and project records.
-- `demo_video/` — physical system demonstration.
+- `tests/` — advisory-boundary and file-handling contract tests.\n- `demo_video/` — physical system demonstration.
 
 The demonstration video is a separate submission media asset and is not embedded in this source checkout.\n\n**Repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection
