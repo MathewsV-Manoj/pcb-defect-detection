@@ -93,15 +93,15 @@ const $=id=>document.getElementById(id);
 let current=null, records=[], displayedCapture=null;
 const states={
  WAITING_FOR_ARM:1,ARMING:1,ARMED_WAIT_RELEASE:2,WAITING_FOR_BOARD:2,
- CAPTURING:3,AWAITING_OPERATOR_RUN:4,RUNNING_INSPECTION:4,
- COMPLETE:5,VISION_COMPLETE_ADVISORY_INCOMPLETE:5,ERROR:0
+ CAPTURING:4,AWAITING_OPERATOR_RUN:4,RUNNING_INSPECTION:5,
+ COMPLETE:6,VISION_COMPLETE_ADVISORY_INCOMPLETE:6,ERROR:0
 };
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function percent(value){if(value===undefined||value===null)return"—";let n=Number(value);return(n<=1?n*100:n).toFixed(1)+"%";}
 function showError(message){$("errorBox").textContent=message||"";$("errorBox").classList.toggle("show",Boolean(message));}
 function setSteps(state){let active=states[state]??0;for(let i=1;i<=6;i++)$("s"+i).classList.toggle("active",i<=active);}
 function renderCapture(status){
- const ready=status.capture_ready&&status.capture_url;
+ const ready=status.state==="AWAITING_OPERATOR_RUN"&&status.capture_ready&&status.capture_url;
  $("runButton").disabled=!ready||status.busy;
  $("cameraPill").textContent=ready?"FRAME CAPTURED":(status.camera_status||"CAMERA WAITING").replaceAll("_"," ");
  if(ready){
