@@ -125,8 +125,8 @@ def main() -> int:
         print(f"[inspection] Vision event saved; advisory model assets are missing: {event_path}", file=sys.stderr)
         if require_advisory:
             print(
-                "[inspection] Complete inspection requires valid PCB_LLAMA_MODEL_PATH and "
-                "PCB_LLAMA_TOKENIZER_PATH files. PCB_LLAMA_REQUIRED=false is reserved for "
+                "[inspection] Complete inspection requires the Llama PTE, matching tokenizer and Pi5 llama_main runner. "
+                "Download them using llm_advisory/download_model.py and llm_advisory/build_pi5_runner.sh. PCB_LLAMA_REQUIRED=false is reserved for "
                 "vision-only commissioning.",
                 file=sys.stderr,
             )
