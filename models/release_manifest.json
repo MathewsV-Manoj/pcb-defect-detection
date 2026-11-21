@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "status": "SOURCE_CHECKOUT_WITH_REQUIRED_MODEL_ASSETS_MISSING",
+  "status": "SOURCE_WITH_PINNED_MODEL_DEPLOYMENT_RECIPE_AND_UNVERIFIED_TARGET_ARTIFACTS",
   "vision": {
     "architecture": "YOLOv8 Nano",
     "runtime": "ONNX Runtime CPU on Raspberry Pi 5",
@@ -10,7 +10,10 @@
       "short_circuit"
     ],
     "input": {
-      "size": [640, 640],
+      "size": [
+        640,
+        640
+      ],
       "channels": 3,
       "color_order": "RGB",
       "layout": "NCHW",
@@ -32,21 +35,43 @@
     "metrics": null,
     "validated_on_pi": false,
     "runtime_benchmark_script": "raspberry_pi/benchmark_onnx.py",
-    "runtime_benchmark_results_present": false
+    "runtime_benchmark_results_present": false,
+    "pipeline_benchmark_script": "raspberry_pi/benchmark_pipeline.py"
   },
   "advisory": {
     "required_for_challenge": true,
-    "model_family": "Llama family",
-    "runtime": "ExecuTorch",
+    "model_family": "Llama 3.2 1B Instruct",
+    "runtime": "ExecuTorch C++ llama_main on Raspberry Pi 5 CPU",
     "processor": "Raspberry Pi 5 ARM CPU",
     "prompt_builder_present": true,
     "runner_source_present": true,
-    "runner_api": "ExecuTorch TextLLMRunner",
+    "runner_api": "ExecuTorch C++ llama_main",
     "model_package_present": false,
     "tokenizer_present": false,
     "validated_on_pi": false,
     "coordinator_source": "raspberry_pi/run_inspection.py",
-    "runner_source": "llm_advisory/run_executorch.py"
+    "runner_source": "llm_advisory/run_executorch.py",
+    "quantization": "SpinQuant INT4 / EO8",
+    "backend_default": "cli",
+    "model_source": {
+      "repository": "executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET",
+      "revision": "911221e0f49d3354cbd4697a9c09feee25cadec7",
+      "license": "llama3.2",
+      "model_file": "Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte",
+      "tokenizer_file": "tokenizer.model",
+      "download_script": "llm_advisory/download_model.py",
+      "hash_manifest_path": "models/llama/download_manifest.json",
+      "weights_committed_to_git": false
+    },
+    "runtime_build": {
+      "build_script": "llm_advisory/build_pi5_runner.sh",
+      "executorch_branch": "release/1.5",
+      "target": "Raspberry Pi 5 aarch64 CPU",
+      "runtime_directory": "models/llama/runtime",
+      "runner_binary_present_in_git": false,
+      "validated_on_pi": false
+    },
+    "deployment_recipe_present": true
   },
   "dataset": {
     "raw_dataset_archive_present": false,
@@ -76,5 +101,13 @@
     "content_reviewed_for_submission": false
   },
   "severity_policy_configured": false,
-  "note": "This manifest reflects the current source checkout. Do not treat missing model artifacts or uncompleted device tests as complete."
+  "note": "The pinned Llama download/build and production invocation paths are committed. Licensed model/tokenizer files and compiled Pi runner are local deployment assets; do not claim target execution before smoke tests and commissioning.",
+  "performance": {
+    "reference_benchmarks_document": "docs/REFERENCE_BENCHMARKS.md",
+    "project_detector_benchmark_script": "raspberry_pi/benchmark_onnx.py",
+    "project_pipeline_benchmark_script": "raspberry_pi/benchmark_pipeline.py",
+    "project_results_present": false,
+    "project_accuracy_metrics_present": false,
+    "power_measurement_present": false
+  }
 }
