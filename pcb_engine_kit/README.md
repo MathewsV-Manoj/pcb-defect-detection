@@ -24,15 +24,17 @@ The primary Raspberry Pi 5 station uses the ONNX Runtime CPU inference applicati
 
 Rows from the same board group must remain in a single split. Duplicate image content is rejected by SHA-256. The converter validates image readability and bounding-box ranges and writes `data.yaml` and `audit.json`.
 
-Example:
+The image-import manifest is separate from `datasets/SOURCE_MANIFEST.csv`, which records dataset provenance. Start from `datasets/import_manifest.example.csv`, then replace the example image and label paths with the actual local files:
 
 ```bash
-cd pcb_engine_kit
+cp ../datasets/import_manifest.example.csv ../datasets/import_manifest.csv
+# Edit import_manifest.csv so every row points to an existing image and label.
 
-python dataset.py ../datasets/SOURCE_MANIFEST.csv ../datasets/processed/pcb3
+cd pcb_engine_kit
+python dataset.py ../datasets/import_manifest.csv ../datasets/processed/pcb3
 ```
 
-The manifest is a project data-provenance file; the source datasets and redistribution permissions remain governed by their original providers. DeepPCB open- and short-circuit annotations are mapped explicitly. A DeepPCB pin-hole annotation is not treated as a missing-hole annotation.
+The provenance manifest is not accepted as the dataset-import CSV. Source datasets and redistribution permissions remain governed by their original providers. DeepPCB open- and short-circuit annotations are mapped explicitly. A DeepPCB pin-hole annotation is not treated as a missing-hole annotation.
 
 ## Train and validate the three-class detector
 
