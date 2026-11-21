@@ -1,7 +1,7 @@
-# Inspection event contract
+# Inspection event
 
-The JSON Schema in `inspection-event.schema.json` defines the record exchanged by the edge application and operator interface.
+inspection-event.schema.json describes the JSON record written by the Pi after an inspection. example-event.json shows the expected field layout.
 
-Each defect finding contains a defect type, severity, location and confidence. Severity is kept independent from confidence. The allowed severity values are LOW, MEDIUM, HIGH and UNASSESSED; UNASSESSED is used when no board-specific impact policy has rated the finding.
+A detection contains its class ID and name, confidence, bounding box, severity and normalized centre location. Severity is separate from confidence. Until a board-specific severity policy is configured, the detector reports UNASSESSED.
 
-The example event is illustrative and is not a detector measurement.
+The example is for checking the record format. It is not a real model prediction or a measured result.
