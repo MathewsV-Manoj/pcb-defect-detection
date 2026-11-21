@@ -30,7 +30,7 @@ The detector input is a 640 × 640 RGB tensor. Preprocessing preserves aspect ra
 
 A frame with no detections is reported as `NO_TARGET_DEFECT_DETECTED`. This means none of the three configured classes was detected in that frame; it is not proof that the entire PCB is defect-free.
 
-Severity is currently recorded as `UNASSESSED`. No board-specific severity rule has been supplied or validated, so the software does not invent a severity score from detector confidence.
+The detector now applies an explicit, configurable type-based screening policy: `missing_hole` = MEDIUM, `open_circuit` = HIGH and `short_circuit` = HIGH. This is marked provisional and requires approval against the actual board drawing/QA criteria; it is not a board-specific risk assessment or safety certification. Unknown classes fall back to `UNASSESSED`, and severity is never inferred from confidence. The policy is in `models/severity_policy.json`.
 
 ## Raspberry Pi service and dashboard
 
@@ -55,6 +55,28 @@ The service is intended for a trusted private network. Do not expose port 8080 d
 Inspection images and JSON events are stored locally on the Pi. Firebase Realtime Database synchronization is optional and disabled by default (`PCB_FIREBASE_PUBLISH=false`); it replicates records only and is not used for inference. Downloading model files and installing dependencies require internet during setup, but inference does not require internet once the model, tokenizer, runtime and packages are present locally. A laptop can connect over a private LAN without WAN access.
 
 The intended deployment is offline-capable; a completed offline test on the final Raspberry Pi must still be recorded before claiming that offline operation has been demonstrated. See [Local execution and performance record](docs/LOCAL_EXECUTION_AND_PERFORMANCE.md) for the evaluator checklist, external reference metrics and commands for collecting actual Pi measurements.
+
+## One-command Raspberry Pi 5 setup
+
+The repository now includes a provisioner that installs the Pi packages, creates the Python environment, downloads the attributed PCB YOLO checkpoint, exports it to ONNX, downloads the Llama 3.2 1B PTE/tokenizer pair, builds the ExecuTorch C++ runner against the Pi's own root filesystem, and runs software smoke tests.
+
+Requirements: 64-bit Raspberry Pi OS on a Raspberry Pi 5, internet access for first-time provisioning, at least 12 GiB free storage, and a suitable power supply/cooling. The first setup downloads large model/build dependencies and can take a while. Review and comply with the upstream Llama 3.2 license and acceptable-use policy before use.
+
+From the repository root on the Pi:
+
+```bash
+bash scripts/provision_pi5.sh
+```
+
+Then edit `raspberry_pi/.env` and enter the **actual** IR and LED-driver BCM pin numbers/polarities for your wiring. The provisioner deliberately does not guess hardware pins. Start the station:
+
+```bash
+bash scripts/run_station_pi5.sh
+```
+
+The provisioner uses Sulojan Rajkumar's attributed six-class YOLOv8s PCB checkpoint as the initial deployment baseline. It exports a local ONNX copy and maps only `missing_hole`, `open_circuit` and `short` into the application's three-class event schema. The publisher's reported metrics remain external reference figures, not results from this project.
+
+The script writes `docs/results/pi5_runtime_smoke_test.json`. This verifies ONNX CPU execution and a real ExecuTorch advisory call using an illustrative event; it does not establish PCB accuracy or validate the physical conveyor/camera/IR/LED cycle. Use the commissioning procedure for those tests.
 
 ## Run the station on Raspberry Pi 5
 
