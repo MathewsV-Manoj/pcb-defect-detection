@@ -1,145 +1,132 @@
-# PCB Automated Optical Inspection
-## Technical project report
+# PCB inspection station
+## Project report
 
-**Conveyor-based inspection · IR-guided positioning · Raspberry Pi 5 · Edge vision · Llama advisory**
+## 1. Project overview
 
-## Executive summary
+This project develops a conveyor-fed inspection station for printed circuit boards. A Raspberry Pi 5 controls the capture sequence and runs the image-processing software. The target is to identify three visible defect types:
 
-The project combines a built conveyor-based PCB inspection station with a Raspberry Pi-hosted operator interface and two independent on-device inference pipelines. The physical station uses an IR presence sensor, a conveyor, an inspection camera and an externally powered LED strip.
+- open circuit;
+- short circuit;
+- missing hole.
 
-The station follows a latched two-phase IR sequence. At the start of a station session, the operator holds a hand in front of the IR sensor for approximately three seconds to arm the station. After release, the PCB is placed on the conveyor. Arming remains active across subsequent board inspections until the station controller is restarted. The conveyor transports the PCB to the camera position, where the next IR activation confirms board presence at the sensor trigger point and triggers image capture. The IR sensor provides a binary presence event; precise camera-field alignment is established mechanically. The Raspberry Pi illuminates the board through the external LED driver and captures a frame.
+The operator uses a laptop browser to view the captured image and start an inspection. The browser does not run the detector. It sends a request to the Raspberry Pi, which processes the saved image and returns the result.
 
-The Pi serves the captured image to a laptop browser for operator verification. The operator then selects **Run inspection on Raspberry Pi**. This sends a command to the Pi-hosted station service; the laptop does not perform inference. The Raspberry Pi preprocesses the captured image, runs YOLO-based defect localization, passes structured findings to the separate Llama/ExecuTorch advisory and returns the result to the operator UI.
+The physical assembly includes a conveyor, IR presence sensor, camera, LED strip and external LED driver. The software repository contains the station controller, Pi-hosted web page, ONNX inference path, inspection coordinator, advisory runner and event schema.
 
-The three target defect classes are open circuit, short circuit and missing hole.
+## 2. Station sequence
 
-## 1. Physical inspection station
+The IR sensor is used in two stages. At the beginning of a session, the operator holds a hand in front of it for about three seconds. When the hand is removed, the controller remains armed. The next sensor activation is treated as a board-presence trigger. The station does not require the hand-hold sequence again for each board; the armed state is cleared when the controller restarts.
 
-| Element | Function |
+When the board reaches the trigger point, the Pi switches on the LED driver, waits for the configured settling interval and captures one frame. The frame is saved locally. The Pi then serves the image to the operator's browser.
+
+The IR sensor is a binary presence detector. It does not calculate the PCB's exact position in the image. The camera view must be aligned through the mechanical placement of the conveyor, sensor and camera.
+
+## 3. Operator website and API
+
+The website is served directly by raspberry_pi/station_controller.py from dashboard/index.html. The operator opens the Pi's IP address and port from a laptop on the same private network.
+
+| Route | Use |
 |---|---|
-| Conveyor assembly | Transports the PCB from loading position to the imaging zone |
-| IR presence sensor | Three-second continuous activation arms the station once; subsequent active transitions detect each PCB at the camera position |
-| External LED strip | Illuminates the PCB during image capture |
-| External LED driver | Switches the separately powered LED strip |
-| Camera | Captures the illuminated PCB frame |
-| Raspberry Pi 5 | Runs the station state machine, hosts the operator website and performs edge inference |
-| Laptop browser | Displays the Pi-hosted UI, previews the captured image and sends the inspection command |
+| GET / | Load the operator page |
+| GET /api/health | Check whether the service responds |
+| GET /api/status | Read sensor, capture and inspection state |
+| GET /api/capture.jpg | View the raw captured frame |
+| GET /api/annotated.jpg | View the detector output after processing |
+| GET /api/history | Read recent local inspection events |
+| POST /api/run-inspection | Ask the Pi to process the captured frame |
 
-The LED strip is supplied through its external driver and power source. The Raspberry Pi GPIO line is the driver's control signal. The conveyor transports the board; the inspection controller coordinates the sensor/camera workflow.
+The operator checks the raw image before running the detector. After the run button is pressed, the Pi starts the inspection coordinator. The page polls the Pi for state changes and displays the saved result.
 
-## 2. Operating sequence and operator interaction
+The HTTP service is intended for a trusted local network. It should not be exposed directly to the public internet.
 
-1. **IR arming:** at the start of a station session, the operator holds a hand in front of the IR sensor for about three seconds. This latches the station into its armed state for subsequent boards.
-2. **Armed state:** the sensor is released and the station enters the board-waiting state.
-3. **PCB loading:** the PCB is placed on the conveyor.
-4. **Conveyor transport:** the belt carries the PCB towards the inspection camera.
-5. **Camera-position detection:** the IR input's next active transition identifies the board at the imaging position.
-6. **Illumination:** the Pi switches the external LED driver on and waits for the configured settling interval.
-7. **Frame capture:** the selected USB/UVC or CSI camera captures one frame; the Pi stores the image locally.
-8. **Image preview:** the Pi-hosted web service exposes the saved frame through `GET /api/capture.jpg`; the laptop browser displays it for operator verification.
-9. **Operator authorization:** the operator clicks **Run inspection on Raspberry Pi**. The dashboard sends `POST /api/run-inspection` to the same Pi-hosted service.
-10. **Local inference:** the Pi reads the stored frame, runs OpenCV preprocessing and YOLO inference, then creates the annotated image and JSON event.
-11. **Local advisory:** the inspection coordinator passes structured detections to the Llama/ExecuTorch pipeline.
-12. **Result return:** the UI polls the Pi's status endpoint and displays the decision, findings, annotated output, advisory and history.
+## 4. Image preparation
 
-![PCB inspection system architecture](inspection_workflow.svg)
+The ONNX detector expects one RGB image with dimensions 640 × 640. The current preprocessing in raspberry_pi/inspect_image.py is:
 
-## 3. Pi-hosted web/API architecture
+1. read the saved frame with OpenCV;
+2. resize it while keeping its aspect ratio;
+3. pad the remaining area to 640 × 640;
+4. convert BGR to RGB;
+5. convert to float32 and divide by 255;
+6. arrange the array as NCHW with shape [1, 3, 640, 640].
 
-The dashboard is served directly by `raspberry_pi/station_controller.py` from `dashboard/index.html`. It is opened remotely from a laptop using the Raspberry Pi's IP address and configured port.
+The detector uses a three-channel image. The current implementation does not convert the image to grayscale or run a separate hand-written trace-continuity detector.
 
-| Endpoint | Purpose |
+## 5. Vision model and class mapping
+
+The base application uses YOLOv8 Nano exported to ONNX and executed through ONNX Runtime on the Raspberry Pi CPU. The class order used by the application and training tools is:
+
+| Class ID | Class name |
+|---:|---|
+| 0 | missing_hole |
+| 1 | open_circuit |
+| 2 | short_circuit |
+
+The detector output contains box coordinates and class scores. The Pi applies a confidence threshold and non-maximum suppression separately for each class. It maps the retained boxes back to the original image, draws them on an annotated copy and stores their coordinates and confidence in the event record.
+
+The class mapping must match the training data. DeepPCB open-circuit and short-circuit labels can be mapped after checking the source label convention. A source label such as pin_hole is not automatically treated as missing_hole; its meaning must be checked first. The project import manifest records the image, label format, board group and train/validation/test split for each image.
+
+## 6. Llama advisory
+
+The Llama process is separate from the vision model. The Pi sends it the structured event fields: board ID, timestamp, defect type, confidence, severity and location. It does not send an image or image path.
+
+The requested response contains four fields: an explanation, recommended operator actions, a severity note and a log entry. The runner checks that the response is valid JSON with the required field types.
+
+The advisory is intended to help the operator review a detector result. It does not add or remove detections, change the detector's class, assign severity from confidence or make an independent PASS/REJECT decision.
+
+The source uses ExecuTorch's text-only TextLLMRunner Python binding. The .pte model and matching tokenizer must be supplied separately and must be built for the Pi's ARM64 environment. The ExecuTorch Python runner API is experimental, so the installed binding, model and tokenizer need to be checked together on the target device.
+
+## 7. Inspection record
+
+Each inspection event stores:
+
+- a record ID and board ID;
+- timestamp and image source;
+- model filename and class order;
+- confidence and NMS thresholds;
+- detector latency;
+- a list of detections;
+- station information;
+- the advisory result, when available;
+- Firebase synchronization status, when publication is enabled.
+
+Each detection includes its class ID, class name, confidence, box coordinates, severity and normalized centre location.
+
+The current detector sets severity to UNASSESSED. A board-specific severity rule has not been configured. The software therefore leaves severity for human review rather than assigning a value without evidence.
+
+A decision of NO_TARGET_DEFECT_DETECTED means that the detector did not find any of the three configured classes in that frame. It does not prove that the entire PCB is defect-free.
+
+## 8. Local records and Firebase
+
+The Pi stores the captured image, annotated image and event JSON in the configured output directory. The dashboard reads recent records from the Pi.
+
+Firebase Realtime Database is an optional copy of the inspection record. The Pi publishes the completed event to /inspections/{record_id} and updates /live. Firebase is not used for image inference or advisory generation. The station can be used locally without Firebase.
+
+## 9. Testing and evaluation
+
+The repository includes automated tests for the station state transitions, event schema, class order, dashboard script syntax, Llama prompt boundary, advisory JSON format, dataset importer and supplementary folder-worker utilities. GitHub Actions runs these tests and compiles the Python source.
+
+Those checks run in a software environment; they do not exercise the GPIO pins, camera, LED driver or model binaries on the Raspberry Pi. The following measurements are still required on the target setup:
+
+| Area | What to record |
 |---|---|
-| `GET /` | Serve the operator website |
-| `GET /api/status` | Return sensor, illumination, capture and inference state |
-| `GET /api/capture.jpg` | Serve the captured frame for pre-inference verification |
-| `GET /api/annotated.jpg` | Serve the post-inference annotated image |
-| `GET /api/history` | Return recent local JSON inspection records |
-| `POST /api/run-inspection` | Start inference on the Raspberry Pi using the saved frame |
+| Detection | Per-class precision, recall, F1, confusion matrix and mAP at the stated IoU thresholds |
+| Capture and station | IR trigger-to-capture time, capture success rate and repeat-cycle reliability |
+| Vision runtime | Per-image latency, sustained FPS, peak RAM and CPU temperature |
+| Llama runtime | Time to first token, tokens per second, total response time and peak RAM |
+| Electrical | Power measured with an external meter under idle, capture and inference load |
+| Operator use | Correct frame preview, clear run acknowledgement and successful result display |
 
-The browser is an operator console only. It does not load model weights or perform OpenCV, YOLO or ExecuTorch inference. The API and model processes execute on the Raspberry Pi.
+The test split must contain boards or capture groups that were not used for training. Views of the same physical PCB should not be spread across the training and test splits.
 
-## 4. OpenCV preprocessing and image representation
+Every reported metric should be accompanied by the model hash, data split, input size, thresholds, runtime versions and Raspberry Pi configuration. A workstation result should not be reported as a Pi measurement.
 
-The current YOLO ONNX implementation uses a three-channel RGB tensor. The preprocessing steps in `raspberry_pi/inspect_image.py` are:
+## 10. Current project files and remaining release items
 
-1. Read the captured frame from the Pi's local storage.
-2. Resize while preserving aspect ratio using letterboxing.
-3. Pad the image to 640 × 640 using the configured padding value.
-4. Convert BGR to RGB.
-5. Convert to float32 and normalize each channel to `[0, 1]`.
-6. Convert the image array into NCHW tensor order, `[1, 3, 640, 640]`.
+The repository contains the application source, dashboard, event schema, dataset utilities, model export script and software tests.
 
-The current detector preprocessing does **not** convert the input to grayscale. The YOLO model requires a three-channel input under the published model contract. The detector learns visual representations of conductive-track discontinuities, unintended bridges and missing holes. A separate handcrafted grayscale, threshold/edge or trace-continuity algorithm is not present in the current inference source.
+The final trained three-class YOLO checkpoint and ONNX file, the ExecuTorch model and tokenizer, the complete processed dataset and target-device measurements are not included in this source checkout. The physical components have been assembled, but the complete capture-to-result cycle still needs reliable validation on the Raspberry Pi with the release models installed.
 
-## 5. Vision pipeline
+The demonstration video also needs to be recorded on the physical station. The demo_video/ folder contains the shot list for that recording.
 
-The base vision path uses YOLOv8 Nano through ONNX Runtime with CPU execution on Raspberry Pi 5.
-
-| Class ID | Defect | Visual feature to localize |
-|---:|---|---|
-| 0 | `missing_hole` | An expected PCB hole is absent or visibly defective |
-| 1 | `open_circuit` | A conductive path is visibly discontinuous |
-| 2 | `short_circuit` | A conductive bridge appears between separate paths |
-
-The detector produces class scores and bounding boxes. Confidence thresholding and non-maximum suppression filter predictions. Bounding boxes are mapped to the original frame and drawn on an annotated image. The event stores class ID, class name, confidence, bounding box and normalized centre.
-
-An optional Hailo NPU through HailoRT and an AI HAT+ / AI HAT+ 2 is a vision acceleration option. The current repository's base path is ONNX Runtime on the Pi CPU; Hailo is not implemented in this source checkout.
-
-## 6. Separate Llama advisory pipeline
-
-The complete inspection architecture requires a local Llama-family advisory using ExecuTorch on the Raspberry Pi ARM CPU. The reference model family is Llama 3.2 Instruct 1B or 3B.
-
-The advisory receives structured fields—board ID, timestamp, defect type, severity, image location and confidence. It returns a concise explanation, recommended operator verification actions, a severity note and log text.
-
-The Llama model receives no camera frame or pixel payload. It cannot create, remove, relabel or suppress detector findings, infer severity from confidence or independently issue a PASS/REJECT decision. YOLO remains the visual localization source.
-
-The source integration comprises:
-
-- `llm_advisory/prompt.py`: text-only prompt construction.
-- `llm_advisory/run_executorch.py`: ExecuTorch LLM runner and response telemetry.
-- `raspberry_pi/run_inspection.py`: vision/advisory sequencing, local record update and optional Firebase sync.
-
-The ExecuTorch `.pte` model and matching tokenizer are separate deployment files and are not included in the public source checkout.
-
-## 7. Inspection event and operator results
-
-Each event contains a record ID, board ID, timestamp, source, model file, class order, inference latency, station metadata and detection list. Each detection contains type, severity, location and confidence.
-
-Severity and confidence are distinct. Severity uses defect type, physical size and functional board location. The current source uses `UNASSESSED` when no board-specific severity profile is configured. `NO_TARGET_DEFECT_DETECTED` means no configured target was detected in the given frame; it is not a blanket guarantee that the board is defect-free.
-
-The UI displays the decision, detections, confidence, location, annotated image, advisory and inspection history. The JSON event is saved locally. Firebase Realtime Database is an optional synchronization layer; it does not execute inference.
-
-## 8. Runtime separation
-
-| Workload | Base runtime | Processor |
-|---|---|---|
-| OpenCV preprocessing | OpenCV | Raspberry Pi 5 CPU |
-| Vision detection | YOLOv8 Nano / ONNX Runtime | Raspberry Pi 5 ARM CPU |
-| Optional vision acceleration | YOLO-family model / HailoRT | Hailo NPU |
-| Advisory reasoning | Llama 3.2 Instruct / ExecuTorch | Raspberry Pi 5 ARM CPU |
-| Operator interface | Python standard-library HTTP server + HTML/CSS/JS | Raspberry Pi 5 |
-| Record synchronization | Firebase Realtime Database | Optional network data service |
-
-Hailo accelerates the vision stage only; it does not replace ExecuTorch for the advisory.
-
-## 9. Evaluation methodology
-
-| Dimension | Measurements |
-|---|---|
-| Detection quality | Per-class precision, recall, F1, confusion matrix, false positives, false negatives and localization |
-| Vision runtime | FPS, per-image latency, IR-trigger-to-record latency, RAM and power |
-| Advisory runtime | Time to first token, tokens/s, total response time and peak RAM |
-| Advisory usefulness | Grounding in class, severity and coordinates; concise verification actions |
-| Operator experience | Three-second arm response, capture preview, run-command acknowledgement, alert clarity and event history |
-| Integration | IR two-phase state sequence, LED timing, camera capture, browser-to-Pi API, local processing and optional synchronization |
-
-Performance figures are reported only with the corresponding dataset split, model hash, runtime version and Raspberry Pi configuration. Workstation results are not represented as Raspberry Pi measurements.
-
-## 10. Source and release evidence
-
-The repository includes source for the IR state machine, Pi-hosted HTTP service, camera capture, OpenCV/ONNX inference, vision/advisory coordinator, ExecuTorch runner, operator website, event schema and software contract tests.
-
-The trained three-class detector, ExecuTorch `.pte` package and tokenizer, complete processed PCB dataset and validated Raspberry Pi benchmark report are separate release assets and are not bundled in the current source checkout. The source-level run button and orchestration require the matching model artifacts for a complete live inference cycle.
-
-**Repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection
+Source repository: https://github.com/MathewsV-Manoj/pcb-defect-detection
