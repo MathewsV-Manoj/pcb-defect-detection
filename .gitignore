@@ -8,6 +8,9 @@ __pycache__/
 runs/
 datasets/raw/
 datasets/processed/
+models/*.pt
+models/*.onnx
+models/*.tflite
 *.log
 .DS_Store
 inspection_runs/
