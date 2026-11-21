@@ -552,7 +552,7 @@ def main() -> int:
 
     server = StationHTTPServer((args.host, args.port), make_handler(runtime))
     print(f"[station] IR GPIO BCM {ir_pin}; LED driver GPIO BCM {led_pin}; camera={camera_mode}", flush=True)
-    print("[station] Hold hand in front of IR sensor for 3 seconds, then release to arm.", flush=True)
+    print("[station] At session start, hold hand in front of IR sensor for 3 seconds once, then release to arm the station.", flush=True)
     print(f"[station] Operator UI: http://<RASPBERRY_PI_IP>:{args.port}/", flush=True)
     print("[station] Use the dashboard's Run Inspection button after the captured frame is reviewed.", flush=True)
     try:
