@@ -140,4 +140,4 @@ No performance figures are asserted without the underlying test configuration an
 - `docs/` — architecture and project records.
 - `demo_video/` — physical system demonstration.
 
-**Repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection
+The demonstration video is a separate submission media asset and is not embedded in this source checkout.\n\n**Repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection
