@@ -74,6 +74,27 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("run_executorch.py", coordinator)
         self.assertIn("publish_event(event)", coordinator)
 
+    def test_text_only_llama_uses_text_llm_runner_and_chat_template(self):
+        runner = (ROOT / "llm_advisory" / "run_executorch.py").read_text(encoding="utf-8")
+        prompt = (ROOT / "llm_advisory" / "prompt.py").read_text(encoding="utf-8")
+        self.assertIn("TextLLMRunner", runner)
+        self.assertIn("runner.generate(prompt, config, token_callback, stats_callback)", runner)
+        self.assertNotIn("MultimodalRunner", runner)
+        self.assertIn("<|begin_of_text|>", prompt)
+        self.assertIn("<|start_header_id|>assistant<|end_header_id|>", prompt)
+
+    def test_station_api_reads_post_body_and_checks_browser_origin(self):
+        controller = (ROOT / "raspberry_pi" / "station_controller.py").read_text(encoding="utf-8")
+        self.assertIn("self.rfile.read(content_length)", controller)
+        self.assertIn("Cross-origin requests are not allowed", controller)
+        self.assertIn("COMPLETE_SYNC_WARNING", controller)
+
+    def test_station_image_and_result_are_reset_for_each_new_board(self):
+        controller = (ROOT / "raspberry_pi" / "station_controller.py").read_text(encoding="utf-8")
+        self.assertIn('self.capture_path = None', controller)
+        self.assertIn('result=None', controller)
+        self.assertIn('"COMPLETE"', controller)
+
 
 if __name__ == "__main__":
     unittest.main()
