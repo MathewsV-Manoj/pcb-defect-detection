@@ -66,7 +66,8 @@ def main() -> int:
     event_path = resolve_path(args.output)
     annotated_path = resolve_path(args.annotated)
     weights_path = resolve_path(args.weights)
-    source_path = resolve_path(args.source) if args.source else None
+    # Relative input-image paths are resolved from the invoking shell's working directory.
+    source_path = Path(args.source).expanduser().resolve() if args.source else None
 
     if source_path and not source_path.is_file():
         parser.error(f"Source image does not exist: {source_path}")
