@@ -67,7 +67,7 @@ class SubmissionContractTests(unittest.TestCase):
     def test_dashboard_javascript_references_existing_elements(self):
         html = (ROOT / "dashboard" / "index.html").read_text(encoding="utf-8")
         declared = set(re.findall(r'\bid="([^"]+)"', html))
-        referenced = set(re.findall(r'\\$("([^"]+)"\)', html))
+        referenced = set(re.findall(r'\$\("([^"]+)"\)', html))
         self.assertEqual(referenced - declared, set(), "Dashboard JavaScript references missing element IDs")
 
     def test_pi_onnx_benchmark_reports_runtime_only_and_model_identity(self):
