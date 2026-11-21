@@ -1,45 +1,55 @@
-# Raspberry Pi 5 edge inference
+# Raspberry Pi 5 inspection station
 
-Target: Raspberry Pi 5 + 64-bit Raspberry Pi OS + ONNX Runtime CPU for the initial three-class detector.
+The Raspberry Pi 5 is the edge-computing controller for the conveyor-based inspection station. The physical station includes a conveyor, an IR presence sensor, an inspection camera and an externally powered LED strip.
 
-Install:
-```bash
-sudo apt update
-sudo apt install -y python3-venv python3-pip python3-opencv
-python3 -m venv --system-site-packages .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r raspberry_pi/requirements.txt
-```
-For CSI camera support, install Raspberry Pi OS package `python3-picamera2`.
+## Station sequence
 
-Put the verified 3-class `best.onnx` in `models/best.onnx`. Expected class order:
-```
-0 missing_hole
-1 open_circuit
-2 short_circuit
-```
-Input is NCHW float32 `[1,3,640,640]`; Pi 5 handoff notes describe raw output `[1,7,8400]` (or transposed). Confirm the actual model graph before use.
+1. The conveyor transports the PCB into the inspection point.
+2. The IR sensor detects board arrival.
+3. The GPIO station controller switches the external illumination driver on.
+4. After the configured illumination-settle interval, the controller starts a one-frame camera inspection.
+5. The ONNX inference process preprocesses the image, runs YOLO inference, saves an annotated image and serializes an inspection event.
+6. The illumination driver is switched off after the inspection process exits.
 
-Single image:
-```bash
-python raspberry_pi/inspect_image.py --source /path/to/pcb.jpg --weights models/best.onnx
-```
-One frame from USB camera:
-```bash
-python raspberry_pi/inspect_image.py --camera 0 --weights models/best.onnx
-```
-One frame from CSI camera:
-```bash
-python raspberry_pi/inspect_image.py --picamera2 --weights models/best.onnx
-```
-This is one-shot capture, not a continuous conveyor controller. GPIO motor pins and trigger wiring have not been verified, so no assumed pin mapping is included.
+The station controller supports a USB/UVC camera or a CSI camera through Picamera2. Its GPIO numbers, sensor polarity and illumination-driver polarity are environment-configured to match the assembled wiring. The script does not control the conveyor motor or the emergency-stop circuit.
 
-Firebase direct publishing:
-```bash
-export FIREBASE_DATABASE_URL="https://YOUR_DATABASE_URL"
-export FIREBASE_AUTH_TOKEN="YOUR_AUTH_TOKEN"
-python raspberry_pi/inspect_image.py --source /path/to/pcb.jpg --weights models/best.onnx --publish
-```
-Use Authentication and restrictive Realtime Database rules; never commit credentials.
-Measure p50/p95 latency, FPS, RAM, temperature and missed defects on the actual Pi 5.
+## Vision inference
+
+`inspect_image.py` is the base Raspberry Pi CPU path and uses ONNX Runtime with `CPUExecutionProvider`. It supports a still image, one frame from a USB camera or one frame from a CSI camera.
+
+The deployment class map is:
+
+| ID | Class |
+|---:|---|
+| 0 | missing_hole |
+| 1 | open_circuit |
+| 2 | short_circuit |
+
+The matching model file is expected at `models/best.onnx`. The model binary is a separate release artifact; no trained detector binary is included in this source checkout.
+
+## GPIO station controller
+
+`station_controller.py` listens for the IR sensor's active transition and initiates one inspection per board-arrival event. The following environment variables bind the code to the actual station wiring:
+
+| Variable | Meaning |
+|---|---|
+| `PCB_IR_GPIO` | BCM pin connected to the IR sensor's digital output |
+| `PCB_IR_ACTIVE_LOW` | `true` when a low level represents board detection |
+| `PCB_IR_PULL_UP` | `on`, `off` or `floating` input configuration |
+| `PCB_LED_DRIVER_GPIO` | BCM pin that switches the external LED driver |
+| `PCB_LED_DRIVER_ACTIVE_LOW` | Driver input polarity |
+| `PCB_CAMERA_MODE` | `usb` or `picamera2` |
+| `PCB_CAMERA_INDEX` | USB camera index when `PCB_CAMERA_MODE=usb` |
+| `PCB_MODEL_PATH` | ONNX model path |
+| `PCB_ILLUMINATION_SETTLE_SECONDS` | Delay between enabling illumination and capture |
+| `PCB_TRIGGER_COOLDOWN_SECONDS` | Minimum interval between accepted triggers |
+| `PCB_FIREBASE_PUBLISH` | `true` to publish events using configured Firebase credentials |
+
+The LED strip must use an external MOSFET/relay driver and its own suitable power supply. The Raspberry Pi GPIO pin is a logic-level control signal only. The IR output must be compatible with 3.3 V GPIO; higher-voltage outputs require appropriate level shifting. The actual pin assignments and interface polarity are installation-specific and are not hard-coded.
+
+## Runtime separation
+
+- **Vision:** ONNX Runtime on the Pi ARM CPU. HailoRT on a Hailo NPU / AI HAT+ / AI HAT+ 2 is an optional vision acceleration path.
+- **Advisory:** Llama through ExecuTorch on the Pi ARM CPU. It receives structured detection findings and remains independent of the vision runtime.
+
+The controller records an IR-triggered source status and illumination state in the inspection event. Severity is set to `UNASSESSED` unless a board-specific severity policy is supplied; confidence is never substituted for severity.
