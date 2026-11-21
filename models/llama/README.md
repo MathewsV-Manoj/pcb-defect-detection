@@ -22,20 +22,23 @@ The downloader pins Hugging Face revision
 configuration files and model card are present, and writes SHA-256 hashes to
 `download_manifest.json`.
 
-Hugging Face may require account authentication and acceptance of the Meta
-Llama 3.2 license. Follow the model repository's access controls. Do not
-upload the model or tokenizer to this project's public GitHub repository.
+The community-exported repository is public at the time of this revision, so Hugging Face login is normally not needed. If access controls change, follow the model repository's authentication instructions. The Llama 3.2 license and acceptable-use policy still apply. Do not upload the model or tokenizer to this project's public GitHub repository.
 
 ## Build the Raspberry Pi 5 runtime
 
-On a Linux x86_64 host with CMake 3.26+, Git and Python 3.10–3.14:
+The recommended setup is to build on the 64-bit Raspberry Pi 5 itself. The project provisioner handles the full dependency/model/runtime sequence with one command:
+
+```bash
+bash scripts/provision_pi5.sh
+```
+
+The runner build uses the Pi's own root filesystem as the linker sysroot, so the resulting binary matches the installed Pi libc. A cross-build from x86_64 must set `EXECUTORCH_SYSROOT` to a copy of the target Pi root filesystem; do not deploy a binary built against a different GLIBC version.
 
 ```bash
 bash llm_advisory/build_pi5_runner.sh
 ```
 
-The script checks out ExecuTorch's `release/1.5` branch and runs its official
-Raspberry Pi 5 cross-compilation script. It copies the resulting
+The script pins an ExecuTorch 1.5 revision and runs its official Raspberry Pi 5 setup script with a Pi-compatible sysroot. It copies the resulting
 `llama_main` executable, `libllama_runner.so` and the resolved ExecuTorch
 commit into the ignored local directory `models/llama/runtime/`.
 
