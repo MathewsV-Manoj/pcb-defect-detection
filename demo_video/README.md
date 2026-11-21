@@ -1,21 +1,19 @@
 # Physical-system demonstration
 
-The demonstration video is the visual record of the built PCB inspection station and its operating sequence. It complements the source code and technical report by showing the hardware and the operator-facing inspection workflow in operation.
+The project demonstration video documents the built conveyor-based PCB inspection station and the operator-controlled Raspberry Pi workflow.
 
-## Demonstrated sequence
+## Demonstrated operating sequence
 
-1. **Inspection station:** conveyor assembly, inspection area, camera and Raspberry Pi 5.
-2. **Board transport:** PCB moves along the conveyor into the inspection zone.
-3. **IR arrival sensing:** the IR sensor detects the incoming PCB and initiates the capture cycle.
-4. **Controlled illumination:** the external LED strip switches on through its driver to illuminate the PCB.
-5. **Image acquisition:** the camera captures the illuminated board after the configured settling interval.
-6. **Vision output:** the inspection application displays the detected defect class and localized image region.
-7. **Structured inspection record:** board identity, timestamp, defect type, severity, location and confidence are recorded.
-8. **Llama advisory:** the on-device advisory explains the structured finding, suggests operator verification and creates log text.
-9. **Operator interface:** the alert, advisory and inspection history are displayed for review.
+1. **Station arming:** an operator holds a hand in front of the IR sensor for approximately three seconds.
+2. **Release and loading:** the sensor is released and a PCB is placed on the conveyor.
+3. **Conveyor transport:** the belt moves the PCB towards the camera position.
+4. **Board-position confirmation:** the IR sensor detects the PCB at the camera position.
+5. **Controlled illumination:** the external LED strip is switched on through its driver.
+6. **Camera capture:** the Raspberry Pi captures and saves the illuminated PCB frame.
+7. **Laptop preview:** the Raspberry Pi-hosted website displays the captured image in the laptop browser for verification.
+8. **Operator run command:** the operator clicks **Run inspection on Raspberry Pi**. The browser sends a command to the Pi station service.
+9. **Edge vision:** OpenCV preprocessing and YOLO defect localization run on the Raspberry Pi.
+10. **On-device advisory:** the Llama/ExecuTorch process receives structured findings and returns an explanation, verification actions and log text.
+11. **Operator results:** the decision, detections, coordinates, confidence, annotated output and event history appear in the UI.
 
-## Architecture shown in the demonstration
-
-The physical sequence corresponds to the repository's IR-triggered station controller and inspection coordinator. The vision model and Llama advisory are separate local runtimes. The advisory consumes structured detection data only and does not inspect the camera image.
-
-The demonstration video is supplied as the separate video deliverable for the project submission. This folder identifies the demonstration scope; the video media file is distributed separately.
+The video demonstrates the physical station and the operator workflow; the public repository contains the corresponding station controller, Pi-hosted dashboard, inspection coordinator, vision source and advisory runner.

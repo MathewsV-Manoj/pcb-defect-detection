@@ -1,67 +1,53 @@
-# Raspberry Pi 5 inspection station
+# Raspberry Pi 5 station software
 
-The Raspberry Pi 5 is the edge-computing controller for the conveyor-based inspection station. The physical station includes a conveyor, an IR presence sensor, an inspection camera and an externally powered LED strip.
+The station controller provides the IR arming state machine, board-position capture trigger, illumination control, Pi-hosted web/API service and operator-triggered inspection launch.
 
-## Station sequence
+## Operating sequence
 
-1. The conveyor transports the PCB into the inspection point.
-2. The IR sensor detects board arrival.
-3. The GPIO station controller switches the external illumination driver on.
-4. After the configured illumination-settle interval, the controller launches the integrated inspection coordinator.
-5. The coordinator invokes the ONNX vision process, saves an annotated image and structured event, runs the text-only Llama/ExecuTorch advisory, appends advisory telemetry and then optionally publishes the completed event.
-6. The illumination driver is switched off after the inspection process exits.
+1. Hold a hand in front of the IR sensor for approximately three seconds.
+2. The station arms and waits for the sensor to be released.
+3. Place the PCB on the conveyor; the belt transports it towards the camera.
+4. The next IR activation identifies the PCB at the camera position.
+5. The Pi enables the external LED driver, waits for the illumination settle time and captures a frame.
+6. The image is saved locally and served to the laptop browser.
+7. The operator clicks **Run inspection on Raspberry Pi**.
+8. The browser sends `POST /api/run-inspection`; the Pi executes vision and advisory processing using the saved frame.
 
-The station controller supports a USB/UVC camera or a CSI camera through Picamera2. Its GPIO numbers, sensor polarity and illumination-driver polarity are environment-configured to match the assembled wiring. The script does not control the conveyor motor or the emergency-stop circuit.
+## Processing sequence
 
-## Vision inference
+The station controller captures the board image before inference. The inspection coordinator then performs OpenCV preprocessing, YOLO ONNX inference, detection decoding and annotation, structured event creation, text-only Llama/ExecuTorch advisory generation and optional Firebase publication.
 
-`inspect_image.py` is the base Raspberry Pi CPU path and uses ONNX Runtime with `CPUExecutionProvider`. It supports a still image, one frame from a USB camera or one frame from a CSI camera.
+The current OpenCV detector preprocessing is letterbox resize/padding, BGR-to-RGB conversion, float32 normalization to `[0,1]` and NCHW tensor creation. The three-channel YOLO path does not use grayscale conversion or a separate handcrafted trace-detection algorithm.
 
-The deployment class map is:
+## Camera and GPIO configuration
 
-| ID | Class |
-|---:|---|
-| 0 | missing_hole |
-| 1 | open_circuit |
-| 2 | short_circuit |
+`station_controller.py` uses gpiozero for IR sensing and the external illumination-driver control. GPIO assignments and polarities are environment-configured.
 
-The matching model file is expected at `models/best.onnx`. The model binary is a separate release artifact; no trained detector binary is included in this source checkout.
-
-## Complete inspection orchestration
-
-The station controller launches `run_inspection.py`, which sequences the vision and advisory components:
-
-1. Run `inspect_image.py` with the captured camera frame.
-2. Read the local JSON event containing type, severity, location and confidence.
-3. Run `llm_advisory/run_executorch.py` with text-only structured findings.
-4. Append advisory text and runtime telemetry to the same event record.
-5. Publish the completed event to Firebase when event synchronization is enabled.
-
-The Llama model and matching tokenizer are configured through `PCB_LLAMA_MODEL_PATH` and `PCB_LLAMA_TOKENIZER_PATH`. The complete station workflow requires both assets. `PCB_LLAMA_REQUIRED=false` is reserved for vision-only hardware commissioning; it is not the full selection-architecture mode.
-
-## GPIO station controller
-
-`station_controller.py` listens for the IR sensor's active transition and initiates one inspection per board-arrival event. The following environment variables bind the code to the actual station wiring:
-
-| Variable | Meaning |
+| Variable | Purpose |
 |---|---|
-| `PCB_IR_GPIO` | BCM pin connected to the IR sensor's digital output |
-| `PCB_IR_ACTIVE_LOW` | `true` when a low level represents board detection |
-| `PCB_IR_PULL_UP` | `on`, `off` or `floating` input configuration |
-| `PCB_LED_DRIVER_GPIO` | BCM pin that switches the external LED driver |
+| `PCB_IR_GPIO` | IR sensor BCM input |
+| `PCB_IR_ACTIVE_LOW` | IR active polarity |
+| `PCB_IR_PULL_UP` | IR input pull-up setting |
+| `PCB_LED_DRIVER_GPIO` | External LED driver BCM output |
 | `PCB_LED_DRIVER_ACTIVE_LOW` | Driver input polarity |
 | `PCB_CAMERA_MODE` | `usb` or `picamera2` |
-| `PCB_CAMERA_INDEX` | USB camera index when `PCB_CAMERA_MODE=usb` |
-| `PCB_MODEL_PATH` | ONNX model path |
-| `PCB_ILLUMINATION_SETTLE_SECONDS` | Delay between enabling illumination and capture |
-| `PCB_TRIGGER_COOLDOWN_SECONDS` | Minimum interval between accepted triggers |
-| `PCB_FIREBASE_PUBLISH` | `true` to publish events using configured Firebase credentials |
+| `PCB_CAMERA_INDEX` | USB camera index |
+| `PCB_MODEL_PATH` | ONNX detector file |
+| `PCB_ILLUMINATION_SETTLE_SECONDS` | Delay before capture |
+| `PCB_OUTPUT_DIR` | Local capture, event and annotated-image directory |
+| `PCB_LLAMA_MODEL_PATH` | ExecuTorch `.pte` path |
+| `PCB_LLAMA_TOKENIZER_PATH` | Matching tokenizer path |
+| `PCB_FIREBASE_PUBLISH` | Optional completed-event synchronization |
 
-The LED strip must use an external MOSFET/relay driver and its own suitable power supply. The Raspberry Pi GPIO pin is a logic-level control signal only. The IR output must be compatible with 3.3 V GPIO; higher-voltage outputs require appropriate level shifting. The actual pin assignments and interface polarity are installation-specific and are not hard-coded.
+The LED strip uses an external driver and power supply. The Pi GPIO provides only the control signal. The IR electrical output must be compatible with 3.3 V GPIO.
 
-## Runtime separation
+## Inspection software
 
-- **Vision:** ONNX Runtime on the Pi ARM CPU. HailoRT on a Hailo NPU / AI HAT+ / AI HAT+ 2 is an optional vision acceleration path.
-- **Advisory:** Llama through ExecuTorch on the Pi ARM CPU. It receives structured detection findings and remains independent of the vision runtime.
+| File | Responsibility |
+|---|---|
+| `station_controller.py` | IR arming, position trigger, illumination, camera frame capture and HTTP service |
+| `inspect_image.py` | OpenCV preprocessing, YOLO ONNX inference, localization and event creation |
+| `run_inspection.py` | Sequences vision, ExecuTorch advisory, event update and optional synchronization |
+| `firebase_client.py` | Publishes completed event records to Firebase |
 
-The controller records an IR-triggered source status and illumination state in the inspection event. Severity is set to `UNASSESSED` unless a board-specific severity policy is supplied; confidence is never substituted for severity.
+The required Llama advisory uses ExecuTorch on the Raspberry Pi ARM CPU. The `.pte` model and matching tokenizer are separate deployment artifacts. The optional HailoRT path applies to vision acceleration only and is not part of this ONNX base implementation.

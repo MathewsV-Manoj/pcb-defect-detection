@@ -1,181 +1,186 @@
 # Edge-AI PCB Automated Optical Inspection
 
-[![Repository checks](https://github.com/MathewsV-Manoj/pcb-defect-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/MathewsV-Manoj/pcb-defect-detection/actions/workflows/ci.yml)
+[![Repository checks](https://github.com/MathewsV-Manoj/pcb-defect-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/MathewsV-Manoj/pcb-defect-detection/actions)
 
-**A conveyor-based PCB inspection system combining IR-triggered board arrival, controlled LED illumination, edge vision, on-device Llama advisory reasoning and an operator interface.**
+**A conveyor-based PCB inspection station with IR-guided positioning, controlled LED illumination, Raspberry Pi edge vision, on-device Llama advisory and a browser-based operator console.**
 
-The project integrates a physical PCB inspection station with an edge-computing workflow. A conveyor transports the board to the inspection zone. An IR presence sensor detects arrival, an externally powered LED strip illuminates the board, and the camera captures an image for inspection. On the Raspberry Pi 5, the software preprocesses the frame, localizes configured defects, generates an annotated image and structured inspection event, and passes the findings to a separate Llama advisory pipeline.
+The system combines a physical inspection line with a two-stage operator/sensor workflow. The operator first holds a hand in front of the IR sensor for approximately three seconds to arm the station. After releasing the sensor, the PCB is placed on the conveyor. The conveyor transports the board to the camera position, where the IR sensor confirms that a board is present. The LED strip illuminates the board and the camera captures an inspection frame.
 
-The three target defect classes are **open circuit**, **short circuit** and **missing hole**. Visual detection and advisory reasoning are deliberately separated: the vision model supplies the defect class and location; Llama explains those structured findings, suggests operator verification actions and creates advisory log text.
+The Raspberry Pi hosts the operator website. The captured frame is served to the laptop browser for visual verification. When the operator selects **Run inspection on Raspberry Pi**, the browser sends a command to the Pi station service. The Raspberry Pi—not the laptop browser—runs the image-processing, vision and advisory workloads, then returns the inspection result to the UI.
 
-**Project resources:** [Technical report](docs/PROJECT_REPORT.md) · [Architecture diagram](docs/inspection_workflow.svg) · [Raspberry Pi 5 deployment](docs/PI5_DEPLOYMENT.md) · [Deliverables and evaluation](docs/DELIVERABLES_AND_EVALUATION.md) · [Demonstration](demo_video/README.md)
+The three target classes are **open circuit**, **short circuit** and **missing hole**. The vision pipeline identifies and localizes defects. The separate Llama advisory pipeline receives structured findings only and generates an explanation, operator verification actions and log text.
+
+**Project resources:** [Technical report](docs/PROJECT_REPORT.md) · [System flowchart](docs/inspection_workflow.svg) · [Pi station deployment](docs/PI5_DEPLOYMENT.md) · [Deliverables and evaluation](docs/DELIVERABLES_AND_EVALUATION.md) · [Operator dashboard](dashboard/index.html)
 
 ---
 
 ## 1. Physical inspection station
 
-The built inspection station combines the following elements:
-
-| Element | Role in the inspection cycle |
+| Hardware element | Function |
 |---|---|
-| Conveyor assembly | Transports the PCB into the inspection zone |
-| IR presence sensor | Detects PCB arrival and triggers the inspection cycle |
-| External LED strip | Illuminates the board during image capture |
-| Inspection camera | Captures the illuminated PCB frame |
-| Raspberry Pi 5 | Coordinates the sensor-triggered capture and edge-processing workflow |
+| Conveyor assembly | Transports the PCB from the loading position to the camera zone |
+| IR presence sensor | Provides the three-second arming event and then detects the PCB at the camera position |
+| External LED strip | Illuminates the PCB during capture |
+| External LED driver | Switches the separately powered LED strip |
+| Inspection camera | Captures the illuminated board |
+| Raspberry Pi 5 | Hosts the operator UI, handles the sensor sequence and runs local inference |
 
-The station controller reads the IR sensor through a configurable GPIO input and switches the LED strip through a separate external driver. The illumination strip is powered by its own supply and driver; the Pi GPIO is a control signal, not the LED power source. The conveyor provides board transport; motor drive and emergency-stop circuitry are separate from the camera-trigger controller.
+The IR input is used as a two-phase state sequence: a continuous activation of approximately three seconds arms the station; after the sensor is released, the next active transition is interpreted as the PCB reaching the camera position. The station controller does not confuse the initial hand-presence event with the later board-arrival event.
 
-## 2. End-to-end inspection sequence
+The LED strip is powered through its external driver and suitable supply. A Raspberry Pi GPIO pin is used only as the driver's logic-level control signal. Conveyor transport is provided by the physical conveyor assembly; the inspection controller coordinates sensing, illumination, capture and processing.
 
-1. **Board transport:** the conveyor carries the PCB towards the inspection position.
-2. **Arrival detection:** the IR sensor detects the board and emits the trigger event.
-3. **Illumination:** the external LED strip is enabled through its driver.
-4. **Image acquisition:** after the configured illumination-settle interval, the camera captures one inspection frame.
-5. **Preprocessing:** OpenCV validates the image, resizes it, converts the colour space and normalizes the input.
-6. **Visual inference:** YOLOv8 Nano predicts defect classes and image locations.
-7. **Defect record:** detections are serialized with type, severity, location, confidence, board ID and timestamp. An annotated image is saved with the localized findings.
-8. **Advisory reasoning:** the Llama/ExecuTorch pipeline receives the structured event fields only. It generates an explanation, recommended verification actions and an inspection log entry.
-9. **Operator interface:** the inspection result, alert, advisory and event history are presented to the operator. The completed JSON event is retained locally and can be synchronized to Firebase Realtime Database.
+## 2. Exact operating workflow
+
+1. **Arm the station:** hold a hand in front of the IR sensor for approximately three seconds.
+2. **Release and load:** release the sensor; place the PCB on the conveyor.
+3. **Transport:** the conveyor carries the PCB towards the camera.
+4. **Confirm position:** the IR sensor detects the PCB at the camera position and triggers the capture stage.
+5. **Illuminate:** the Raspberry Pi switches the external LED driver on and waits for the configured illumination-settle interval.
+6. **Capture:** the camera captures one frame and the Raspberry Pi saves it locally.
+7. **Laptop preview:** the Pi-hosted website serves the captured frame to the laptop browser. The operator can visually verify that the correct board and camera view were captured.
+8. **Operator command:** the operator clicks **Run inspection on Raspberry Pi**. The browser sends `POST /api/run-inspection` to the Pi-hosted station service.
+9. **Local processing:** the Raspberry Pi loads the saved frame, preprocesses it with OpenCV and runs the configured YOLO detector.
+10. **Advisory:** the Pi passes the structured detection record to the on-device Llama/ExecuTorch process.
+11. **Results:** the Pi creates the annotated image and structured event, then returns the decision, defects, coordinates, confidence and advisory to the UI.
+12. **History:** the result is retained as a local JSON record and can optionally be synchronized to Firebase Realtime Database.
 
 ![PCB inspection system architecture](docs/inspection_workflow.svg)
 
-## 3. Two separate inference pipelines
+## 3. Raspberry Pi-hosted operator UI
 
-The design uses two independent local inference paths. The advisory model is mandatory in the complete inspection workflow; the Hailo accelerator is an optional vision hardware path.
+The website is served by the station controller running on the Raspberry Pi. An operator opens the Pi's address from a laptop browser on the same trusted local network.
 
-| Pipeline | Model and runtime | Processor | Responsibility |
-|---|---|---|---|
-| Vision — base path | YOLOv8 Nano with ONNX Runtime | Raspberry Pi 5 ARM CPU | Detects, classifies and localizes PCB defects |
-| Vision — accelerator option | YOLO-family detector with HailoRT | Hailo NPU through AI HAT+ / AI HAT+ 2 | Optional acceleration of the vision workload |
-| Advisory — required path | Llama 3.2 Instruct 1B or 3B with ExecuTorch | Raspberry Pi 5 ARM CPU | Explains structured findings, recommends verification actions and writes advisory log text |
+The dashboard has two distinct interactions:
 
-The current Raspberry Pi vision implementation uses ONNX Runtime on the Pi CPU. The Hailo/HailoRT route is an optional accelerator architecture and is not part of the current source implementation. Hailo applies to vision inference only; it does not replace the Llama advisory runtime.
+- **Image verification:** after IR-confirmed capture, the browser displays the frame that is stored on the Pi. The frame is served from `/api/capture.jpg`.
+- **Run inspection:** the operator clicks the run button. The page sends a same-origin HTTP request to `/api/run-inspection`. The Pi reads the saved frame and starts its local processing coordinator.
 
-The Llama model runs locally through ExecuTorch on the Pi ARM CPU. It receives a text prompt containing defect type, severity, location, confidence and board context, not the original PCB image. Detection, advisory generation and logging are local operations; cloud inference is not part of the architecture. Firebase is used only for optional record synchronization.
+The browser is an operator interface only. It does not run YOLO, ExecuTorch or image-processing algorithms. The Pi also serves status and history endpoints to the page:
 
-A CPU-only Raspberry Pi 5 is the base deployment path. The platform guidance identifies 8 GB RAM as providing more headroom for concurrent vision and Llama workloads; a 4 GB configuration requires tighter memory profiling.
+| Endpoint | Function |
+|---|---|
+| `GET /` | Serves the operator dashboard |
+| `GET /api/status` | Returns IR, illumination, capture and inference state |
+| `GET /api/capture.jpg` | Serves the captured PCB frame for operator review |
+| `GET /api/annotated.jpg` | Serves the detector-annotated image after inference |
+| `GET /api/history` | Returns recent local inspection events |
+| `POST /api/run-inspection` | Starts vision and advisory processing on the Raspberry Pi |
 
-## 4. Vision model and defect classes
+The station service is intended for a trusted local network. It is not designed to be exposed directly to the public internet.
 
-The selected detector interface is YOLOv8 Nano. It returns localized bounding boxes rather than a single image-level label.
+## 4. Image processing and vision model
 
-| Class ID | Defect | Inspection meaning |
+### Implemented OpenCV preprocessing
+
+The committed ONNX inference path uses a three-channel image tensor. Its preprocessing sequence is:
+
+1. Read the captured image from the Pi's local inspection directory.
+2. Resize it using **letterboxing**, preserving the original aspect ratio.
+3. Pad the resized frame to the detector's 640 × 640 input dimensions.
+4. Convert the OpenCV image from **BGR to RGB**.
+5. Convert pixel values to `float32` and normalize them to the range `[0, 1]`.
+6. Arrange the data as an NCHW tensor with shape `[1, 3, 640, 640]`.
+
+**Grayscale clarification:** the current YOLO deployment path does not convert the image to grayscale. It requires a three-channel RGB tensor. The detector learns visual features associated with conductive-track discontinuities, unintended conductive bridges and missing holes. A separate grayscale, thresholding, edge-detection or handcrafted trace-continuity algorithm is not part of the current inference implementation and is not claimed as an implemented stage.
+
+### YOLO defect localization
+
+The current base vision path uses YOLOv8 Nano through ONNX Runtime with CPU execution on the Raspberry Pi 5.
+
+| Class ID | Defect | Visual pattern being localized |
 |---:|---|---|
-| 0 | `missing_hole` | An expected PCB hole is absent or visibly defective |
-| 1 | `open_circuit` | A visible discontinuity is present in a conductive track |
-| 2 | `short_circuit` | An unintended conductive bridge connects separate tracks |
+| 0 | `missing_hole` | An expected hole is absent or visibly defective |
+| 1 | `open_circuit` | A conductive path has a visible discontinuity |
+| 2 | `short_circuit` | An unintended conductive bridge appears between separate paths |
 
-The deployment class map is shared across the Raspberry Pi inference application, dataset converter, exporter and supplementary TFLite worker. The model contract includes input dimensions, colour order, normalization, output tensor layout, confidence filtering and non-maximum suppression.
+The model output is filtered by confidence and non-maximum suppression. Bounding boxes are mapped back to the original image coordinates and drawn on the annotated output. Each finding includes its class, confidence, bounding box and normalized centre.
 
-## 5. Structured defect record and severity
+## 5. Separate vision and advisory runtimes
 
-Each inspection event includes a record ID, board ID, timestamp, source, model identity, inference latency, station state and an array of detections.
+The system contains two independent inference pipelines.
 
-Each detection contains:
+| Pipeline | Model/runtime | Processor | Function |
+|---|---|---|---|
+| Vision — implemented base path | YOLOv8 Nano + ONNX Runtime | Raspberry Pi 5 ARM CPU | Detects, classifies and localizes PCB defects |
+| Vision — optional acceleration | YOLO-family detector + HailoRT | Hailo NPU via AI HAT+ / AI HAT+ 2 | Optional acceleration of vision inference |
+| Advisory — required path | Llama 3.2 Instruct 1B or 3B + ExecuTorch | Raspberry Pi 5 ARM CPU | Explains structured findings, suggests operator verification and generates log text |
 
-- **Type:** `missing_hole`, `open_circuit` or `short_circuit`.
+Hailo is an optional vision accelerator and is not part of the current ONNX source path. Hailo does not execute the Llama advisory. The required advisory model runs separately through ExecuTorch on the Raspberry Pi ARM CPU.
+
+### Llama input and output boundary
+
+The advisory receives the board ID, timestamp, defect type, severity, location and confidence as structured text. It does not receive the PCB pixels or camera image. Its output contains:
+
+- A concise explanation of the reported finding.
+- Suggested operator verification actions.
+- A severity note.
+- A structured inspection log entry.
+
+Llama does not create, remove, relabel or suppress YOLO detections. It does not infer severity from confidence and does not independently issue a PASS/REJECT decision.
+
+The source integration is implemented in `llm_advisory/prompt.py`, `llm_advisory/run_executorch.py` and `raspberry_pi/run_inspection.py`. The ExecuTorch `.pte` model and matching tokenizer are separate deployment assets and are not included in the public source checkout.
+
+## 6. Defect record, severity and result handling
+
+Each inspection event contains a record ID, board ID, timestamp, input source, model identity, inference latency, station state and an array of detections.
+
+Each detection includes:
+
+- **Type:** one of the three target classes.
 - **Severity:** `LOW`, `MEDIUM`, `HIGH` or `UNASSESSED`.
-- **Location:** image-coordinate bounding box and normalized centre.
-- **Confidence:** the detector's confidence score.
+- **Location:** bounding box and normalized image centre.
+- **Confidence:** detector score for that prediction.
 
-Severity and confidence are independent. Severity is based on defect type, physical extent and location within the board's functional layout; confidence expresses the detector's certainty in its prediction. Where no board-specific impact profile has assigned a severity, the event remains `UNASSESSED` for operator review.
+Severity and confidence are different measures. Severity is based on defect type, physical extent and board location. Where no board-specific impact profile assigns severity, the event retains `UNASSESSED` for operator review.
 
-The current decision policy emits `REVIEW` when configured target defects are detected and `NO_TARGET_DEFECT_DETECTED` when the detector returns no configured findings. The latter means only that no configured target was detected in that frame; it is not an unconditional product-quality guarantee. The Llama advisory does not independently issue a PASS/REJECT decision.
+The application returns `REVIEW` when configured target defects are detected and `NO_TARGET_DEFECT_DETECTED` when no configured target is found in the frame. The latter does not guarantee that the whole PCB is defect-free. The Llama advisory does not change the detector decision.
 
-The event contract is defined in [`schemas/inspection-event.schema.json`](schemas/inspection-event.schema.json), with a representative record in [`schemas/example-event.json`](schemas/example-event.json).
+The data contract is defined in [`schemas/inspection-event.schema.json`](schemas/inspection-event.schema.json), with an illustrative event in [`schemas/example-event.json`](schemas/example-event.json).
 
-## 6. Llama advisory with ExecuTorch
+## 7. Operator results and record synchronization
 
-The complete system includes a mandatory Llama-family advisory stage using ExecuTorch on the Raspberry Pi ARM CPU. A pretrained Llama 3.2 Instruct 1B or 3B model is the reference model family; fine-tuning is not required for the structured-prompt workflow.
+After inference, the Pi-hosted dashboard shows:
 
-The advisory receives:
+- The original captured frame and the annotated detector output.
+- Board ID and inspection decision.
+- Defect class, severity, confidence and bounding-box location.
+- Vision inference latency.
+- Llama advisory and recommended verification actions.
+- Recent inspection history and CSV export.
 
-- Defect type and assigned severity.
-- Bounding-box location and normalized image coordinates.
-- Detector confidence.
-- Board ID and inspection timestamp.
+The local JSON event is the edge-side inspection record. Firebase Realtime Database is an optional synchronization layer using `/live` and `/inspections/{record_id}`. Firebase does not run image inference or the Llama model.
 
-It returns a concise explanation, recommended operator verification actions, a severity note and a structured log entry. The advisory is restricted to the supplied evidence: it cannot view PCB pixels, create or remove detections, relabel model output, infer severity from confidence or replace the independent inspection decision policy.
+## 8. Dataset and evaluation
 
-The software integration is implemented across:
+PCB-specific references include DeepPCB, Tiny-Defect-Detection-for-PCB and project camera captures. MVTec AD, NEU Surface Defect and KolektorSDD are broader industrial references; they are not interchangeable with PCB class labels. Dataset identity, source and annotation mapping are tracked in `datasets/SOURCE_MANIFEST.csv`.
 
-| Source | Function |
+The evaluation framework covers:
+
+| Evaluation area | Measurements |
 |---|---|
-| `llm_advisory/prompt.py` | Builds a text-only prompt from the structured inspection event |
-| `llm_advisory/run_executorch.py` | Invokes the ExecuTorch LLM runner and records response telemetry |
-| `raspberry_pi/run_inspection.py` | Coordinates vision inference, advisory generation, local event update and optional Firebase synchronization |
-| `raspberry_pi/station_controller.py` | Responds to IR arrival events, switches the illumination driver and launches the complete inspection coordinator |
-
-The ExecuTorch `.pte` model package and matching tokenizer are separate deployment assets and are not stored in the public source repository. The runner and orchestration source are present; target-device advisory execution depends on those matching model assets and the corresponding ExecuTorch LLM Runner build.
-
-## 7. Operator interface and inspection history
-
-The operator dashboard is implemented in [`dashboard/index.html`](dashboard/index.html). It presents:
-
-- Latest inspection result and board identity.
-- IR sensor and LED illumination state at capture.
-- Camera and conveyor state fields.
-- Detected defect types, severity, location and confidence.
-- Llama advisory text.
-- Inspection history and CSV export.
-
-The dashboard is a presentation layer. It does not perform image inference or Llama generation. Firebase Realtime Database synchronizes completed records through `/live` and `/inspections/{record_id}`; it is not an inference runtime. Local JSON inspection events remain the primary edge-side records.
-
-## 8. Dataset strategy
-
-The dataset manifest distinguishes PCB-specific sources from broader industrial surface-defect references.
-
-| Dataset | Domain | Relevance to this project |
-|---|---|---|
-| DeepPCB | PCB defects | PCB-specific annotations for open/short circuit patterns |
-| Tiny-Defect-Detection-for-PCB | PCB defects | PCB-specific small-defect reference |
-| Project camera captures | Actual inspection station | Captures the board appearance and illumination conditions of the built system |
-| MVTec AD | General industrial anomaly detection | Reference for anomaly-detection methodology |
-| NEU Surface Defect | Steel surface defects | General surface-defect reference; not a PCB label set |
-| KolektorSDD | Electrical commutator surface defects | General industrial defect reference; not a PCB label set |
-
-Dataset identity, version, annotation mapping, licence or access terms, and split provenance are tracked in [`datasets/SOURCE_MANIFEST.csv`](datasets/SOURCE_MANIFEST.csv). The manifest distinguishes candidate sources from sources recorded for a training run. The complete processed training archive is not included in this repository.
-
-## 9. Evaluation framework
-
-The evaluation follows five dimensions: detection quality, on-device execution, advisory quality, operator experience and runtime separation.
-
-| Area | Evaluation measures |
-|---|---|
-| Detection quality | Per-class precision, recall and F1; confusion matrix; false alarms; missed defects; localization review |
-| Real-time vision | FPS, per-image latency, end-to-end latency, peak memory and power on Raspberry Pi 5 |
+| Detection quality | Per-class precision, recall, F1, confusion matrix, false positives, missed defects and localization review |
+| Real-time vision | FPS, per-image latency, IR-trigger-to-event latency, peak memory and power on Raspberry Pi 5 |
 | Llama runtime | Time to first token, tokens per second, total response time and peak memory |
-| Advisory quality | Relevance to defect type, severity and location; grounded actions; no unsupported findings |
-| Operator experience | Alert clarity, review flow, status visibility, readable history and traceable log entries |
-| Runtime separation | Vision and advisory execution measured independently; Hailo vision path evaluated separately when present |
+| Advice quality | Relevance to class, severity and location; useful, grounded operator actions |
+| Operator experience | Image verification, clear alerts, visible station state and traceable event history |
+| Integration | Three-second arming, IR board-position trigger, LED timing, camera capture, browser-to-Pi command and result return |
 
-The measurement protocol and deliverable mapping are in [`docs/DELIVERABLES_AND_EVALUATION.md`](docs/DELIVERABLES_AND_EVALUATION.md). No numerical accuracy or device-performance value is published without a corresponding checkpoint, dataset split, runtime version and target-device measurement record.
+No numerical result is published without the matching checkpoint, held-out dataset split, runtime and target-device measurement record. The public source checkout does not include the final trained YOLO weights, ExecuTorch model/tokenizer package, complete processed dataset archive or a validated Pi 5 benchmark report.
 
-## 10. Repository structure
+## 9. Repository structure
 
 | Path | Contents |
 |---|---|
-| `raspberry_pi/` | IR-triggered station controller, vision/advisory orchestrator, ONNX image/camera inference and Firebase publisher |
+| `raspberry_pi/` | IR state machine, Pi web/API service, image inference, inspection coordinator and Firebase publisher |
+| `dashboard/` | Pi-hosted operator UI |
 | `llm_advisory/` | Structured prompt builder and ExecuTorch runner |
-| `dashboard/` | Operator dashboard |
 | `schemas/` | Inspection-event JSON Schema and example |
-| `models/` | Canonical class map and model release manifest |
-| `datasets/` | Dataset provenance and source manifest |
+| `models/` | Canonical class map and release manifest |
+| `datasets/` | Dataset provenance manifest |
 | `pcb_engine_kit/` | Annotation conversion, YOLO training/export utilities and supplementary TFLite worker |
-| `training/` | Example training configuration |
-| `tests/` | Advisory-boundary, event-schema, class-map, dashboard and station-integration contract tests |
+| `tests/` | Source contracts for class order, station trigger, API/UI and advisory boundary |
+| `docs/` | Technical report, deployment guide, flowchart and evaluation framework |
 | `firebase/` | Example Realtime Database rules |
-| `docs/` | Technical report, Raspberry Pi deployment, architecture and evaluation documentation |
-| `demo_video/` | Physical-system demonstration overview |
-
-## 11. Submission deliverables
-
-| Deliverable | Repository evidence |
-|---|---|
-| Source code | Station controller, vision inference, inspection coordinator, ExecuTorch runner, dashboard, schemas and automated tests |
-| Application | Built conveyor inspection station with IR arrival sensing, LED illumination and camera-based inspection |
-| Demonstration video | Physical station sequence and operator-facing inspection workflow, supplied as the separate video submission |
-| Technical report | System design, runtime separation, event format, dataset strategy and evaluation methodology |
+| `demo_video/` | Physical station demonstration overview |
 
 **Repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection

@@ -59,7 +59,10 @@ class SubmissionContractTests(unittest.TestCase):
 
     def test_dashboard_exposes_station_and_review_fields_without_demo_tools(self):
         html = (ROOT / "dashboard" / "index.html").read_text(encoding="utf-8")
-        for marker in ("id=\"irStatus\"", "id=\"ledStatus\"", "<th>SEVERITY</th>", "<th>LOCATION</th>"):
+        for marker in (
+            'id="irStatus"', 'id="ledStatus"', 'id="captureArea"', 'id="runButton"',
+            'id="annotatedImage"', "<th>SEVERITY</th>", "<th>LOCATION</th>", "/api/run-inspection",
+        ):
             self.assertIn(marker, html)
         for stale in ('id="service"', 'id="intro"', "applySimulation", "PASTE_"):
             self.assertNotIn(stale, html)
@@ -67,9 +70,9 @@ class SubmissionContractTests(unittest.TestCase):
     def test_station_controller_invokes_complete_inspection_coordinator(self):
         controller = (ROOT / "raspberry_pi" / "station_controller.py").read_text(encoding="utf-8")
         coordinator = (ROOT / "raspberry_pi" / "run_inspection.py").read_text(encoding="utf-8")
-        self.assertIn('run_inspection.py', controller)
-        self.assertIn('run_executorch.py', coordinator)
-        self.assertIn('publish_event(event)', coordinator)
+        self.assertIn("run_inspection.py", controller)
+        self.assertIn("run_executorch.py", coordinator)
+        self.assertIn("publish_event(event)", coordinator)
 
 
 if __name__ == "__main__":

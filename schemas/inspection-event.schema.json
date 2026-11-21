@@ -68,7 +68,8 @@
           "enum": [
             "ON",
             "OFF",
-            "UNKNOWN"
+            "UNKNOWN",
+            "ON_AT_CAPTURE"
           ]
         },
         "camera_source": {
