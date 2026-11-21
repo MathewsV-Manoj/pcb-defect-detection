@@ -55,7 +55,11 @@ Each inspection event includes a record ID, board ID, timestamp, source type, mo
 
 The vision model is responsible for visual defect localization. The Llama advisory receives the structured event as text only. It does not receive the PCB image and is instructed not to add, remove, relabel or suppress detector findings. It produces an explanation, recommended operator checks, a severity note and a log entry.
 
-The advisory code uses ExecuTorch's text-only `TextLLMRunner`. Llama and ExecuTorch are required technologies for the Bharat AI-SoC Challenge. The repository contains the prompt builder and runner source, but the exported ExecuTorch `.pte` model and matching tokenizer are not included. The required on-device advisory therefore remains an outstanding release item until the actual model/tokenizer are supplied and tested on the Pi.
+The advisory is configured for Llama 3.2 1B Instruct SpinQuant INT4/EO8 using ExecuTorch's text-only C++ `llama_main` runner on the Raspberry Pi 5 CPU. The repository includes a pinned Hugging Face model downloader, local SHA-256 manifest generation, a Linux x86_64 Pi 5 runner build script and an integration entry point called by the production inspection coordinator. The PTE weights and matching tokenizer are downloaded locally under the upstream Llama 3.2 license and are not committed to Git. The default station configuration requires the advisory (`PCB_LLAMA_REQUIRED=true`); it is not treated as an optional cloud feature.
+
+The Llama prompt contains only the structured event fields and detection summaries. It does not contain the image or image path. The generated response must be a four-field JSON object and is validated before it is displayed. The advisory cannot alter detector findings, issue an independent PASS/REJECT decision or control the conveyor or illumination. A human operator remains responsible for the quality disposition.
+
+The deployment recipe and integration source are committed, but the actual PTE/tokenizer download, compiled runner installation and live inference on the team's Raspberry Pi must still be evidenced in the commissioning record. Do not claim target-device Llama execution until the smoke test and complete station cycle are recorded.
 
 The detector currently sets severity to `UNASSESSED`. No board-specific severity policy has been validated. Confidence is a detector score, not a severity measure, and is not used to invent a severity label.
 
@@ -69,9 +73,9 @@ The Firebase client copies completed inspection records to Realtime Database whe
 
 ## 7. Testing and evaluation
 
-The repository includes automated software checks for the class-order contract, event schema, station state transitions, advisory prompt boundary, advisory response format, dashboard script syntax, dataset importer and safe dataset archive extraction. GitHub Actions runs the software checks.
+The repository includes automated software checks for the class-order contract, event schema, station state transitions, advisory prompt boundary, advisory response format, dashboard script syntax, dataset importer and safe dataset archive extraction. A Pi-side detector benchmark and a still-image vision-plus-Llama pipeline benchmark are also committed.
 
-These checks do not exercise the physical GPIO wiring, camera, LED driver, final YOLO weights, ExecuTorch model or sustained Raspberry Pi operation. The following evidence is still required before a complete technical claim can be made:
+These checks do not exercise the physical GPIO wiring, camera, LED driver, final YOLO weights, downloaded Llama package, compiled ExecuTorch runtime or sustained Raspberry Pi operation. The following evidence is still required before a complete technical claim can be made:
 
 | Area | Evidence required |
 |---|---|
@@ -80,7 +84,7 @@ These checks do not exercise the physical GPIO wiring, camera, LED driver, final
 | Export correctness | ONNX model hash, input/output contract and prediction comparison against the source checkpoint |
 | Station operation | Verified GPIO pin mapping, camera capture, illumination timing, repeated trigger tests and complete operator workflow |
 | Edge performance | Pi-side inference latency percentiles, throughput, RAM and temperature, measured on the stated Pi configuration |
-| Advisory operation | Llama model/tokenizer identity and hashes, ExecuTorch version/build, valid output and on-device latency |
+| Advisory operation | Downloaded Llama model/tokenizer identity and hashes, ExecuTorch version/build, valid output and measured on-device response time |
 | Application reliability | Repeated capture-to-result tests, local record integrity and Firebase synchronization result when enabled |
 
 Do not report workstation measurements as Raspberry Pi measurements. Do not claim a performance threshold unless it has been measured using the stated hardware and method.
@@ -89,7 +93,7 @@ Do not report workstation measurements as Raspberry Pi measurements. Do not clai
 
 The repository includes the source implementation, dashboard, event schema, dataset preparation and training source, deployment instructions, tests and a demonstration MP4 file.
 
-The final YOLO `best.pt` and `best.onnx`, model metadata generated from the final export, Llama `.pte` model, matching tokenizer, processed dataset/audit, held-out evaluation output and completed Pi commissioning record are not present in this source checkout. The committed MP4 file must be reviewed to confirm that it shows the actual live station sequence required by the submission.
+The final YOLO `best.pt` and `best.onnx`, generated export metadata, processed dataset/audit, held-out evaluation output and completed Pi commissioning record are not present in this source checkout. The pinned Llama downloader and ExecuTorch Pi 5 build route are present, but the licensed PTE/tokenizer and compiled runner are local deployment assets, not tracked Git files. Their installation and target smoke test must be recorded on the actual Pi. The committed MP4 file must also be reviewed to confirm that it shows the actual live station sequence required by the submission.
 
 The source-only repository is not yet a complete runnable release. These missing artifacts and validations are listed in [Submission readiness](SUBMISSION_READINESS.md).
 
