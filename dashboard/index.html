@@ -52,6 +52,10 @@ footer{color:#718a96;font-size:10px;border-top:1px solid var(--line);margin-top:
       <div class="step" id="s6"><b>06 · RESULT</b><span>Vision, Llama advisory and operator log</span></div>
     </div>
     <div id="stationMessage" class="result">Connecting to Raspberry Pi station service…</div>
+    <div class="grid" style="grid-template-columns:repeat(2,1fr);margin-top:8px">
+      <div class="result"><span>IR sensor state</span><strong id="irStatus">UNKNOWN</strong></div>
+      <div class="result"><span>LED illumination state</span><strong id="ledStatus">OFF</strong></div>
+    </div>
     <div class="alert" id="errorBox"></div>
   </section>
 
@@ -79,7 +83,7 @@ footer{color:#718a96;font-size:10px;border-top:1px solid var(--line);margin-top:
 
   <section class="card section">
     <div class="title">Inspection history <button id="csvButton">Export CSV</button></div>
-    <div class="tablewrap"><table><thead><tr><th>TIME</th><th>BOARD ID</th><th>DECISION</th><th>DEFECTS</th><th>SEVERITY</th><th>MAX CONFIDENCE</th></tr></thead><tbody id="history"><tr><td colspan="6">No inspection events recorded.</td></tr></tbody></table></div>
+    <div class="tablewrap"><table><thead><tr><th>TIME</th><th>BOARD ID</th><th>DECISION</th><th>DEFECTS</th><th>SEVERITY</th><th>LOCATION</th><th>MAX CONFIDENCE</th></tr></thead><tbody id="history"><tr><td colspan="7">No inspection events recorded.</td></tr></tbody></table></div>
   </section>
 
   <footer>PCB VISION · Local image acquisition · Edge inference on Raspberry Pi · ExecuTorch advisory · Operator-triggered inspection</footer>
@@ -88,7 +92,7 @@ footer{color:#718a96;font-size:10px;border-top:1px solid var(--line);margin-top:
 const $=id=>document.getElementById(id);
 let current=null, records=[], displayedCapture=null;
 const states={
- WAITING_FOR_ARM:0,ARMING:0,ARMED_WAIT_RELEASE:1,WAITING_FOR_BOARD:1,
+ WAITING_FOR_ARM:1,ARMING:1,ARMED_WAIT_RELEASE:2,WAITING_FOR_BOARD:2,
  CAPTURING:3,AWAITING_OPERATOR_RUN:4,RUNNING_INSPECTION:4,
  COMPLETE:5,VISION_COMPLETE_ADVISORY_INCOMPLETE:5,ERROR:0
 };
@@ -151,7 +155,8 @@ function render(status){
  $("stationMessage").textContent=status.message||"";
  $("stationMessage").style.borderColor=status.state==="ERROR"?"#7e4246":"var(--line)";
  $("cameraPill").textContent=status.camera_status||"CAMERA WAITING";
- if(status.ir_sensor_status)$("stationMessage").dataset.ir=status.ir_sensor_status;
+ $("irStatus").textContent=String(status.ir_sensor_status||"UNKNOWN").replaceAll("_"," ");
+ $("ledStatus").textContent=String(status.illumination_status||"OFF").replaceAll("_"," ");
  setSteps(status.state);
  renderCapture(status);
  renderResult(status);
@@ -187,17 +192,17 @@ async function loadHistory(){
   $("history").innerHTML=records.length?records.map(r=>{
    const ds=r.detections||[],names=ds.map(d=>d.class_name).join(", ")||"None";
    const severity=ds.map(d=>d.severity||"UNASSESSED").join(", ")||"—";
+   const location=ds.map(d=>(d.location?.bbox_xyxy||d.bbox_xyxy||[]).join(", ")).filter(Boolean).join("; ")||"—";
    const max=ds.length?Math.max(...ds.map(d=>Number(d.confidence)||0)):"—";
-   return '<tr><td>'+escapeHTML(r.timestamp)+'</td><td>'+escapeHTML(r.board_id)+'</td><td>'+escapeHTML(r.decision)+'</td><td>'+escapeHTML(names)+'</td><td>'+escapeHTML(severity)+'</td><td>'+(max==="—"?"—":percent(max))+'</td></tr>';
-  }).join(""):'<tr><td colspan="6">No inspection events recorded.</td></tr>';
-  $("total").textContent=records.length;
+   return '<tr><td>'+escapeHTML(r.timestamp)+'</td><td>'+escapeHTML(r.board_id)+'</td><td>'+escapeHTML(r.decision)+'</td><td>'+escapeHTML(names)+'</td><td>'+escapeHTML(severity)+'</td><td>'+escapeHTML(location)+'</td><td>'+(max==="—"?"—":percent(max))+'</td></tr>';
+  }).join(""):'<tr><td colspan="7">No inspection events recorded.</td></tr>';
  }catch(error){console.warn("History unavailable",error);}
 }
 $("runButton").addEventListener("click",runInspection);
 $("refreshButton").addEventListener("click",()=>{poll();loadHistory();});
 $("csvButton").addEventListener("click",()=>{
- const rows=[["timestamp","board_id","decision","defects","severity","confidence"],...records.map(r=>{
-  const ds=r.detections||[];return[r.timestamp,r.board_id,r.decision,ds.map(d=>d.class_name).join(";"),ds.map(d=>d.severity||"UNASSESSED").join(";"),ds.map(d=>d.confidence).join(";")];
+ const rows=[["timestamp","board_id","decision","defects","severity","location","confidence"],...records.map(r=>{
+  const ds=r.detections||[];return[r.timestamp,r.board_id,r.decision,ds.map(d=>d.class_name).join(";"),ds.map(d=>d.severity||"UNASSESSED").join(";"),ds.map(d=>(d.location?.bbox_xyxy||d.bbox_xyxy||[]).join(" ")).join(";"),ds.map(d=>d.confidence).join(";")];
  })];
  const csv=rows.map(row=>row.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n");
  const link=document.createElement("a");link.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));link.download="pcb_inspection_history.csv";link.click();URL.revokeObjectURL(link.href);
