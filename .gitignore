@@ -21,3 +21,8 @@ inspection_runs/
 # Large, licensed Llama model assets and locally built Pi runtime stay out of Git.
 models/llama/*
 !models/llama/README.md
+
+# Externally hosted/licensed model artifacts are downloaded locally.
+models/pretrained/**/*.pt
+!models/pretrained/**/README.md
+!models/pretrained/**/*.py
