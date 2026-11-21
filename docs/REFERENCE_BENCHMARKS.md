@@ -61,6 +61,14 @@ phone results and must not be represented as Pi 5 results.
 
 Source: [ExecuTorch community model card — inference time](https://huggingface.co/executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET).
 
+## PCB defect model reference
+
+Published PCB model results for the MIT-declared Sulojan YOLOv8s baseline are
+documented separately in [PCB_UPSTREAM_BASELINE.md](PCB_UPSTREAM_BASELINE.md).
+That report records the model author's split, per-class metrics, training
+configuration and checkpoint SHA-256. Those values are not measurements from
+this project's Pi station.
+
 ## Project measurements: currently unpopulated
 
 Run these commands on the actual Pi after copying the final model assets and
