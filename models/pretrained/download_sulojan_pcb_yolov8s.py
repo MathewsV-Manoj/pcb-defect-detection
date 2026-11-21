@@ -8,7 +8,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEST_DIR = ROOT / "models" / "pretrained" / "sulojan_pcb_yolov8s"
 REPOSITORY = "Sulojan/pcb-defect-yolov8s"
 REVISION = "main"
