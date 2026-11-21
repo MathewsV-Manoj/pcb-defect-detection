@@ -15,11 +15,12 @@ The physical station and its operation are documented in the project demonstrati
 | Component | Source location | Function |
 |---|---|---|
 | IR-triggered station acquisition | `raspberry_pi/station_controller.py` | Detect board arrival, control the illumination driver and initiate one-frame inspection |
+| Inspection orchestration | `raspberry_pi/run_inspection.py` | Sequence vision inference, ExecuTorch advisory, local event update and optional Firebase publication |
 | Vision inference | `raspberry_pi/inspect_image.py` | OpenCV preprocessing and YOLO ONNX CPU inference |
 | Event publishing | `raspberry_pi/firebase_client.py` | Publish structured events to Firebase Realtime Database |
 | Operator interface | `dashboard/index.html` | Present inspection result, advisory and history |
 | Advisory prompt | `llm_advisory/prompt.py` | Build a text-only prompt from structured findings |
-| Advisory runtime entry point | `llm_advisory/run_executorch.py` | Invoke the ExecuTorch LLM runner and capture response telemetry |
+| Advisory runtime entry point | `llm_advisory/run_executorch.py` | Invoke the ExecuTorch LLM runner with structured text-only findings and capture response telemetry |
 | Advisory boundary tests | `tests/test_advisory_contract.py` | Verify structured fields are included and image payloads are excluded |
 | Event contract | `schemas/` | Define defect type, severity, location and confidence fields |
 
