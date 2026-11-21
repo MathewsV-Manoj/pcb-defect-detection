@@ -142,8 +142,8 @@ Project files: [Flowchart](docs/inspection_workflow.svg) · [Project report](doc
 
 ## Team
 
-<img src="assets/team-photo.jpg" alt="Project team" width="420" />
+<img src="assets/team-photo.webp" alt="Project team" width="420" />
 
-- **Matthew C Manoj** — S5, Electronics and Communication Engineering, Muthoot Institute of Technology and Science
+- **Mathews V Manoj** — S5, Electronics and Communication Engineering, Muthoot Institute of Technology and Science
 - **Jordan Noby Eralil** — S5, Electronics and Communication Engineering, Muthoot Institute of Technology and Science
 - **Deon Lukose Shince** — S5, Electronics and Communication Engineering, Muthoot Institute of Technology and Science
