@@ -181,6 +181,29 @@
         "string",
         "null"
       ]
+    },
+    "firebase_sync": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "PUBLISHED",
+            "FAILED",
+            "DISABLED",
+            "NOT_ATTEMPTED"
+          ]
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "additionalProperties": false
     }
   },
   "additionalProperties": true
