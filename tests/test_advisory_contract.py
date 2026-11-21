@@ -1,3 +1,4 @@
+import json
 import unittest
 import sys
 from pathlib import Path
@@ -50,9 +51,9 @@ class AdvisoryPromptContractTests(unittest.TestCase):
             "severity_note": "Severity is unassessed; request human review.",
             "log_entry": "PCB-TEST-04: open circuit finding requires review.",
         }
-        raw = __import__("json").dumps(value)
+        raw = json.dumps(value)
         self.assertEqual(validate_advisory(parse_advisory_json(raw)), value)
-        self.assertEqual(validate_advisory(parse_advisory_json("```json\\n" + raw + "\\n```")), value)
+        self.assertEqual(validate_advisory(parse_advisory_json("```json" + chr(10) + raw + chr(10) + "```")), value)
 
     def test_advisory_response_rejects_missing_or_wrongly_typed_fields(self):
         with self.assertRaises(RuntimeError):
