@@ -3,7 +3,7 @@ import argparse,csv,json,hashlib,shutil
 from pathlib import Path
 import xml.etree.ElementTree as ET
 import cv2,yaml
-NAMES=['open_circuit','short_circuit','missing_hole']
+NAMES=['missing_hole','open_circuit','short_circuit']
 ALIASES={'open':'open_circuit','short':'short_circuit',**{n:n for n in NAMES}}
 def main():
  p=argparse.ArgumentParser();p.add_argument('manifest');p.add_argument('output');a=p.parse_args()
@@ -27,7 +27,8 @@ def main():
    for line in label.read_text().splitlines():
     if not line.strip():continue
     x1,y1,x2,y2,c=map(float,line.replace(',',' ').split())
-    if int(c) in [1,2]:boxes.append((int(c)-1,x1,y1,x2,y2))
+    deeppcb_map = {1: NAMES.index('open_circuit'), 2: NAMES.index('short_circuit')}
+    if int(c) in deeppcb_map:boxes.append((deeppcb_map[int(c)],x1,y1,x2,y2))
   elif fmt=='yolo':
    for line in label.read_text().splitlines():
     if not line.strip():continue
