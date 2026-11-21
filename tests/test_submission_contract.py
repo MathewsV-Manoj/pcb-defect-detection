@@ -95,8 +95,9 @@ class SubmissionContractTests(unittest.TestCase):
 
     def test_onnx_detector_runs_nms_separately_for_each_class(self):
         source = (ROOT / "raspberry_pi" / "inspect_image.py").read_text(encoding="utf-8")
-        self.assertIn("for cid in range(len(CLASS_NAMES)):", source)
-        self.assertIn("positions = np.flatnonzero(class_ids == cid)", source)
+        self.assertIn("for source_id, source_name in enumerate(model_class_names):", source)
+        self.assertIn("positions = np.flatnonzero(class_ids == source_id)", source)
+        self.assertIn("target_name = target_class_map.get(source_name)", source)
         self.assertIn("class_boxes = [boxes[int(position)] for position in positions]", source)
         self.assertNotIn("NMSBoxes(boxes, scores.tolist()", source)
         self.assertIn("len(session.get_outputs()) != 1", source)
