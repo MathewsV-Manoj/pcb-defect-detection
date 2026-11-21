@@ -131,7 +131,7 @@ No performance figures are asserted without the underlying test configuration an
 
 ## 10. Source repository
 
-- `raspberry_pi/` — edge inference, IR-triggered station controller and Firebase event publishing.
+- `raspberry_pi/` — IR-triggered station controller, vision inference, integrated advisory orchestration and Firebase event publishing.
 - `dashboard/` — operator interface.
 - `llm_advisory/` — structured prompt builder.
 - `schemas/` — event contract and example.
