@@ -1,4 +1,4 @@
-"""Train, validate and export PCB YOLO models for Pi ONNX and TFLite runtimes."""
+"""Train, validate and export the three-class PCB YOLO model for Raspberry Pi ONNX inference."""
 from __future__ import annotations
 
 import argparse
@@ -8,20 +8,39 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+import yaml
 from ultralytics import YOLO
 
 CLASS_ORDER = ["missing_hole", "open_circuit", "short_circuit"]
 
 
-def check_class_order(model: YOLO) -> None:
-    names: Any = model.names
+def ordered_names(names: Any) -> list[str]:
     if isinstance(names, dict):
-        ordered = [names[index] for index in sorted(names)]
-    else:
-        ordered = list(names)
-    if ordered != CLASS_ORDER:
+        return [str(names[key]) for key in sorted(names, key=lambda item: int(item))]
+    if isinstance(names, (list, tuple)):
+        return [str(name) for name in names]
+    raise RuntimeError(f"Unsupported class-name structure: {type(names).__name__}")
+
+
+def check_dataset_class_order(data_path: str | Path) -> None:
+    path = Path(data_path).expanduser().resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f"Dataset YAML not found: {path}")
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or "names" not in data:
+        raise RuntimeError(f"Dataset YAML must contain a names field: {path}")
+    names = ordered_names(data["names"])
+    if names != CLASS_ORDER:
         raise RuntimeError(
-            f"Checkpoint class order {ordered!r} does not match deployment order {CLASS_ORDER!r}"
+            f"Dataset class order {names!r} does not match deployment order {CLASS_ORDER!r}"
+        )
+
+
+def check_checkpoint_class_order(model: YOLO) -> None:
+    names = ordered_names(model.names)
+    if names != CLASS_ORDER:
+        raise RuntimeError(
+            f"Checkpoint class order {names!r} does not match deployment order {CLASS_ORDER!r}"
         )
 
 
@@ -43,19 +62,22 @@ def export_onnx(model: YOLO, out: Path, size: int) -> Path:
     destination = out / "best.onnx"
     if result.resolve() != destination.resolve():
         shutil.copy2(result, destination)
+
+    digest = hashlib.sha256(destination.read_bytes()).hexdigest()
     metadata = {
         "format": "onnx",
-        "architecture": "YOLOv8",
+        "architecture": "YOLOv8 Nano",
         "class_order": CLASS_ORDER,
         "input_size": [size, size],
-        "preprocessing": [
-            "letterbox",
-            "BGR_TO_RGB",
-            "float32_normalize_0_1",
-            "NCHW",
-        ],
+        "input": {
+            "color_order": "RGB",
+            "layout": "NCHW",
+            "dtype": "float32",
+            "normalization": "0_to_1",
+            "resize": "letterbox",
+        },
         "output_contract": "raw_yolov8_xywh_3_class_scores_no_nms",
-        "sha256": hashlib.sha256(destination.read_bytes()).hexdigest(),
+        "sha256": digest,
         "validated_on_pi": False,
     }
     (out / "best.onnx.json").write_text(
@@ -64,57 +86,9 @@ def export_onnx(model: YOLO, out: Path, size: int) -> Path:
     return destination
 
 
-def export_tflite(model: YOLO, out: Path, data: str, size: int) -> Path:
-    result = Path(
-        model.export(
-            format="tflite",
-            int8=True,
-            data=data,
-            imgsz=size,
-            batch=1,
-            nms=False,
-            device="cpu",
-        )
-    )
-    candidates = []
-    if result.is_file() and "full_integer_quant" in result.name:
-        candidates = [result]
-    elif result.is_dir():
-        candidates = list(result.rglob("*full_integer_quant.tflite"))
-    else:
-        candidates = list(result.parent.rglob("*full_integer_quant.tflite"))
-
-    if len(candidates) != 1:
-        raise RuntimeError(
-            "Expected exactly one full-integer TFLite artifact from this export; "
-            f"found {len(candidates)} candidates: {candidates}"
-        )
-
-    destination = out / "detector.tflite"
-    if candidates[0].resolve() != destination.resolve():
-        shutil.copy2(candidates[0], destination)
-
-    metadata = {
-        "schema_version": 1,
-        "classes": CLASS_ORDER,
-        "input": "RGB_0_1_letterbox_114",
-        "box_units": "normalized",
-        "output": "yolov8_raw_xywh_class_scores",
-        "sha256": hashlib.sha256(destination.read_bytes()).hexdigest(),
-        "validated": False,
-    }
-    (out / "metadata.json").write_text(
-        json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
-    )
-    return destination
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "mode",
-        choices=["train", "validate", "export", "export-onnx", "export-tflite"],
-    )
+    parser.add_argument("mode", choices=["train", "validate", "export-onnx"])
     parser.add_argument("--data", help="YOLO dataset YAML")
     parser.add_argument("--weights", default="yolov8n.pt", help="Checkpoint or base YOLO weights")
     parser.add_argument("--size", type=int, default=640)
@@ -126,11 +100,14 @@ def main() -> int:
 
     if args.size < 32 or args.size % 32:
         parser.error("--size must be at least 32 and divisible by 32")
-    if args.mode in {"train", "validate", "export", "export-tflite"} and not args.data:
-        parser.error(f"--data is required for mode {args.mode}")
 
-    model = YOLO(args.weights)
+    if args.mode in {"train", "validate"}:
+        if not args.data:
+            parser.error(f"--data is required for mode {args.mode}")
+
     if args.mode == "train":
+        check_dataset_class_order(args.data)
+        model = YOLO(args.weights)
         model.train(
             data=args.data,
             imgsz=args.size,
@@ -146,25 +123,36 @@ def main() -> int:
             mosaic=0.0,
             mixup=0.0,
         )
+        save_dir = Path(model.trainer.save_dir).resolve()
+        best_path = save_dir / "weights" / "best.pt"
+        if not best_path.is_file():
+            raise RuntimeError(f"Training completed without a best.pt checkpoint at {best_path}")
+        trained = YOLO(str(best_path))
+        check_checkpoint_class_order(trained)
+        print(f"Training output directory: {save_dir}")
+        print(f"Best checkpoint: {best_path}")
         return 0
+
+    model = YOLO(args.weights)
+    check_checkpoint_class_order(model)
 
     if args.mode == "validate":
-        check_class_order(model)
-        model.val(data=args.data, split="test", imgsz=args.size, device=args.device, plots=True)
+        check_dataset_class_order(args.data)
+        model.val(
+            data=args.data,
+            split="test",
+            imgsz=args.size,
+            device=args.device,
+            plots=True,
+        )
+        print("Test evaluation completed. See the generated Ultralytics run directory and plots.")
         return 0
 
-    check_class_order(model)
     out = Path(args.out).expanduser().resolve()
     out.mkdir(parents=True, exist_ok=True)
-
-    if args.mode in {"export", "export-onnx"}:
-        onnx_path = export_onnx(model, out, args.size)
-        print(f"ONNX export: {onnx_path}")
-    if args.mode in {"export", "export-tflite"}:
-        tflite_path = export_tflite(model, out, args.data or "", args.size)
-        print(f"TFLite export: {tflite_path}")
-
-    print("Export metadata is marked unvalidated until parity and target-device camera tests pass.")
+    onnx_path = export_onnx(model, out, args.size)
+    print(f"ONNX export: {onnx_path}")
+    print("Export metadata remains unvalidated until held-out parity and target-Pi tests pass.")
     return 0
 
 
