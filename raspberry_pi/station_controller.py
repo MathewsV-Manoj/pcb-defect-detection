@@ -18,7 +18,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-INFERENCE = ROOT / "raspberry_pi" / "inspect_image.py"
+INSPECTION = ROOT / "raspberry_pi" / "run_inspection.py"
 
 
 def env_bool(name: str, default: bool) -> bool:
@@ -115,7 +115,7 @@ def main() -> int:
         env["PCB_ILLUMINATION_STATUS"] = "ON"
         command = [
             sys.executable,
-            str(INFERENCE),
+            str(INSPECTION),
             "--weights", str((ROOT / model_path).resolve() if not Path(model_path).is_absolute() else Path(model_path)),
             "--board-id", board_id,
             "--conf", confidence,
