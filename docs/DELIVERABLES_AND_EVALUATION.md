@@ -13,8 +13,8 @@
 
 | Stage | Expected behaviour/evidence |
 |---|---|
-| IR arming | Continuous hand presence for approximately three seconds arms the station |
-| Sensor release | Station enters the board-waiting state |
+| IR arming | At station startup, continuous hand presence for approximately three seconds arms the station once; the armed state persists across subsequent PCB cycles |
+| Sensor release | Station enters the board-waiting state and remains armed until controller restart |
 | PCB transport | PCB is placed on the conveyor and transported towards the imaging zone |
 | Camera-position detection | The next IR activation identifies the PCB at the camera position |
 | Illumination and capture | External LED strip turns on through its driver; camera frame is saved on the Pi |
