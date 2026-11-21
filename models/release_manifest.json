@@ -2,7 +2,7 @@
   "schema_version": 2,
   "status": "SOURCE_WITH_PINNED_MODEL_DEPLOYMENT_RECIPE_AND_UNVERIFIED_TARGET_ARTIFACTS",
   "vision": {
-    "architecture": "YOLOv8 Nano",
+    "architecture": "YOLOv8-family ONNX (project three-class checkpoint or attributed six-class YOLOv8s baseline)",
     "runtime": "ONNX Runtime CPU on Raspberry Pi 5",
     "class_order": [
       "missing_hole",
@@ -101,14 +101,15 @@
     "content_reviewed_for_submission": false
   },
   "severity_policy_configured": false,
-  "note": "The pinned Llama download/build and production invocation paths are committed. Licensed model/tokenizer files and compiled Pi runner are local deployment assets; do not claim target execution before smoke tests and commissioning.",
+  "note": "Inference is configured to run locally on the Raspberry Pi 5 CPU after model/runtime provisioning. No cloud inference API is configured; Firebase record synchronization is optional and disabled by default. Target-device inference and offline operation are not yet marked validated until commissioning evidence is saved.",
   "performance": {
     "reference_benchmarks_document": "docs/REFERENCE_BENCHMARKS.md",
     "project_detector_benchmark_script": "raspberry_pi/benchmark_onnx.py",
     "project_pipeline_benchmark_script": "raspberry_pi/benchmark_pipeline.py",
     "project_results_present": false,
     "project_accuracy_metrics_present": false,
-    "power_measurement_present": false
+    "power_measurement_present": false,
+    "external_references_document": "docs/REFERENCE_BENCHMARKS.md"
   },
   "external_pretrained_baseline": {
     "publisher": "Sulojan Rajkumar",
@@ -133,5 +134,26 @@
       "spurious_copper"
     ],
     "metrics_are_upstream_not_project_results": true
+  },
+  "local_execution": {
+    "execution_mode": "on_device",
+    "target_device": "Raspberry Pi 5",
+    "vision_preprocessing": "OpenCV on Raspberry Pi 5",
+    "vision_inference": "ONNX Runtime CPUExecutionProvider on Raspberry Pi 5 CPU",
+    "advisory_model": "Llama 3.2 1B Instruct SpinQuant INT4 / EO8",
+    "advisory_inference": "ExecuTorch C++ llama_main on Raspberry Pi 5 CPU",
+    "dashboard": "Static dashboard served by the Pi; browser is UI only and does not run inference",
+    "remote_inference_api_configured": false,
+    "runtime_internet_required_for_inference": false,
+    "local_model_and_runtime_assets_required": true,
+    "offline_validation_completed": false,
+    "offline_validation_evidence": null,
+    "firebase_record_sync": {
+      "default_enabled": false,
+      "environment_variable": "PCB_FIREBASE_PUBLISH",
+      "default_value": false,
+      "purpose": "Optional event-record replication only; not used for model inference"
+    },
+    "documentation": "docs/LOCAL_EXECUTION_AND_PERFORMANCE.md"
   }
 }
