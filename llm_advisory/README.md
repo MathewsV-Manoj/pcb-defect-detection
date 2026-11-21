@@ -1,33 +1,30 @@
-# Llama advisory pipeline
+# On-device Llama advisory
 
-The selection architecture requires a Llama-family model deployed locally through ExecuTorch. The advisory pipeline runs on the Raspberry Pi 5 ARM CPU and is separate from the visual-detection runtime.
+The operator advisory is a text-only Llama pipeline designed to run on the Raspberry Pi 5 ARM CPU through ExecuTorch. It is independent of the vision runtime, which runs through ONNX Runtime on the CPU or optionally HailoRT on a Hailo NPU.
 
-## Model and runtime
+## Runtime implementation
 
-The reference model family is **Llama 3.2 Instruct 1B or 3B**. A pretrained instruction-tuned model with a constrained structured prompt is sufficient for the initial advisory workflow; fine-tuning is not a prerequisite.
+- `prompt.py` builds the advisory prompt from board metadata and structured detector findings.
+- `run_executorch.py` invokes the ExecuTorch LLM Python runner and writes advisory text with runtime telemetry.
+- `../tests/test_advisory_contract.py` verifies that defect type, severity and location are included while image payloads are excluded.
 
-ExecuTorch is the reference on-device runtime for this pipeline. The Llama model does not need to run on Hailo. HailoRT, when present, accelerates the vision pipeline only.
+The ExecuTorch runner uses text inputs only. It receives defect type, severity, location, confidence, board ID and timestamp. It does not receive the PCB image.
 
-## Input contract
+## Model
 
-The advisory receives a structured inspection event containing:
-- Defect type.
-- Severity (LOW, MEDIUM, HIGH or UNASSESSED).
-- Location (bounding box, normalized centre and optional board zone).
-- Vision confidence.
-- Board ID and timestamp.
+The reference model family is Llama 3.2 Instruct 1B or 3B. The `.pte` model and matching tokenizer binary are separate deployment artifacts. They are not bundled in the source checkout, and no Raspberry Pi inference benchmark is asserted here.
 
-It does not receive the raw PCB image. The prompt builder is implemented in `prompt.py`.
+The runner uses the ExecuTorch LLM Python bindings. The documented API provides `MultimodalRunner`, `GenerationConfig`, `make_text_input` and text-only generation. The runner supplies text inputs only and does not call image-input helpers.
 
-## Output responsibilities
+## Advisory output
 
-The advisory generates:
-1. A concise explanation of the detector findings.
-2. Suggested operator verification or corrective actions.
-3. A structured inspection log entry.
+The model is prompted to return a concise explanation, verification actions, a severity note and an inspection log entry. The advisory is stored separately from the original detection array. It cannot add, remove, relabel or suppress detector findings, infer severity from confidence, or make an independent PASS/REJECT decision.
 
-It does not detect defects, view image pixels, modify detection classes or confidence, infer severity from confidence, or independently issue a PASS/REJECT decision. When severity is UNASSESSED, the advisory must preserve that state and request human review rather than inventing a rating.
+## Runtime measurements
 
-## Runtime boundary
+`run_executorch.py` records total response time and time to first generated token. Generation statistics exposed by the installed runner are retained in the JSON result. Tokens per second and peak memory are assessed separately using target-device profiling.
 
-The repository contains the prompt-construction source. The ExecuTorch runtime package and quantized model binary are separate deployment assets and are not bundled in this source checkout. Advisory performance is evaluated independently using time to first token, tokens per second, total response time and memory on the target Pi.
+## Runtime references
+
+- [ExecuTorch LLM Runner Python API](https://github.com/pytorch/executorch/tree/main/extension/llm/runner)
+- [ExecuTorch Llama 3.2 model support and export workflow](https://github.com/pytorch/executorch/tree/main/examples/models/llama)
