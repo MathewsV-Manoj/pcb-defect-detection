@@ -38,7 +38,7 @@ The IR sensor provides the board-arrival event used by the inspection cycle. The
 2. **Presence detection:** the IR sensor detects the arriving board and provides the trigger input.
 3. **Illumination and capture:** the external LED strip illuminates the PCB and the camera acquires a frame.
 4. **Image preprocessing:** OpenCV validates the frame, resizes it, normalizes pixel values and prepares the model input.
-5. **Visual detection:** YOLOv8 Nano detects and localizes open circuits, short circuits and missing holes. The Raspberry Pi CPU execution path uses ONNX Runtime. A Hailo NPU path can be selected when the Hailo accelerator hardware is present.
+5. **Visual detection:** YOLOv8 Nano detects and localizes open circuits, short circuits and missing holes. The Raspberry Pi CPU execution path uses ONNX Runtime. The committee architecture also lists HailoRT on a Hailo NPU / AI HAT+ / AI HAT+ 2 as an optional vision-acceleration route. The current repository implements the ONNX Runtime CPU path; no Hailo-compiled model or Hailo runtime integration is included in this checkout.
 6. **Defect record:** detections are serialized with class, confidence, bounding-box location, board identity and timestamp. A severity value is carried separately from confidence.
 7. **Advisory reasoning:** the Llama/ExecuTorch pipeline receives the structured defect record and creates an explanation, recommended verification actions and a log entry. It does not view raw PCB pixels or alter visual detections.
 8. **Operator interface:** the interface presents the result, alert, advisory and inspection log. Firebase can synchronize the latest state and retained inspection records.
@@ -52,10 +52,10 @@ The system contains two distinct inference pipelines:
 | Pipeline | Runtime and processor | Responsibility |
 |---|---|---|
 | Vision — CPU path | ONNX Runtime on Raspberry Pi 5 ARM CPU | PCB image inference, class prediction and defect localization |
-| Vision — accelerator path | HailoRT on Hailo NPU / AI HAT+ or AI HAT+ 2 | Optional accelerated vision inference |
+| Vision — accelerator option | HailoRT on Hailo NPU / AI HAT+ or AI HAT+ 2 | Committee-listed alternative; not implemented in the current source checkout |
 | Advisory | Llama through ExecuTorch on Raspberry Pi 5 ARM CPU | Reasoning over structured defect findings, operator recommendations and log text |
 
-Hailo is an accelerator option for the vision pipeline; it is not a dependency of the CPU-only Pi 5 path. ExecuTorch is the reference runtime for the Llama advisory pipeline. Vision and advisory workloads remain separate so that a slow language-model response cannot change or block the detector's raw findings.
+Hailo is an optional architecture path for the vision pipeline and is not part of the current code branch. The implemented path is ONNX Runtime on the Pi CPU; Hailo does not apply to the Llama advisory. ExecuTorch is the reference runtime for the Llama advisory pipeline. Vision and advisory workloads remain separate so that a slow language-model response cannot change or block the detector's raw findings.
 
 ## 3. Vision model and target defects
 
@@ -146,7 +146,7 @@ No benchmark figure is included unless it is tied to the exact dataset split, ch
 | `training/` | Example dataset configuration |
 | `tests/` | Advisory-boundary and software contract tests |
 | `firebase/` | Example Realtime Database security rules |
-| `docs/` | Project report, system architecture and implementation record |
+| `docs/` | Project report, Raspberry Pi deployment design, system architecture and implementation record |
 | `demo_video/` | Demonstration scope for the physical inspection station and operator workflow |
 
 ## 9. Demonstration
