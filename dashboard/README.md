@@ -1,7 +1,7 @@
-# Firebase dashboard
+# Operator dashboard
 
-Static HTML dashboard listening to Firebase Realtime Database `/live` and `/inspections`. It displays session/history/defect data and deliberately does not display a live camera preview.
+The dashboard presents the latest PCB inspection state and retained inspection events from Firebase Realtime Database. Its operator view includes camera and conveyor state, IR board-presence sensing, external LED illumination status, defect findings, model metadata, advisory text and inspection history.
 
-Replace the `PASTE_...` placeholders in `firebaseConfig` with your Firebase Web App config. Host on HTTPS. Configure Authentication and restrictive database rules.
+The dashboard is a presentation layer. Image preprocessing, visual inference and the on-device Llama advisory pipeline execute on the edge device. Firebase provides record synchronization and is not an inference runtime.
 
-Trial scenarios in the page are simulation-only; they do not write demo records into Firebase and do not control the conveyor or GPIO.
+The HTML source is `index.html`. Live configuration is environment-specific and is not committed with private credentials.
