@@ -9,7 +9,7 @@ class Detector:
   try:from tflite_runtime.interpreter import Interpreter
   except ImportError:from tensorflow.lite import Interpreter
   folder=Path(folder);self.meta=json.loads((folder/'metadata.json').read_text())
-  assert self.meta['classes']==['open_circuit','short_circuit','missing_hole']
+  assert self.meta['classes']==['missing_hole','open_circuit','short_circuit']
   assert self.meta['box_units']=='normalized'
   assert hashlib.sha256((folder/'detector.tflite').read_bytes()).hexdigest()==self.meta['sha256']
   self.runner=Interpreter(model_path=str(folder/'detector.tflite'),num_threads=threads);self.runner.allocate_tensors()
