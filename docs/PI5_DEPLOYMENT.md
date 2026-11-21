@@ -81,31 +81,57 @@ Inspect the JSON and annotated image. A no-detection result only means no config
 
 ## 5. Install the required Llama/ExecuTorch advisory
 
-The Bharat AI-SoC Challenge requires a Llama-family advisory model deployed with ExecuTorch. The source checkout contains the text-only prompt and runner, but does not contain the exported `.pte` model, the matching tokenizer or the target-device ExecuTorch Python build.
+The challenge-required advisory is configured for **Llama 3.2 1B Instruct
+SpinQuant INT4/EO8**, running locally through ExecuTorch's C++ `llama_main`
+runner on the Raspberry Pi 5 CPU. The model PTE and matching `tokenizer.model`
+are downloaded as local deployment assets and are not committed to Git.
 
-Provide those files from the team's selected Llama model release. The model and tokenizer must be a matching pair, and the ExecuTorch runner build must support the operators used by the exported model. Record their hashes and the exact ExecuTorch revision/build.
+On a machine with internet access and after accepting the model terms:
 
-Set the paths in `raspberry_pi/.env`:
+```bash
+python -m pip install "huggingface_hub>=0.30,<2"
+hf auth login
+python llm_advisory/download_model.py
+```
+
+Build the Pi 5 runner on the documented Linux x86_64 build host:
+
+```bash
+bash llm_advisory/build_pi5_runner.sh
+```
+
+Copy the complete `models/llama/` directory (PTE, tokenizer and
+`runtime/llama_main` plus shared libraries) to the Pi. Configure these paths
+in `raspberry_pi/.env`:
 
 ```text
-PCB_LLAMA_MODEL_PATH=/absolute/path/to/model.pte
-PCB_LLAMA_TOKENIZER_PATH=/absolute/path/to/tokenizer.bin
+PCB_LLAMA_MODEL_PATH=models/llama/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte
+PCB_LLAMA_TOKENIZER_PATH=models/llama/tokenizer.model
+PCB_LLAMA_RUNNER_PATH=models/llama/runtime/llama_main
+PCB_LLAMA_BACKEND=cli
 PCB_LLAMA_REQUIRED=true
 ```
 
-Verify the runner imports on the Pi before a station test:
+Load the environment and run the actual project smoke test on the Pi:
 
 ```bash
-python - <<'PY'
-from executorch.extension.llm.custom_ops import custom_ops
-from executorch.kernels import quantized
-from executorch.extension.llm.runner import GenerationConfig, TextLLMRunner
-print("TextLLMRunner imports passed")
-PY
+set -a
+source raspberry_pi/.env
+set +a
+export LD_LIBRARY_PATH="$PWD/models/llama/runtime:${LD_LIBRARY_PATH:-}"
+python llm_advisory/run_executorch.py \
+  --event schemas/example-event.json \
+  --model "$PCB_LLAMA_MODEL_PATH" \
+  --tokenizer "$PCB_LLAMA_TOKENIZER_PATH" \
+  --runner "$PCB_LLAMA_RUNNER_PATH"
 ```
 
-The ExecuTorch Python runner API is revision-dependent. Run the actual project advisory with the supplied model and tokenizer on the Pi; an import check alone is not a completed test.
-
+The default production coordinator requires advisory execution. Do not treat
+a Python binding import check as validation of the configured C++ path. Save
+the successful smoke-test output and a completed inspection event with
+`advisory_runtime.status = "COMPLETED"`. Follow
+[`llm_advisory/README.md`](../llm_advisory/README.md) for full provenance,
+runtime details and safety-scope restrictions.
 ## 6. Run the station workflow
 
 1. Start the station service with the configured environment.
