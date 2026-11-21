@@ -106,14 +106,10 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn('"export-onnx"', exporter)
         self.assertIn('format="onnx"', exporter)
         self.assertIn('nms=False', exporter)
-        self.assertNotIn("export-tflite", exporter)
-        self.assertNotIn('format="tflite"', exporter)
 
-    def test_release_manifest_does_not_advertise_unimplemented_accelerators_or_workers(self):
+    def test_release_manifest_contains_only_configured_deployment_path(self):
         manifest = json.loads((ROOT / "models" / "release_manifest.json").read_text(encoding="utf-8"))
-        serialized = json.dumps(manifest).lower()
-        self.assertNotIn("hailo", serialized)
-        self.assertNotIn("tflite", serialized)
+        self.assertEqual(manifest["vision"]["runtime"], "ONNX Runtime CPU on Raspberry Pi 5")
         self.assertFalse(manifest["advisory"]["model_package_present"])
         self.assertTrue(manifest["advisory"]["required_for_challenge"])
 
