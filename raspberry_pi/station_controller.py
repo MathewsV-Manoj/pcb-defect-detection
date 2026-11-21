@@ -93,31 +93,53 @@ class StationRuntime:
             return result
 
     def ir_pressed(self) -> None:
-        """Short sensor transitions are interpreted according to the current state."""
+        """Arm once; subsequent sensor activations are PCB-at-camera triggers."""
         capture = False
         with self.lock:
             current = self.state["state"]
             self.state["ir_sensor_status"] = "DETECTED"
-            if current in {"WAITING_FOR_ARM", "COMPLETE", "VISION_COMPLETE_ADVISORY_INCOMPLETE", "ERROR"}:
+
+            if current == "WAITING_FOR_ARM" and not self.state["armed"]:
                 self.state.update(
                     state="ARMING",
-                    armed=False,
                     message="IR presence detected. Keep your hand in front of the sensor for 3 seconds.",
                     error=None,
                     capture_ready=False,
                 )
-            elif current == "WAITING_FOR_BOARD" and self.state["armed"] and not self.state["busy"]:
+            elif (
+                self.state["armed"]
+                and not self.state["busy"]
+                and current in {
+                    "WAITING_FOR_BOARD",
+                    "COMPLETE",
+                    "COMPLETE_SYNC_WARNING",
+                    "VISION_COMPLETE_ADVISORY_INCOMPLETE",
+                    "ERROR",
+                }
+            ):
+                # Invalidate the previous board before starting the next capture.
+                self.capture_path = None
+                self.event_path = None
+                self.annotated_path = None
                 self.state.update(
                     state="CAPTURING",
-                    armed=False,
                     busy=True,
                     message="PCB detected at the camera position. Illuminating and capturing the frame.",
+                    board_id=None,
                     camera_status="CAPTURING",
                     capture_ready=False,
+                    capture_time=None,
+                    decision=None,
+                    detections=[],
+                    advisory=None,
+                    inference_latency_ms=None,
+                    result=None,
                     error=None,
                 )
                 capture = True
+
             self.state["updated_at"] = datetime.now(timezone.utc).isoformat()
+
         if capture:
             threading.Thread(target=self._capture_worker, daemon=True).start()
 
@@ -139,7 +161,7 @@ class StationRuntime:
             if self.state["state"] == "ARMED_WAIT_RELEASE":
                 self.state.update(
                     state="WAITING_FOR_BOARD",
-                    message="System armed. The conveyor can bring the PCB to the camera position.",
+                    message="Station armed. The conveyor can bring the PCB to the camera position. Arming remains active for subsequent boards.",
                 )
             elif self.state["state"] == "ARMING":
                 self.state.update(
@@ -218,6 +240,7 @@ class StationRuntime:
                     detections=[],
                     advisory=None,
                     inference_latency_ms=None,
+                    result=None,
                     busy=False,
                     illumination_status="OFF",
                 )
@@ -228,6 +251,8 @@ class StationRuntime:
                 message="Image capture failed. Check camera, IR alignment and illumination hardware.",
                 error=str(exc),
                 camera_status="ERROR",
+                capture_ready=False,
+                result=None,
                 busy=False,
                 illumination_status="OFF",
             )
@@ -294,10 +319,20 @@ class StationRuntime:
 
             advisory_runtime = event.get("advisory_runtime") or {}
             advisory_complete = advisory_runtime.get("status") == "COMPLETED"
-            if completed.returncode == 0 and advisory_complete:
+            firebase_sync = event.get("firebase_sync") or {}
+
+            if advisory_complete and completed.returncode == 0:
                 state = "COMPLETE"
-                message = "Vision inspection and on-device Llama advisory completed on the Raspberry Pi."
+                message = "Vision inspection and on-device Llama advisory completed on the Raspberry Pi. The station remains armed for the next PCB."
                 error = None
+            elif advisory_complete and firebase_sync.get("status") == "FAILED":
+                state = "COMPLETE_SYNC_WARNING"
+                message = "Vision and Llama advisory completed. Firebase synchronization failed; the local inspection record is saved."
+                error = firebase_sync.get("message")
+            elif advisory_complete:
+                state = "COMPLETE_SYNC_WARNING"
+                message = "Vision and Llama advisory completed, but the inspection process reported an additional error."
+                error = f"Inspection process returned code {completed.returncode}."
             else:
                 state = "VISION_COMPLETE_ADVISORY_INCOMPLETE"
                 message = "Vision result is available. The required ExecuTorch advisory did not complete."
@@ -353,6 +388,8 @@ def make_handler(runtime: StationRuntime):
         def send_json(self, payload, status=200):
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
             self.send_response(status)
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Referrer-Policy", "no-referrer")
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
             self.send_header("Cache-Control", "no-store")
@@ -365,6 +402,13 @@ def make_handler(runtime: StationRuntime):
                 return
             data = path.read_bytes()
             self.send_response(200)
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Referrer-Policy", "no-referrer")
+            if path.suffix.lower() == ".html":
+                self.send_header(
+                    "Content-Security-Policy",
+                    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'",
+                )
             self.send_header("Content-Type", content_type or "application/octet-stream")
             self.send_header("Content-Length", str(len(data)))
             self.send_header("Cache-Control", "no-store")
@@ -401,10 +445,31 @@ def make_handler(runtime: StationRuntime):
 
         def do_POST(self):
             path = urlparse(self.path).path
-            if path == "/api/run-inspection":
-                ok, message = runtime.start_inspection()
-                return self.send_json({"accepted": ok, "message": message}, 202 if ok else 409)
-            return self.send_json({"error": "Unknown API endpoint."}, 404)
+            if path != "/api/run-inspection":
+                return self.send_json({"error": "Unknown API endpoint."}, 404)
+
+            # Consume the request body so a persistent HTTP connection remains usable.
+            try:
+                content_length = int(self.headers.get("Content-Length", "0") or "0")
+            except ValueError:
+                return self.send_json({"error": "Invalid Content-Length."}, 400)
+            if content_length < 0 or content_length > 2048:
+                return self.send_json({"error": "Request body is too large."}, 413)
+            body = self.rfile.read(content_length) if content_length else b""
+            if body:
+                try:
+                    json.loads(body.decode("utf-8"))
+                except (UnicodeDecodeError, json.JSONDecodeError):
+                    return self.send_json({"error": "Request body must be valid JSON."}, 400)
+
+            # Reject cross-origin browser requests. The station UI calls this same-origin API.
+            origin = self.headers.get("Origin")
+            host = self.headers.get("Host", "")
+            if origin and urlparse(origin).netloc.lower() != host.lower():
+                return self.send_json({"error": "Cross-origin requests are not allowed."}, 403)
+
+            ok, message = runtime.start_inspection()
+            return self.send_json({"accepted": ok, "message": message}, 202 if ok else 409)
 
     return Handler
 
