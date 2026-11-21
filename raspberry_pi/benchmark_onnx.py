@@ -24,7 +24,7 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 
-from inspect_image import CLASS_NAMES, SIZE, decode, letterbox
+from inspect_image import CLASS_NAMES, SIZE, decode, letterbox, load_model_contract
 
 IMAGE_SUFFIXES = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
 
@@ -110,6 +110,7 @@ def main() -> int:
     options = ort.SessionOptions()
     options.intra_op_num_threads = args.threads
     options.inter_op_num_threads = 1
+    model_class_names, target_class_map, model_metadata = load_model_contract(model_path)
     session = ort.InferenceSession(
         str(model_path),
         sess_options=options,
@@ -148,6 +149,8 @@ def main() -> int:
             pad,
             args.confidence,
             args.iou,
+            model_class_names=model_class_names,
+            target_class_map=target_class_map,
         )
         post_ms = (time.perf_counter() - start) * 1000.0
         return pre_ms, infer_ms, post_ms, len(detections)
@@ -204,6 +207,9 @@ def main() -> int:
             "path": str(model_path),
             "sha256": sha256_file(model_path),
             "class_order": CLASS_NAMES,
+        "source_model_class_order": model_class_names,
+        "source_model_target_class_map": target_class_map,
+        "source_model_metadata": model_metadata,
             "input_shape": input_meta.shape,
             "input_type": input_meta.type,
             "provider": session.get_providers(),
