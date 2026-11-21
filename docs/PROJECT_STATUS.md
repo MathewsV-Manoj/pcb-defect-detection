@@ -8,7 +8,7 @@ The project includes a conveyor-based PCB inspection station with:
 - External LED strip for controlled illumination.
 - Raspberry Pi 5 as the edge-computing target.
 
-The physical station and its operation are documented in the project demonstration video.
+The physical station and its operation are documented by the project demonstration video, which is maintained as a separate submission media asset.
 
 ## Software architecture
 
