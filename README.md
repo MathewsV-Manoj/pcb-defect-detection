@@ -1,5 +1,7 @@
 # Edge-AI PCB Automated Optical Inspection
 
+[![Repository checks](https://github.com/MathewsV-Manoj/pcb-defect-detection/actions/workflows/ci.yml/badge.svg)](https://github.com/MathewsV-Manoj/pcb-defect-detection/actions/workflows/ci.yml)
+
 **A conveyor-based PCB inspection system combining IR-triggered board detection, controlled LED illumination, computer vision, on-device advisory reasoning and an operator interface.**
 
 We built a physical PCB inspection station around a conveyor, an IR presence sensor, an inspection camera and an externally powered LED illumination strip. When a board reaches the inspection point, the IR sensor detects its arrival and the camera captures the illuminated board for inspection. The edge-computing workflow then preprocesses the image, localizes configured PCB defects and creates a structured inspection record for the operator interface.
@@ -12,7 +14,7 @@ The three target defect classes are **open circuit**, **short circuit** and **mi
 - **Edge platform:** Raspberry Pi 5.
 - **Vision pipeline:** OpenCV preprocessing and YOLOv8 Nano object detection using an ONNX Runtime CPU path.
 - **Accelerated vision option:** Hailo NPU through HailoRT and an AI HAT+/AI HAT+ 2 when that accelerator is installed. The CPU path remains a complete deployment option.
-- **Advisory pipeline:** Llama 3.2 Instruct (1B or 3B class) through ExecuTorch on the Raspberry Pi ARM CPU. The repository contains a text-only runner and structured prompt builder; the model package is deployed separately. This is independent of the vision runtime and receives no raw pixels.
+- **Advisory pipeline:** Llama 3.2 Instruct (1B or 3B class) through ExecuTorch on the Raspberry Pi ARM CPU. The station orchestrator calls a text-only runner and structured prompt builder; the model package and matching tokenizer are deployed separately. This is independent of the vision runtime and receives no raw pixels.
 - **Inspection record:** defect type, severity field, location/bounding box, confidence, board ID, timestamp and runtime metadata.
 - **Operator interface:** inspection alerts, advisory text and event history, with Firebase Realtime Database used for record synchronization.
 - **Demonstration:** the physical conveyor, IR arrival sensing, LED illumination, image capture and inspection interface are shown in the project demonstration.
@@ -28,7 +30,7 @@ The physical station combines four elements:
 | Camera | Captures the board image for visual inspection |
 | External LED strip | Provides illumination for repeatable image capture |
 
-The IR sensor provides the board-arrival event used by the inspection cycle. The LED strip provides the illumination source around image capture. The Raspberry Pi software includes a configurable GPIO station controller so that sensor input and the illumination-driver output can be assigned to the actual wiring. The external LED strip is switched through its driver; a Raspberry Pi GPIO pin is not used to power the strip directly.
+The IR sensor provides the board-arrival event used by the inspection cycle. The LED strip provides the illumination source around image capture. The Raspberry Pi software includes a configurable GPIO station controller and an inspection orchestrator so sensor input, illumination and the vision-to-advisory sequence are coordinated at the inspection station. The external LED strip is switched through its driver; a Raspberry Pi GPIO pin is not used to power the strip directly.
 
 ## 2. End-to-end inspection sequence
 
@@ -100,7 +102,7 @@ The advisory receives only the defect record fields: type, severity, location, c
 
 The Llama model does not inspect the PCB image, detect or classify defects, change model confidence, add or suppress detections, or independently determine a PASS/REJECT result. The vision pipeline remains the source of visual evidence.
 
-The repository includes the structured prompt builder in [`llm_advisory/prompt.py`](llm_advisory/prompt.py) and the inference entry point in [`llm_advisory/run_executorch.py`](llm_advisory/run_executorch.py). The ExecuTorch `.pte` model and matching tokenizer binary are separate deployment assets and are not included in this source checkout.
+The complete local software sequence is coordinated by [`raspberry_pi/run_inspection.py`](raspberry_pi/run_inspection.py), which invokes vision, calls [`llm_advisory/run_executorch.py`](llm_advisory/run_executorch.py) with text-only findings, appends advisory telemetry and then optionally synchronizes the completed record. The structured prompt is built by [`llm_advisory/prompt.py`](llm_advisory/prompt.py). The ExecuTorch `.pte` model and matching tokenizer binary are separate deployment assets and are not included in this source checkout.
 
 ## 6. Operator interface and data layer
 
@@ -128,13 +130,13 @@ The evaluation framework covers:
 | Operator experience | Clarity of alerts, ease of review, readable history and traceable log entries |
 | Runtime separation | Independent vision and advisory execution, including CPU-only and optional Hailo vision paths |
 
-No benchmark figure is included unless it is tied to the exact dataset split, checkpoint, runtime and target hardware that produced it. The source repository does not currently include a final trained three-class detector binary, a complete dataset archive or a validated Raspberry Pi 5 benchmark report.
+No benchmark figure is included unless it is tied to the exact dataset split, checkpoint, runtime and target hardware that produced it. The source repository does not currently include the final trained three-class detector binary, a complete dataset archive, the ExecuTorch model/tokenizer assets or validated Raspberry Pi 5 benchmark results.
 
 ## 8. Repository contents
 
 | Path | Purpose |
 |---|---|
-| `raspberry_pi/` | ONNX image/camera inference, IR-triggered station controller and Firebase publisher |
+| `raspberry_pi/` | IR-triggered station controller, integrated vision/advisory orchestrator, ONNX image/camera inference and Firebase publisher |
 | `dashboard/` | Operator dashboard source |
 | `llm_advisory/` | Structured prompt builder and text-only ExecuTorch runner |
 | `schemas/` | Inspection-event JSON schema and example |
