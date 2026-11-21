@@ -8,6 +8,8 @@ import cv2
 import numpy as np
 import onnxruntime as ort
 
+from severity_policy import classify_severity, load_severity_policy
+
 CLASS_NAMES = ["missing_hole", "open_circuit", "short_circuit"]
 SIZE = 640
 
@@ -65,7 +67,7 @@ def letterbox(image, size=SIZE):
 
 def decode(
     output, original_shape, scale, pad, conf=0.25, iou=0.45,
-    model_class_names=None, target_class_map=None,
+    model_class_names=None, target_class_map=None, severity_policy=None,
 ):
     model_class_names = model_class_names or CLASS_NAMES
     target_class_map = target_class_map or {name: name for name in model_class_names if name in CLASS_NAMES}
@@ -132,13 +134,18 @@ def decode(
                 continue
 
             bbox = [round(x1, 2), round(y1, 2), round(x2, 2), round(y2, 2)]
+            severity, severity_basis = (
+                classify_severity(target_name, severity_policy)
+                if severity_policy is not None
+                else ("UNASSESSED", "No severity policy was supplied to this inference call.")
+            )
             found.append({
                 "class_id": target_id,
                 "class_name": target_name,
                 "confidence": float(scores[i]),
                 "bbox_xyxy": bbox,
-                "severity": "UNASSESSED",
-                "severity_basis": "No board-specific impact profile is configured for this inspection.",
+                "severity": severity,
+                "severity_basis": severity_basis,
                 "location": {
                     "bbox_xyxy": bbox,
                     "center_normalized": [
@@ -206,6 +213,8 @@ def main():
         p.error("conf/iou must be in [0,1]")
     try:
         image, source_type = read_frame(args)
+        severity_policy_path = os.getenv("PCB_SEVERITY_POLICY_PATH", "models/severity_policy.json")
+        severity_policy = load_severity_policy(severity_policy_path)
         model_class_names, target_class_map, model_metadata = load_model_contract(args.weights)
         session = ort.InferenceSession(args.weights, providers=["CPUExecutionProvider"])
         inputs = session.get_inputs()
@@ -237,6 +246,7 @@ def main():
         detections = decode(
             outputs[0], image.shape[:2], scale, pad, args.conf, args.iou,
             model_class_names=model_class_names, target_class_map=target_class_map,
+            severity_policy=severity_policy,
         )
         now = datetime.now(timezone.utc)
         board_id = args.board_id or f"PCB-{now.strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4().hex[:6]}"
@@ -256,6 +266,12 @@ def main():
             "source_model_target_class_map": target_class_map,
             "source_model_sha256": hashlib.sha256(Path(args.weights).read_bytes()).hexdigest(),
             "source_model_metadata": model_metadata,
+            "severity_policy": {
+                "name": severity_policy.get("policy_name"),
+                "status": severity_policy.get("status"),
+                "path": severity_policy.get("_path"),
+                "scope": severity_policy.get("scope"),
+            },
             "input_size": [SIZE, SIZE],
             "preprocessing": ["letterbox", "BGR_TO_RGB", "float32_normalize_0_1", "NCHW"],
             "confidence_threshold": args.conf,
