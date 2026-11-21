@@ -109,11 +109,12 @@ advisory; it is never merged into or allowed to change the detector's findings.
 ## Runtime and measurements
 
 The production/default backend is ExecuTorch's C++ CLI runner. Its process
-wall-clock response time and process peak RSS are recorded. This wrapper does
-not currently receive stable per-token callbacks from the C++ CLI, so TTFT
-and tokens/second are stored as null rather than guessed. The optional Python
-TextLLMRunner backend is available only when the ExecuTorch Python bindings
-and matching kernels are built and installed.
+wall-clock response time and process peak RSS are recorded. When the CLI emits
+an ExecuTorch `PyTorchObserver` record, the wrapper parses the measured first-
+token timestamp and generated-token count to calculate TTFT and generation
+throughput. If those fields are not emitted, they remain null rather than being
+guessed. The optional Python `TextLLMRunner` backend is also supported when
+the ExecuTorch Python bindings and matching kernels are built and installed.
 
 Measure actual Pi performance with
 `raspberry_pi/benchmark_pipeline.py`. It invokes the production coordinator
