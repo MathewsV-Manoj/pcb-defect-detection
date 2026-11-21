@@ -1,19 +1,35 @@
-# Physical-system demonstration
+# Demonstration video
 
-The project demonstration video documents the built conveyor-based PCB inspection station and the operator-controlled Raspberry Pi workflow.
+The video still needs to be recorded on the physical station. This shot list is a guide for that recording; it is not a substitute for the video.
 
-## Demonstrated operating sequence
+## Suggested recording order
 
-1. **Station arming:** at the beginning of the station session, an operator holds a hand in front of the IR sensor for approximately three seconds. The station remains armed for subsequent PCB cycles.
-2. **Release and loading:** the sensor is released and a PCB is placed on the conveyor.
-3. **Conveyor transport:** the belt moves the PCB towards the camera position.
-4. **Board-position confirmation:** the IR sensor detects the PCB at the camera position.
-5. **Controlled illumination:** the external LED strip is switched on through its driver.
-6. **Camera capture:** the Raspberry Pi captures and saves the illuminated PCB frame.
-7. **Laptop preview:** the Raspberry Pi-hosted website displays the captured image in the laptop browser for verification.
-8. **Operator run command:** the operator clicks **Run inspection on Raspberry Pi**. The browser sends a command to the Pi station service.
-9. **Edge vision:** OpenCV preprocessing and YOLO defect localization run on the Raspberry Pi.
-10. **On-device advisory:** the Llama/ExecuTorch process receives structured findings and returns an explanation, verification actions and log text.
-11. **Operator results:** the decision, detections, coordinates, confidence, annotated output and event history appear in the UI.
+| Shot | What to film | What the viewer should be able to see |
+|---|---|---|
+| 1 | Full station, powered off | Conveyor, camera, IR sensor, LED strip and Raspberry Pi |
+| 2 | Operator holds a hand in front of the IR sensor | Continuous hold for about three seconds |
+| 3 | Operator releases the sensor | Dashboard changes to the armed/waiting state |
+| 4 | PCB placed on the conveyor | Board moving towards the inspection area |
+| 5 | Close view of the IR trigger point | Sensor activates as the PCB reaches the camera area |
+| 6 | LED and camera | LED turns on, frame is captured and LED turns off |
+| 7 | Laptop browser | The captured frame appears on the Pi-hosted page |
+| 8 | Operator clicks Run inspection | Button acknowledges the request |
+| 9 | Raspberry Pi processing | Show the Pi terminal/log if useful; do not show secrets or tokens |
+| 10 | Dashboard result | Show the annotated image, class, confidence, location and advisory |
+| 11 | Second PCB | Show that the station remains armed and accepts the next board |
 
-The video demonstrates the physical station and the operator workflow; the public repository contains the corresponding station controller, Pi-hosted dashboard, inspection coordinator, vision source and advisory runner.
+## Recording notes
+
+- Use the actual Pi-hosted dashboard address, not a locally opened copy of the HTML file.
+- Keep the camera frame and the dashboard readable.
+- Include at least one real inspection result from the final model.
+- Show both the captured image and the annotated image.
+- Do not use the hidden simulation mode or edited screenshots as proof of hardware operation.
+- If a stage fails during filming, correct it and record another take. Do not hide a failed run by presenting it as a successful live inspection.
+- Do not show Wi-Fi passwords, Firebase tokens, model download tokens or other credentials.
+
+## Suggested narration
+
+“This is the PCB inspection station. At the start of a session, the operator holds a hand in front of the IR sensor for about three seconds. After the sensor is released, the station stays armed. The PCB travels along the conveyor and the IR sensor triggers capture when the board reaches the camera area. The Raspberry Pi switches on the LED driver and saves an image. The operator checks the image in the browser and starts inspection from the laptop. The Pi runs the detector locally and returns the annotated result and operator advisory to the page.”
+
+Keep the narration consistent with what the camera actually shows. The IR sensor confirms board presence at its trigger point; it does not measure precise image alignment.
