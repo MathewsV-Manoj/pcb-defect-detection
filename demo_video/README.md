@@ -1,5 +1,12 @@
-# Physical system demonstration
+# Demonstration video
 
-The project demonstration video documents the assembled conveyor-based PCB inspection station and its operating sequence: board transport, IR-based arrival detection, external LED-strip illumination, camera acquisition, defect inspection and operator-facing output.
+The physical-system demonstration is supplied as a separate submission media asset. It documents the assembled conveyor station and the operating sequence:
 
-The video is the visual record of the physical station and its operation. Detection and runtime measurements are reported separately from the video demonstration.
+- PCB transport into the inspection position.
+- IR sensor detection of PCB arrival.
+- External LED-strip illumination.
+- Camera capture of the illuminated PCB.
+- Vision detection output and localized findings.
+- Llama advisory, operator alert and inspection log workflow.
+
+The video media file is not included in this source checkout. The repository documents the demonstration scope; the video remains a separate submission deliverable.
