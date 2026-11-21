@@ -35,7 +35,9 @@
     "processor": "Raspberry Pi 5 ARM CPU",
     "prompt_builder_present": true,
     "model_package_present": false,
-    "benchmark": null
+    "benchmark": null,
+    "runner_source_present": true,
+    "tokenizer_present": false
   },
   "dataset": {
     "raw_dataset_archive_present": false,
