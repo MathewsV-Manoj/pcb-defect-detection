@@ -19,6 +19,20 @@ Complete this sheet on the actual station after the final detector, Llama model 
 
 ## Software and model files
 
+The Llama deployment route is committed in the repository. Download the
+licensed model/tokenizer pair on a machine with Hugging Face access and build
+the Pi 5 runtime on a Linux x86_64 host, then copy models/llama to the Pi:
+
+    python -m pip install "huggingface_hub>=0.30,<2"
+    hf auth login
+    python llm_advisory/download_model.py
+    # On a Linux x86_64 build host:
+    bash llm_advisory/build_pi5_runner.sh
+
+The Llama 3.2 1B Instruct PTE and matching tokenizer are local files and are
+not tracked by Git. The runner build script records the ExecuTorch commit.
+Copy the complete models/llama directory to the Pi before continuing.
+
 From the repository root on the Pi:
 
 ```bash
@@ -29,6 +43,7 @@ set +a
 python -m pip show onnxruntime opencv-python gpiozero
 ls -lh models/best.onnx models/best.onnx.json
 ls -lh "$PCB_LLAMA_MODEL_PATH" "$PCB_LLAMA_TOKENIZER_PATH"
+ls -lh "$PCB_LLAMA_RUNNER_PATH" models/llama/runtime/libllama_runner.so
 ```
 
 Record the exact versions and model identities:
@@ -124,10 +139,28 @@ python raspberry_pi/benchmark_onnx.py \
 | Peak RAM | ____________________ | Benchmark JSON |
 | CPU temperature | ____________________ | Thermal reading |
 | Full capture-to-result time | ____________________ | Timed physical cycles |
-| Llama time to first token | ____________________ | Advisory output |
-| Llama tokens per second | ____________________ | Advisory output |
+| Llama time to first token | ____________________ | Python binding telemetry only; C++ CLI path leaves null |
+| Llama tokens per second | ____________________ | Only record when runner exposes measured token counts |
 | Successful cycles / attempted cycles | ____________________ | Station log |
 | Power | ____________________ | External power meter, if measured |
+
+## Vision-plus-Llama software pipeline benchmark
+
+After the model and runner smoke tests pass, run the production coordinator
+against a folder of held-out PCB images:
+
+    python raspberry_pi/benchmark_pipeline.py \
+      --images /path/to/held_out_images \
+      --model models/best.onnx \
+      --warmup 1 \
+      --out docs/results/pi_pipeline_benchmark.json
+
+This benchmark invokes the real detector and ExecuTorch advisory once per
+image. It measures image-to-advisory process wall time, detector latency and
+the Llama fields exposed by the selected runner. It does not include physical
+IR triggering, camera capture, conveyor timing, LED settling or browser
+delivery. Record those in the physical-cycle table above. Power must be
+measured with an external meter.
 
 ## Evidence to retain
 
