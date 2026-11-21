@@ -47,7 +47,7 @@ class AdvisoryPromptContractTests(unittest.TestCase):
         self.assertTrue(prompt.startswith("<|begin_of_text|>"))
         self.assertIn("<|start_header_id|>system<|end_header_id|>", prompt)
         self.assertIn("<|start_header_id|>user<|end_header_id|>", prompt)
-        self.assertTrue(prompt.endswith("<|start_header_id|>assistant<|end_header_id|>\\n"))
+        self.assertTrue(prompt.endswith("<|start_header_id|>assistant<|end_header_id|>\n"))
         self.assertIn("read-only evidence", prompt)
 
 
