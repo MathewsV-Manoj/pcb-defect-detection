@@ -4,7 +4,7 @@
 
 **A conveyor-based PCB inspection station with IR-guided positioning, controlled LED illumination, Raspberry Pi edge vision, on-device Llama advisory and a browser-based operator console.**
 
-The system combines a physical inspection line with a two-stage operator/sensor workflow. The operator first holds a hand in front of the IR sensor for approximately three seconds to arm the station. After releasing the sensor, the PCB is placed on the conveyor. The conveyor transports the board to the camera position, where the IR sensor confirms that a board is present. The LED strip illuminates the board and the camera captures an inspection frame.
+The system combines a physical inspection line with a two-stage operator/sensor workflow. At the start of a station session, the operator holds a hand in front of the IR sensor for approximately three seconds to arm the station. This is a one-time arming step: after the sensor is released, the station remains armed for subsequent boards until the controller is restarted. The PCB is then placed on the conveyor. The conveyor transports the board to the camera position, where the IR sensor confirms that a board is present. The LED strip illuminates the board and the camera captures an inspection frame.
 
 The Raspberry Pi hosts the operator website. The captured frame is served to the laptop browser for visual verification. When the operator selects **Run inspection on Raspberry Pi**, the browser sends a command to the Pi station service. The Raspberry Pi—not the laptop browser—runs the image-processing, vision and advisory workloads, then returns the inspection result to the UI.
 
@@ -25,7 +25,7 @@ The three target classes are **open circuit**, **short circuit** and **missing h
 | Inspection camera | Captures the illuminated board |
 | Raspberry Pi 5 | Hosts the operator UI, handles the sensor sequence and runs local inference |
 
-The IR input is used as a two-phase state sequence: a continuous activation of approximately three seconds arms the station; after the sensor is released, the next active transition is interpreted as the PCB reaching the camera position. The station controller does not confuse the initial hand-presence event with the later board-arrival event.
+The IR input is used as a latched two-phase state sequence: a continuous activation of approximately three seconds arms the station once; after the sensor is released, the next active transition is interpreted as the PCB reaching the camera position. After an inspection completes, the controller stays armed and accepts the next board-arrival transition without requiring another hand-hold sequence. Restarting the station controller resets the arming state.
 
 The LED strip is powered through its external driver and suitable supply. A Raspberry Pi GPIO pin is used only as the driver's logic-level control signal. Conveyor transport is provided by the physical conveyor assembly; the inspection controller coordinates sensing, illumination, capture and processing.
 
