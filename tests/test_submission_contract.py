@@ -46,7 +46,7 @@ class SubmissionContractTests(unittest.TestCase):
         if node is None:
             self.skipTest("Node.js is not installed in this test environment")
         html = (ROOT / "dashboard" / "index.html").read_text(encoding="utf-8")
-        match = re.search(r'<script\\s+type="module"\\s*>(.*?)</script>', html, re.DOTALL)
+        match = re.search(r'<script\s+type="module"\s*>(.*?)</script>', html, re.DOTALL)
         self.assertIsNotNone(match, "Dashboard module script was not found")
         with tempfile.NamedTemporaryFile("w", suffix=".mjs", encoding="utf-8", delete=False) as handle:
             handle.write(match.group(1))
