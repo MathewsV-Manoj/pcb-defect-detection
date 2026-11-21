@@ -27,7 +27,9 @@
       "present": false
     },
     "metrics": null,
-    "validated_on_pi": false
+    "validated_on_pi": false,
+    "onnx_export_script": "pcb_engine_kit/train_export.py export-onnx",
+    "onnx_metadata_path": "models/best.onnx.json"
   },
   "advisory": {
     "model_family": "Llama 3.2 Instruct 1B or 3B",
@@ -39,13 +41,18 @@
     "runner_source_present": true,
     "tokenizer_present": false,
     "coordinator_source": "raspberry_pi/run_inspection.py",
-    "runner_source": "llm_advisory/run_executorch.py"
+    "runner_source": "llm_advisory/run_executorch.py",
+    "runner_api": "ExecuTorch TextLLMRunner (Python bindings)",
+    "python_bindings_build_required": "EXECUTORCH_BUILD_PYBIND=ON",
+    "runner_api_experimental": true,
+    "validated_on_pi": false
   },
   "dataset": {
     "raw_dataset_archive_present": false,
     "processed_dataset_present": false,
     "training_yaml_present": false,
-    "provenance_manifest": "datasets/SOURCE_MANIFEST.csv"
+    "provenance_manifest": "datasets/SOURCE_MANIFEST.csv",
+    "import_manifest_template": "datasets/import_manifest.example.csv"
   },
   "hardware": {
     "conveyor": true,
@@ -54,7 +61,10 @@
     "camera": true,
     "raspberry_pi_gpio_controller_source": "raspberry_pi/station_controller.py",
     "station_controller_source": "raspberry_pi/station_controller.py",
-    "inspection_orchestrator_source": "raspberry_pi/run_inspection.py"
+    "inspection_orchestrator_source": "raspberry_pi/run_inspection.py",
+    "gpio_pin_mapping_verified": false,
+    "camera_capture_verified_on_pi": false,
+    "led_driver_timing_verified_on_pi": false
   },
   "note": "The source repository documents the built physical inspection station and runtime architecture. Model binaries, ExecuTorch package, dataset archive and measured target-device results are not bundled in this source checkout."
 }
