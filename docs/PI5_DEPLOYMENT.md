@@ -2,6 +2,24 @@
 
 This guide describes the implemented Raspberry Pi station path: IR arming, conveyor-triggered capture, OpenCV preprocessing, YOLO ONNX inference, ExecuTorch advisory, local event logging and the operator page.
 
+## Quick setup: one command
+
+On 64-bit Raspberry Pi OS running on a Raspberry Pi 5, clone/copy this repository to the Pi, connect it to the internet for first-time provisioning, ensure at least 12 GiB free storage, then run:
+
+```bash
+bash scripts/provision_pi5.sh
+```
+
+This provisions the Python environment, downloads and exports the attributed PCB YOLOv8s model to ONNX, downloads the Llama 3.2 1B PTE/tokenizer, builds the ExecuTorch C++ runner against the Pi's own sysroot, and runs ONNX + Llama software smoke tests. It writes `docs/results/pi5_runtime_smoke_test.json`.
+
+Next, edit `raspberry_pi/.env` and supply the real IR/LED BCM GPIO pins and polarities. Then start the station with:
+
+```bash
+bash scripts/run_station_pi5.sh
+```
+
+The installer deliberately does not guess physical GPIO wiring. The first setup needs internet and substantial free storage; subsequent inference is designed to run locally without internet.
+
 ## 1. Install the station software
 
 Use 64-bit Raspberry Pi OS. From the repository root:
@@ -57,7 +75,7 @@ The sensor confirms presence at its trigger point. It does not measure exact ima
 
 ## 4. Install and check the YOLO ONNX detector
 
-The station expects `models/best.onnx` and its companion metadata file `models/best.onnx.json`. These must be generated from the final three-class checkpoint using the instructions in `pcb_engine_kit/README.md`.
+The station expects `models/best.onnx` and its companion metadata file `models/best.onnx.json`. The provisioner creates these from the credited Sulojan YOLOv8s baseline and records the six-to-three class mapping. To use a project-trained three-class checkpoint instead, follow `pcb_engine_kit/README.md` and validate it independently.
 
 The deployment class order must be:
 
@@ -86,7 +104,7 @@ SpinQuant INT4/EO8**, running locally through ExecuTorch's C++ `llama_main`
 runner on the Raspberry Pi 5 CPU. The model PTE and matching `tokenizer.model`
 are downloaded as local deployment assets and are not committed to Git.
 
-On a machine with internet access and after accepting the model terms:
+The provisioner performs these download/build steps automatically. The manual fallback on a machine with internet access is:
 
 ```bash
 python -m pip install "huggingface_hub>=0.30,<2"
@@ -94,7 +112,7 @@ hf auth login
 python llm_advisory/download_model.py
 ```
 
-Build the Pi 5 runner on the documented Linux x86_64 build host:
+Build the runner on the Pi itself, or cross-build from Linux x86_64 only with the Pi's actual sysroot:
 
 ```bash
 bash llm_advisory/build_pi5_runner.sh
