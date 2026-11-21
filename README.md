@@ -48,6 +48,14 @@ The station controller serves `dashboard/index.html` and the API from the Raspbe
 
 The service is intended for a trusted private network. Do not expose port 8080 directly to the public internet.
 
+## Local inference and offline operation
+
+**All inference algorithms are configured to run on the Raspberry Pi 5, not in the browser or through a cloud API.** OpenCV preprocessing and the YOLO ONNX detector run locally through ONNX Runtime's CPU provider. The Llama 3.2 1B advisory runs locally through the ExecuTorch C++ `llama_main` runner on the Pi CPU. The laptop browser is only an operator interface; it sends same-origin requests to the Pi-hosted station service and displays the results.
+
+Inspection images and JSON events are stored locally on the Pi. Firebase Realtime Database synchronization is optional and disabled by default (`PCB_FIREBASE_PUBLISH=false`); it replicates records only and is not used for inference. Downloading model files and installing dependencies require internet during setup, but inference does not require internet once the model, tokenizer, runtime and packages are present locally. A laptop can connect over a private LAN without WAN access.
+
+The intended deployment is offline-capable; a completed offline test on the final Raspberry Pi must still be recorded before claiming that offline operation has been demonstrated. See [Local execution and performance record](docs/LOCAL_EXECUTION_AND_PERFORMANCE.md) for the evaluator checklist, external reference metrics and commands for collecting actual Pi measurements.
+
 ## Run the station on Raspberry Pi 5
 
 Use 64-bit Raspberry Pi OS. From the repository root:
