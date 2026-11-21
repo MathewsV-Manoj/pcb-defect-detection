@@ -3,7 +3,7 @@ import argparse
 from pathlib import Path
 import cv2
 p=argparse.ArgumentParser();p.add_argument('folder');a=p.parse_args()
-print('1=open, 2=short, 3=missing hole; R=draw box; U=undo; S=save/next; Q=quit. Empty saved label means reviewed good image.')
+print('1=missing hole, 2=open circuit, 3=short circuit; R=draw box; U=undo; S=save/next; Q=quit. Empty saved label means reviewed good image.')
 for path in sorted(Path(a.folder).iterdir()):
  if path.suffix.lower() not in ['.png','.jpg','.jpeg']:continue
  im=cv2.imread(str(path))
