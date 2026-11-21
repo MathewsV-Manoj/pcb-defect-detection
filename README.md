@@ -108,6 +108,44 @@ The training script checks that the dataset class order matches the deployment c
 
 The exported file must still be checked against held-out images and on the target Pi. Successful conversion alone is not evidence of accuracy, prediction parity or target-device performance.
 
+## Published pretrained PCB YOLOv8s baseline
+
+A MIT-licensed third-party six-class YOLOv8s PCB checkpoint is available as an
+attributed baseline from Sulojan Rajkumar. Its model-card and author-reported
+held-out results, training details, source links and exact checkpoint SHA-256
+are documented in [docs/PCB_UPSTREAM_BASELINE.md](docs/PCB_UPSTREAM_BASELINE.md).
+These are the publisher's reported results; they are not claimed as results
+from this project.
+
+Download and verify the 22.5 MB checkpoint:
+
+```bash
+python -m pip install "huggingface_hub>=0.30,<2"
+python models/pretrained/download_sulojan_pcb_yolov8s.py
+```
+
+To export the six-class model for the current Raspberry Pi decoder:
+
+```bash
+python -m pip install -r pcb_engine_kit/requirements-train.txt
+python pcb_engine_kit/train_export.py export-upstream-onnx \
+  --weights models/pretrained/sulojan_pcb_yolov8s/best.pt \
+  --size 640 --out deployment_upstream
+```
+
+Copy both `deployment_upstream/best.onnx` and
+`deployment_upstream/best.onnx.json` to `models/best.onnx` and
+`models/best.onnx.json` on the Pi. The sidecar defines the source six-class
+order and maps only `missing_hole`, `open_circuit` and `short` to the
+application's corresponding three defect classes; the other source classes
+are ignored. The inspection record retains the original model class order,
+mapping and checkpoint hash.
+
+For a project-specific three-class model, use the same checkpoint only as a
+transfer-learning initialization with the verified three-class dataset and
+train/validation/test split. Evaluate the new checkpoint independently before
+reporting its metrics.
+
 ## Repository map
 
 | Folder | Contents |
