@@ -7,8 +7,8 @@ The Raspberry Pi 5 is the edge-computing controller for the conveyor-based inspe
 1. The conveyor transports the PCB into the inspection point.
 2. The IR sensor detects board arrival.
 3. The GPIO station controller switches the external illumination driver on.
-4. After the configured illumination-settle interval, the controller starts a one-frame camera inspection.
-5. The ONNX inference process preprocesses the image, runs YOLO inference, saves an annotated image and serializes an inspection event.
+4. After the configured illumination-settle interval, the controller launches the integrated inspection coordinator.
+5. The coordinator invokes the ONNX vision process, saves an annotated image and structured event, runs the text-only Llama/ExecuTorch advisory, appends advisory telemetry and then optionally publishes the completed event.
 6. The illumination driver is switched off after the inspection process exits.
 
 The station controller supports a USB/UVC camera or a CSI camera through Picamera2. Its GPIO numbers, sensor polarity and illumination-driver polarity are environment-configured to match the assembled wiring. The script does not control the conveyor motor or the emergency-stop circuit.
@@ -26,6 +26,18 @@ The deployment class map is:
 | 2 | short_circuit |
 
 The matching model file is expected at `models/best.onnx`. The model binary is a separate release artifact; no trained detector binary is included in this source checkout.
+
+## Complete inspection orchestration
+
+The station controller launches `run_inspection.py`, which sequences the vision and advisory components:
+
+1. Run `inspect_image.py` with the captured camera frame.
+2. Read the local JSON event containing type, severity, location and confidence.
+3. Run `llm_advisory/run_executorch.py` with text-only structured findings.
+4. Append advisory text and runtime telemetry to the same event record.
+5. Publish the completed event to Firebase when event synchronization is enabled.
+
+The Llama model and matching tokenizer are configured through `PCB_LLAMA_MODEL_PATH` and `PCB_LLAMA_TOKENIZER_PATH`. The complete station workflow requires both assets. `PCB_LLAMA_REQUIRED=false` is reserved for vision-only hardware commissioning; it is not the full selection-architecture mode.
 
 ## GPIO station controller
 
