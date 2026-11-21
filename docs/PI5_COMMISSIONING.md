@@ -19,19 +19,19 @@ Complete this sheet on the actual station after the final detector, Llama model 
 
 ## Software and model files
 
-The Llama deployment route is committed in the repository. Download the
-licensed model/tokenizer pair on a machine with Hugging Face access and build
-the Pi 5 runtime on a Linux x86_64 host, then copy models/llama to the Pi:
+Run the one-command provisioner on the 64-bit Raspberry Pi 5:
 
-    python -m pip install "huggingface_hub>=0.30,<2"
-    hf auth login
-    python llm_advisory/download_model.py
-    # On a Linux x86_64 build host:
-    bash llm_advisory/build_pi5_runner.sh
+    bash scripts/provision_pi5.sh
 
-The Llama 3.2 1B Instruct PTE and matching tokenizer are local files and are
-not tracked by Git. The runner build script records the ExecuTorch commit.
-Copy the complete models/llama directory to the Pi before continuing.
+It installs dependencies, downloads and exports the attributed PCB YOLOv8s
+checkpoint to ONNX, downloads the Llama 3.2 1B PTE/tokenizer pair, builds
+`llama_main` against the Pi's own root filesystem, and writes
+`docs/results/pi5_runtime_smoke_test.json`. The model files and compiled
+runner remain local deployment assets and are not committed to Git.
+
+The provisioner requires internet for initial setup and at least 12 GiB of
+free storage. It does not guess physical pin assignments; set the real BCM
+pins/polarities in `raspberry_pi/.env` before starting the controller.
 
 From the repository root on the Pi:
 
@@ -76,7 +76,7 @@ Confirm the detector class order:
 set -a
 source raspberry_pi/.env
 set +a
-python raspberry_pi/station_controller.py --host 0.0.0.0 --port 8080
+bash scripts/run_station_pi5.sh
 ```
 
 From another terminal:
