@@ -116,7 +116,8 @@ def main() -> int:
     if not model_path.is_file() or not tokenizer_path.is_file():
         event["advisory"] = {
             "status": "MODEL_ASSETS_MISSING",
-            "message": "The ExecuTorch model and matching tokenizer were not found on the Raspberry Pi.",
+            "message": "The pinned Llama 3.2 ExecuTorch model and matching tokenizer are not installed. "
+            "Run llm_advisory/download_model.py after accepting the upstream model license.",
         }
         event["advisory_runtime"] = {"runtime": "ExecuTorch", "status": "NOT_RUN"}
         event["firebase_sync"] = {"status": "NOT_ATTEMPTED"}
@@ -166,6 +167,8 @@ def main() -> int:
                 "total_response_ms": advisory_result.get("total_response_ms"),
                 "tokens_per_second": advisory_result.get("tokens_per_second"),
                 "process_peak_rss_kb": advisory_result.get("process_peak_rss_kb"),
+                "runner_backend": advisory_result.get("runner_backend"),
+                "telemetry_note": advisory_result.get("telemetry_note"),
             }
             write_json(event_path, event)
 
