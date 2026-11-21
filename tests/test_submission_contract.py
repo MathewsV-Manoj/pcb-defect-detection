@@ -158,6 +158,27 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertFalse(manifest["advisory"]["model_package_present"])
         self.assertIn("models/llama/*", (ROOT / ".gitignore").read_text(encoding="utf-8"))
 
+    def test_attributed_pretrained_pcb_model_contract_and_class_mapping(self):
+        downloader = (ROOT / "models" / "pretrained" / "download_sulojan_pcb_yolov8s.py").read_text(encoding="utf-8")
+        provenance = (ROOT / "docs" / "PCB_UPSTREAM_BASELINE.md").read_text(encoding="utf-8")
+        exporter = (ROOT / "pcb_engine_kit" / "train_export.py").read_text(encoding="utf-8")
+        detector = (ROOT / "raspberry_pi" / "inspect_image.py").read_text(encoding="utf-8")
+        manifest = json.loads((ROOT / "models" / "release_manifest.json").read_text(encoding="utf-8"))
+
+        self.assertIn("Sulojan/pcb-defect-yolov8s", downloader)
+        self.assertIn("1acd655ce93a474f0ed00958ddd1079afb46c74868f916af6187bf63dad5bb3d", downloader)
+        self.assertIn("publisher", provenance.lower())
+        self.assertIn("not a model trained by the current project team", provenance.lower())
+        self.assertIn("export-upstream-onnx", exporter)
+        self.assertIn('"short": "short_circuit"', exporter)
+        self.assertIn("attribute_count = 4 + len(model_class_names)", detector)
+        self.assertIn("source_model_class_order", detector)
+        self.assertTrue(manifest["external_pretrained_baseline"]["metrics_are_upstream_not_project_results"])
+        self.assertEqual(
+            manifest["external_pretrained_baseline"]["target_mapping"],
+            {"missing_hole": "missing_hole", "open_circuit": "open_circuit", "short": "short_circuit"},
+        )
+
     def test_external_benchmarks_are_explicitly_separate_from_project_measurements(self):
         reference = (ROOT / "docs" / "REFERENCE_BENCHMARKS.md").read_text(encoding="utf-8")
         pipeline = (ROOT / "raspberry_pi" / "benchmark_pipeline.py").read_text(encoding="utf-8")
