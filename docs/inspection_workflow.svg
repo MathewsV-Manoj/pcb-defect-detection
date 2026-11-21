@@ -1,10 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1360" viewBox="0 0 1440 1360" role="img" aria-labelledby="title description">
   <title id="title">PCB inspection station workflow</title>
-  <desc id="description">The operator arms the station once with a three-second hand hold. A PCB moves along the conveyor. An IR sensor confirms presence at the camera trigger point, then the Raspberry Pi switches on the LED driver and saves a camera frame. The Pi serves the frame to a laptop browser. The operator reviews it and starts inspection. OpenCV prepares the image, YOLO detects the three target defects, and a text-only Llama advisory explains the structured results. The Pi returns the result to the browser and keeps a local record. Firebase sync is optional.</desc>
+  <desc id="description">The operator arms the station once with a three-second hand hold. A PCB moves on the conveyor. The IR sensor triggers the Pi, which switches on the LED driver and captures a frame. The Pi serves the frame to a laptop browser. The operator reviews it and requests inspection. The Pi runs OpenCV and the YOLO ONNX detector, saves the event, sends structured findings to the required Llama advisory through ExecuTorch, and displays the result. Firebase receives inspection records when configured.</desc>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-      <path d="M0 0 L10 5 L0 10 Z" fill="#52616b"/>
-    </marker>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#52616b"/></marker>
     <style>
       text { font-family: Arial, Helvetica, sans-serif; }
       .heading { font-size: 34px; font-weight: 700; fill: #172b3a; }
@@ -15,7 +14,7 @@
       .pi { fill: #edf4f3; stroke: #397e78; }
       .operator { fill: #f0f3f7; stroke: #506d88; }
       .advisory { fill: #fbf0e9; stroke: #bb7548; }
-      .optional { fill: #ffffff; stroke: #8b969c; stroke-dasharray: 6 5; }
+      .data { fill: #f4f1f8; stroke: #80709a; stroke-dasharray: 6 5; }
       .name { font-size: 19px; font-weight: 700; fill: #203544; }
       .detail { font-size: 15px; fill: #52616b; }
       .number { font-size: 14px; font-weight: 700; fill: #52616b; }
@@ -23,96 +22,69 @@
       .dashed { stroke-dasharray: 6 5; }
     </style>
   </defs>
-
   <rect width="1440" height="1360" fill="#ffffff"/>
   <text x="72" y="76" class="heading">PCB inspection station</text>
-  <text x="72" y="110" class="lead">The Pi captures and processes each board. The laptop is used to review the image and start inspection.</text>
+  <text x="72" y="110" class="lead">The Raspberry Pi captures and processes each board; the laptop is the operator interface.</text>
 
   <text x="72" y="166" class="section">1 · LOAD AND CAPTURE</text>
   <g>
     <rect x="72" y="190" width="300" height="132" rx="10" class="box physical"/>
-    <text x="96" y="222" class="number">01</text>
-    <text x="96" y="252" class="name">Arm the station</text>
-    <text x="96" y="282" class="detail">Hold a hand at the IR sensor</text>
-    <text x="96" y="304" class="detail">for about 3 seconds, then release.</text>
-
+    <text x="96" y="222" class="number">01</text><text x="96" y="252" class="name">Arm the station</text>
+    <text x="96" y="282" class="detail">Hold a hand at the IR sensor</text><text x="96" y="304" class="detail">for about 3 seconds, then release.</text>
     <rect x="408" y="190" width="300" height="132" rx="10" class="box physical"/>
-    <text x="432" y="222" class="number">02</text>
-    <text x="432" y="252" class="name">Load the PCB</text>
-    <text x="432" y="282" class="detail">Place the board on the conveyor.</text>
-    <text x="432" y="304" class="detail">The station stays armed.</text>
-
+    <text x="432" y="222" class="number">02</text><text x="432" y="252" class="name">Load the PCB</text>
+    <text x="432" y="282" class="detail">Place the board on the conveyor.</text><text x="432" y="304" class="detail">The station remains armed.</text>
     <rect x="744" y="190" width="300" height="132" rx="10" class="box physical"/>
-    <text x="768" y="222" class="number">03</text>
-    <text x="768" y="252" class="name">Detect board presence</text>
-    <text x="768" y="282" class="detail">The next IR activation confirms</text>
-    <text x="768" y="304" class="detail">presence at the camera trigger point.</text>
-
+    <text x="768" y="222" class="number">03</text><text x="768" y="252" class="name">Detect board presence</text>
+    <text x="768" y="282" class="detail">The next IR activation confirms</text><text x="768" y="304" class="detail">presence at the camera trigger point.</text>
     <rect x="1080" y="190" width="288" height="132" rx="10" class="box physical"/>
-    <text x="1104" y="222" class="number">04</text>
-    <text x="1104" y="252" class="name">Light and capture</text>
-    <text x="1104" y="282" class="detail">The Pi switches the LED driver</text>
-    <text x="1104" y="304" class="detail">and saves a camera frame.</text>
-
-    <path d="M372 256 H400" class="arrow"/>
-    <path d="M708 256 H736" class="arrow"/>
-    <path d="M1044 256 H1072" class="arrow"/>
+    <text x="1104" y="222" class="number">04</text><text x="1104" y="252" class="name">Light and capture</text>
+    <text x="1104" y="282" class="detail">The Pi switches the LED driver</text><text x="1104" y="304" class="detail">and saves a camera frame.</text>
+    <path d="M372 256 H400 M708 256 H736 M1044 256 H1072" class="arrow"/>
   </g>
-  <text x="72" y="354" class="detail">The IR sensor is a presence switch. The camera view is aligned by the mechanical position of the sensor and camera.</text>
+  <text x="72" y="354" class="detail">The IR sensor is a presence switch; exact image alignment comes from the mechanical setup.</text>
 
   <path d="M1224 322 V376 H720 V400" class="arrow"/>
   <rect x="360" y="404" width="720" height="102" rx="10" class="box pi"/>
-  <text x="390" y="440" class="number">05 · RASPBERRY PI</text>
-  <text x="390" y="472" class="name">Serve the captured image</text>
+  <text x="390" y="440" class="number">05 · RASPBERRY PI</text><text x="390" y="472" class="name">Serve the captured image</text>
   <text x="720" y="472" class="detail" text-anchor="end">GET /api/capture.jpg</text>
 
   <path d="M720 506 V548" class="arrow"/>
   <rect x="360" y="552" width="720" height="118" rx="10" class="box operator"/>
-  <text x="390" y="588" class="number">06 · LAPTOP BROWSER</text>
-  <text x="390" y="620" class="name">Review the image</text>
+  <text x="390" y="588" class="number">06 · LAPTOP BROWSER</text><text x="390" y="620" class="name">Review the image</text>
   <text x="390" y="648" class="detail">Check the board and camera view before starting inspection.</text>
 
   <path d="M720 670 V712" class="arrow"/>
   <rect x="360" y="716" width="720" height="102" rx="10" class="box operator"/>
-  <text x="390" y="752" class="number">07 · OPERATOR COMMAND</text>
-  <text x="390" y="784" class="name">Run inspection on Raspberry Pi</text>
+  <text x="390" y="752" class="number">07 · OPERATOR COMMAND</text><text x="390" y="784" class="name">Run inspection on Raspberry Pi</text>
   <text x="1048" y="784" class="detail" text-anchor="end">POST /api/run-inspection</text>
 
   <path d="M720 818 V860" class="arrow"/>
-  <text x="72" y="856" class="section">2 · PROCESS THE IMAGE ON THE PI</text>
+  <text x="72" y="856" class="section">2 · LOCAL IMAGE PROCESSING AND ADVISORY</text>
 
   <rect x="72" y="884" width="400" height="124" rx="10" class="box pi"/>
-  <text x="102" y="920" class="number">08</text>
-  <text x="102" y="952" class="name">OpenCV preprocessing</text>
+  <text x="102" y="920" class="number">08</text><text x="102" y="952" class="name">OpenCV preprocessing</text>
   <text x="102" y="980" class="detail">Letterbox · BGR to RGB · normalize · NCHW</text>
-
   <path d="M472 946 H516" class="arrow"/>
   <rect x="520" y="884" width="400" height="124" rx="10" class="box pi"/>
-  <text x="550" y="920" class="number">09</text>
-  <text x="550" y="952" class="name">YOLO defect detection</text>
-  <text x="550" y="980" class="detail">Missing hole · open circuit · short circuit</text>
-
+  <text x="550" y="920" class="number">09</text><text x="550" y="952" class="name">YOLOv8 Nano via ONNX Runtime</text>
+  <text x="550" y="980" class="detail">missing_hole · open_circuit · short_circuit</text>
   <path d="M920 946 H964" class="arrow"/>
   <rect x="968" y="884" width="400" height="124" rx="10" class="box pi"/>
-  <text x="998" y="920" class="number">10</text>
-  <text x="998" y="952" class="name">Save the inspection record</text>
-  <text x="998" y="980" class="detail">Decision · boxes · confidence · timestamp</text>
+  <text x="998" y="920" class="number">10</text><text x="998" y="952" class="name">Create inspection event</text>
+  <text x="998" y="980" class="detail">Decision · detections · boxes · confidence</text>
 
   <path d="M1168 1008 V1048 H720 V1072" class="arrow"/>
   <rect x="360" y="1076" width="720" height="116" rx="10" class="box advisory"/>
-  <text x="390" y="1112" class="number">11 · SEPARATE TEXT-ONLY PROCESS</text>
-  <text x="390" y="1144" class="name">Llama advisory through ExecuTorch</text>
-  <text x="390" y="1172" class="detail">Receives the detection record and returns an explanation and suggested checks.</text>
-
+  <text x="390" y="1112" class="number">11 · TEXT-ONLY LLAMA ADVISORY</text><text x="390" y="1144" class="name">ExecuTorch TextLLMRunner</text>
+  <text x="390" y="1172" class="detail">Receives structured findings and returns explanation and operator checks.</text>
   <path d="M720 1192 V1222" class="arrow"/>
   <rect x="360" y="1226" width="720" height="96" rx="10" class="box operator"/>
-  <text x="390" y="1262" class="number">12 · RESULT IN THE BROWSER</text>
-  <text x="390" y="1294" class="name">Show detections, annotated image and advisory</text>
+  <text x="390" y="1262" class="number">12 · RESULT IN THE BROWSER</text><text x="390" y="1294" class="name">Show detections, annotated image and advisory</text>
 
-  <rect x="1088" y="1078" width="280" height="112" rx="10" class="box optional"/>
-  <text x="1112" y="1114" class="number">OPTIONAL</text>
-  <text x="1112" y="1146" class="name">Firebase sync</text>
-  <text x="1112" y="1174" class="detail">Copies records only; does</text>
-  <text x="1112" y="1194" class="detail">not run either model.</text>
+  <rect x="1088" y="1078" width="280" height="112" rx="10" class="box data"/>
+  <text x="1112" y="1114" class="number">INSPECTION EVENT SYNC</text>
+  <text x="1112" y="1146" class="name">Firebase Realtime Database</text>
+  <text x="1112" y="1174" class="detail">Stores event history and latest</text><text x="1112" y="1194" class="detail">record; no model inference.</text>
   <path d="M1080 1140 H1088" class="arrow dashed"/>
 </svg>
