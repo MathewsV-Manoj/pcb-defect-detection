@@ -96,7 +96,7 @@ The Llama prompt contains only the structured event fields and detection summari
 
 The deployment recipe and integration source are committed, but the actual PTE/tokenizer download, compiled runner installation and live inference on the team's Raspberry Pi must still be evidenced in the commissioning record. Do not claim target-device Llama execution until the smoke test and complete station cycle are recorded.
 
-The detector currently sets severity to `UNASSESSED`. No board-specific severity policy has been validated. Confidence is a detector score, not a severity measure, and is not used to invent a severity label.
+The detector now applies a configurable provisional type-based screening policy from `models/severity_policy.json`: `missing_hole` is MEDIUM, while `open_circuit` and `short_circuit` are HIGH. The policy records a rationale for each class and explicitly states that board-specific validation/approval is still required. It is an initial review-priority rule, not a board-specific electrical risk assessment or safety certification. Unknown classes fall back to UNASSESSED. Confidence is a detector score and is never used to assign severity.
 
 A decision of `NO_TARGET_DEFECT_DETECTED` means the detector did not find one of the three configured classes in the captured frame. It is not a declaration that the entire PCB is defect-free.
 
@@ -128,7 +128,7 @@ Do not report workstation measurements as Raspberry Pi measurements. Do not clai
 
 The repository includes the source implementation, dashboard, event schema, dataset preparation and training source, deployment instructions, tests and a demonstration MP4 file.
 
-The final YOLO `best.pt` and `best.onnx`, generated export metadata, processed dataset/audit, held-out evaluation output and completed Pi commissioning record are not present in this source checkout. The pinned Llama downloader and ExecuTorch Pi 5 build route are present, but the licensed PTE/tokenizer and compiled runner are local deployment assets, not tracked Git files. Their installation and target smoke test must be recorded on the actual Pi. The committed MP4 file must also be reviewed to confirm that it shows the actual live station sequence required by the submission.
+The final YOLO binaries and the generated deployment bundle are installed locally by `scripts/provision_pi5.sh` rather than committed to the source checkout. The processed project dataset/audit, held-out evaluation output and completed Pi commissioning record are still not present in this source checkout. The pinned Llama downloader and ExecuTorch Pi 5 build route are present, but the licensed PTE/tokenizer and compiled runner are local deployment assets, not tracked Git files. Their installation and target smoke test must be recorded on the actual Pi. The committed MP4 file must also be reviewed to confirm that it shows the actual live station sequence required by the submission.
 
 The source-only repository is not yet a complete runnable release. These missing artifacts and validations are listed in [Submission readiness](SUBMISSION_READINESS.md).
 
