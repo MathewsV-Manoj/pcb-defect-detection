@@ -73,6 +73,15 @@ Llama text is advisory and cannot modify YOLO detections or control the
 conveyor, illumination or other machinery. A human operator remains
 responsible for disposition and safety.
 
+The upstream Llama 3.2 Acceptable Use Policy also restricts use in
+operations of critical infrastructure, transportation technologies and heavy
+machinery. This prototype must remain a supervised, non-critical laboratory
+demonstration; do not deploy its Llama component in any restricted operational
+setting. A textual advisory that cannot control actuators is an important
+safeguard, but does not override the upstream use restrictions. Review the
+current policy before every deployment.
+
+
 ## License and redistribution
 
 The upstream model is marked `llama3.2`. Review and comply with the Meta Llama
