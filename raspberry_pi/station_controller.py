@@ -490,7 +490,6 @@ def main() -> int:
     except KeyboardInterrupt:
         print("\n[station] Shutting down.", flush=True)
     finally:
-        server.shutdown()
         server.server_close()
         sensor.close()
         illumination.off()
