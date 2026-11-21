@@ -1,21 +1,22 @@
-# Model artifacts
+# Model files
 
-## Vision model
+The Raspberry Pi application expects the vision detector at models/best.onnx. Export this file from the final three-class YOLO checkpoint with:
 
-The edge inference interface is YOLOv8 Nano with this canonical class-ID contract:
+~~~bash
+cd pcb_engine_kit
+python train_export.py export-onnx --weights runs/pcb/weights/best.pt --size 640 --out deployment
+~~~
 
-```text
+Copy deployment/best.onnx to this folder as best.onnx. Keep best.onnx.json beside it; that file records the class order, input contract and SHA-256 hash. The source checkout does not contain the final trained detector.
+
+The class order used by the Pi application is:
+
+~~~text
 0 missing_hole
 1 open_circuit
 2 short_circuit
-```
+~~~
 
-The Raspberry Pi ONNX application expects `models/best.onnx`. Export it from the trained three-class checkpoint using `pcb_engine_kit/train_export.py export-onnx`; the script writes `best.onnx` and `best.onnx.json` with the model hash and input contract. The detector binary and its training provenance are separate release artifacts. No trained three-class detector binary is bundled in this source checkout.
+The Llama advisory uses ExecuTorch TextLLMRunner. Its .pte model and matching tokenizer are kept outside this public source repository. The export configuration example and setup steps are in llm_advisory/README.md.
 
-## Advisory model
-
-The committee architecture specifies Llama 3.2 Instruct 1B or 3B through ExecuTorch on the Raspberry Pi ARM CPU. The prompt builder is in `llm_advisory/prompt.py`; the text-only runtime uses ExecuTorch `TextLLMRunner`. The ExecuTorch Python binding build, `.pte` model and matching tokenizer are separate deployment assets and are not bundled here. The Python runner API is experimental and must be validated with the exact model/runtime build on the Pi.
-
-## Release identity
-
-`release_manifest.json` records artifact presence, hashes, validation state and dataset provenance. The repository does not publish unverified accuracy or target-device benchmark values.
+release_manifest.json records which model files are present and which checks have actually been completed. A source file or export script is not a substitute for a tested model binary.
