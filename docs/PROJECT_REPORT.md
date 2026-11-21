@@ -1,130 +1,143 @@
-# PCB Automated Optical Inspection - Technical Project Report
+# PCB Automated Optical Inspection
+## Technical project report
 
-**Edge AI | Computer Vision | Raspberry Pi 5 | Firebase | Operator Dashboard**
+**Edge AI · Conveyor-based inspection · Raspberry Pi 5 · On-device advisory · Operator interface**
 
 ## Executive summary
 
-We built an edge-oriented PCB inspection workflow to identify three visual defect categories: **open circuit, short circuit and missing hole**. The system flow begins with PCB image acquisition, applies OpenCV preprocessing, runs a YOLOv8 Nano detector, converts localized findings into a structured inspection event and creates an annotated image for review. The event is then published to Firebase Realtime Database and presented through a browser dashboard.
+The project implements a conveyor-based PCB inspection station supported by an IR presence sensor, camera acquisition and external LED illumination. A board arriving at the inspection point is detected by the IR sensor. The camera captures the illuminated board, and the edge-processing pipeline prepares the image for visual defect detection.
 
-The project brings together the inspection-station workflow with software modules for dataset preparation, detector development, edge inference, event publication, optional operator advisory and inspection-history presentation. YOLO is responsible for visual localization. The optional language-model advisory uses structured detector findings only. Firebase provides data storage and real-time transport.
+The vision stage uses a YOLOv8 Nano detection interface for three PCB defect categories: open circuit, short circuit and missing hole. The output is stored as a structured inspection event containing defect type, severity, image location and confidence. An independent Llama-family advisory pipeline uses ExecuTorch on the Raspberry Pi ARM CPU to explain structured findings, recommend verification actions and create log text. The operator interface presents alerts, advisory information and inspection history.
 
-## 1. End-to-end system flow
+The system architecture follows the selection committee's separation of the vision and advisory runtimes. Raspberry Pi CPU inference is the base vision path; Hailo NPU acceleration is an optional vision deployment path.
+
+## 1. Physical inspection station
+
+The physical system comprises a conveyor assembly, IR sensor, camera and external LED strip.
+
+- The conveyor transports the PCB into the inspection zone.
+- The IR sensor detects the presence of an arriving PCB.
+- The external LED strip illuminates the board during image acquisition.
+- The camera captures the board for the vision pipeline.
+
+The Raspberry Pi station-controller source supports configurable IR input and illumination-driver output. The LED strip is powered through its external driver, not directly from a GPIO pin. Conveyor motor control remains a distinct hardware-control function.
+
+## 2. Reference architecture
 
 ![PCB inspection system architecture](inspection_workflow.svg)
 
-The inspection process follows seven stages:
+### Physical and acquisition flow
 
-1. **PCB positioning and image acquisition.** A PCB is placed at the inspection position. The edge application accepts an image from a file, a USB/UVC camera or a Raspberry Pi CSI camera through Picamera2.
-2. **OpenCV preprocessing.** The captured frame is validated, resized while preserving its aspect ratio, padded to the model input size, converted from BGR to RGB and normalized.
-3. **YOLOv8 Nano inference.** The detector predicts candidate bounding boxes and class scores for open circuit, short circuit and missing hole.
-4. **Detection decoding and annotation.** Confidence filtering and non-maximum suppression are applied. Bounding boxes are mapped to the original image and drawn on an annotated PCB image.
-5. **Inspection-event generation.** The application creates a structured event containing the board ID, timestamp, source, model information, inference latency and list of detections.
-6. **Firebase publication and optional advisory.** The edge application publishes the event to Firebase. The optional Llama-family advisory receives structured findings and can produce a short operator explanation.
-7. **Dashboard presentation.** The browser dashboard displays the latest inspection state, defect details, inspection history and CSV export.
+1. PCB transport into the inspection zone.
+2. IR sensor detects board arrival.
+3. External LED illumination is enabled for capture.
+4. Camera acquires the PCB frame.
+5. OpenCV preprocesses the image.
+6. The vision runtime detects and localizes the configured defects.
+7. A structured defect record is generated.
+8. Llama/ExecuTorch creates operator guidance from the record.
+9. The operator interface displays the alert, advice and log.
 
-An empty detection list means that no configured target defect was detected in the supplied image; it is not a guarantee that the entire PCB is defect-free.
+### Separate inference pipelines
 
-## 2. Defect classes and detector output
-
-| Target class | Visual inspection objective | Output |
-|---|---|---|
-| Open circuit | Locate a visible break or discontinuity in a conductive track | Class, confidence and bounding box |
-| Short circuit | Locate an unintended conductive bridge between separate conductive paths | Class, confidence and bounding box |
-| Missing hole | Locate an absent or visibly defective hole at an expected board location | Class, confidence and bounding box |
-
-The detector interface includes the class IDs, class names, input dimensions, preprocessing method, output tensor layout, confidence filtering and non-maximum suppression. These details must remain consistent across the training checkpoint, exported model and edge decoder.
-
-## 3. Dataset engineering and model development
-
-The repository includes utilities for supported YOLO, Pascal VOC and DeepPCB annotation inputs. The dataset workflow converts labels into a consistent YOLO format, validates images and bounding boxes, checks duplicates, supports board-aware dataset splits and generates an audit trail. A local OpenCV tool supports project-specific annotation.
-
-Board-aware splitting keeps images or crops from the same physical board or capture group together, reducing data leakage between training and evaluation.
-
-For a reproducible model release, preserve the source dataset and version, annotation mapping, dataset YAML, class list, training arguments, package versions, checkpoint hash, evaluation split, confusion matrix and precision-recall curves.
-
-The training kit and Raspberry Pi handoff specify different class-order conventions. The final class mapping must therefore be verified against the actual checkpoint metadata before pairing weights with an edge decoder. The repository documents this in `pcb_engine_kit/CLASS_ORDER_CONFLICT.md`. Source labels such as `pin_hole` are not automatically treated as `missing_hole` without checking their annotation meaning.
-
-## 4. Raspberry Pi 5 edge deployment
-
-Raspberry Pi 5 is the project's edge-computing platform. The inference application processes a still image or one frame from a USB/UVC or CSI camera using OpenCV and ONNX Runtime CPU execution. It decodes YOLO predictions, maps bounding boxes to the original image, saves an annotated image and serializes the inspection event.
-
-The separate PCB Engine folder-worker uses TensorFlow Lite Runtime to process queued images through incoming, processing, results, archive and failed folders. It writes result JSON and annotated image files. It also includes a reference-board workflow using ORB features and homography alignment to compare configured PCB regions.
-
-Edge performance is assessed on the actual target device using inference latency, throughput, RAM usage, CPU temperature, sustained-run reliability and exported-model parity.
-
-## 5. Reference-board-assisted verification
-
-The reference-board utility compares an inspection image with a known-good board image. It detects ORB features, estimates a homography, aligns the images and evaluates configured regions. Regions with low similarity are returned as review candidates.
-
-These reference-comparison candidates remain distinct from YOLO detections. The two methods provide separate sources of inspection evidence.
-
-## 6. Structured operator advisory
-
-The advisory prompt builder passes selected structured fields such as board ID, class name, confidence and bounding-box coordinates to a Llama-family language-model layer. The advisory can explain an already-detected finding and suggest a human verification step.
-
-The advisory does not inspect the original PCB image, create or relabel detections, suppress model output or independently issue a PASS/REJECT decision. Visual localization remains the responsibility of YOLO.
-
-## 7. Firebase and dashboard
-
-The Raspberry Pi application publishes inspection events directly to Firebase Realtime Database using the Firebase REST interface.
-
-| Database path | Purpose |
+| Vision pipeline | Advisory pipeline |
 |---|---|
-| `/live` | Latest inspection state consumed by the dashboard |
-| `/inspections/{record_id}` | Individual inspection records and event history |
+| Raspberry Pi 5 ARM CPU with ONNX Runtime | Raspberry Pi 5 ARM CPU with ExecuTorch |
+| YOLOv8 Nano detector | Llama 3.2 Instruct family, 1B or 3B class |
+| Predicts, classifies and localizes defects | Explains findings, suggests actions and writes log text |
+| Optional HailoRT execution on Hailo NPU / AI HAT+ or AI HAT+ 2 | Remains on the Pi ARM CPU in both CPU and Hailo vision configurations |
 
-The static HTML, CSS and JavaScript dashboard subscribes to Firebase updates. It provides an inspection overview, latest board result, defect-category counts, detected-defect details, advisory display, device-status fields, inspection history and CSV export. The dashboard presents inspection information; it does not run the YOLO model.
+The Hailo accelerator is an optional vision-runtime path. It does not replace the Llama/ExecuTorch advisory runtime. If no Hailo accelerator is installed, the vision model runs on the Raspberry Pi CPU.
 
-Firebase Authentication and restrictive Realtime Database rules should be configured. Authentication tokens and private credentials must remain outside browser code and source control.
+## 3. Vision detection
 
-## 8. Evaluation methodology
+The configured classes are:
 
-Evaluation is organized across detection quality, edge-device behaviour and application-level inspection workflow.
+| Class ID | Defect type | Inspection meaning |
+|---:|---|---|
+| 0 | missing_hole | Expected PCB hole absent or visibly defective |
+| 1 | open_circuit | Visible discontinuity in a conductive track |
+| 2 | short_circuit | Unintended conductive bridge between separate tracks |
 
-### Detection quality
+The model produces bounding boxes, class IDs and confidence scores. The inference application maps the boxes back to the captured image and creates an annotated result. Model input size, preprocessing, output decoding, confidence filtering and non-maximum suppression form one model contract.
 
-- Per-class precision and recall.
-- mAP@50 and mAP@50-95.
-- Confusion matrix.
-- Precision-recall curves.
-- Visual review of bounding-box localization.
-- Evaluation on held-out boards and representative capture conditions.
+## 4. Structured defect record
 
-### Edge-device performance
+The inspection event contains a unique record ID, board ID, timestamp, source, model identity, inference latency and detector findings.
 
-- Mean, median and p95 inference latency.
-- Throughput or frames per second.
-- Peak RAM usage.
-- CPU temperature under sustained load.
-- Sustained-run reliability.
-- Prediction parity between the reference and exported model.
+Each finding carries four independent fields:
 
-### Application and inspection workflow
-
-- Image acquisition and frame validation.
-- Correct class-name mapping and bounding-box placement.
-- Inspection-event generation and annotated-image saving.
-- Firebase publication and dashboard refresh.
-- Inspection-history retrieval and CSV export.
-- Repeatable PCB positioning and camera alignment at the inspection station.
-
-Report measured values against the exact model artifact, dataset split, runtime, input dimensions and hardware configuration used. Workstation GPU results must be kept separate from Raspberry Pi 5 measurements.
-
-## 9. Repository map
-
-| Folder | Contents |
+| Field | Meaning |
 |---|---|
-| `raspberry_pi/` | ONNX Runtime image/camera inference, Firebase REST publisher and runtime requirements |
-| `pcb_engine_kit/` | Dataset import, annotation, YOLO training/export, TFLite folder-worker, reference comparison and tests |
-| `dashboard/` | Firebase-connected static operator dashboard |
-| `llm_advisory/` | Prompt construction and structured advisory boundaries |
-| `schemas/` and `firebase/` | Inspection-event schema and example Realtime Database rules |
-| `datasets/`, `training/`, `models/` | Dataset source manifest, training guide, release manifest and class-map files |
-| `docs/` | Architecture diagram, implementation notes and deployment documentation |
-| `demo_video/` | Demonstration-video upload folder and sequence guide |
+| Type | Detected PCB defect class |
+| Severity | LOW, MEDIUM, HIGH or UNASSESSED |
+| Location | Bounding box and normalized image-relative position |
+| Confidence | Vision model confidence score |
 
-## 10. Demonstration video
+Severity is not inferred from confidence. It depends on defect type, physical extent and location within the board's functional layout. Where a board-specific severity rule has not established an impact level, the event retains UNASSESSED and requires operator review.
 
-The demonstration video belongs in [`demo_video/`](../demo_video/). The recommended sequence is: inspection station and PCB positioning, camera capture, annotated YOLO output, generated inspection record, Firebase update and corresponding dashboard refresh. Include another board or defect example where available. Use actual system footage and distinguish live results from simulated dashboard scenes.
+The machine-readable contract is stored in `schemas/inspection-event.schema.json`.
 
-**GitHub repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection
+## 5. Llama advisory and ExecuTorch
+
+The Llama advisory is a separate, on-device reasoning component. A pretrained Llama 3.2 Instruct 1B or 3B model is the intended model family, with ExecuTorch as the reference runtime on the Raspberry Pi ARM CPU. The advisory does not require fine-tuning as a prerequisite; structured prompts provide the defect context.
+
+Its input consists of defect type, severity, location, confidence and board context. It returns a concise explanation, suggested verification or corrective actions, and an inspection log entry.
+
+The advisory does not receive raw PCB pixels and does not detect, classify or change visual findings. It does not replace the operator or independently make a product disposition decision.
+
+The source repository contains the structured prompt builder. The ExecuTorch model package and quantized model binary are separate deployment artifacts and are not included in this source checkout.
+
+## 6. Operator interface and inspection log
+
+The operator interface displays the inspection result, defect type, severity, location, confidence, Llama advisory and event history. The dashboard source is in `dashboard/index.html`.
+
+Firebase Realtime Database synchronizes the current station state at `/live` and retained inspection events at `/inspections/{record_id}`. Firebase is a data layer only; model inference is local to the edge device.
+
+## 7. Technology stack
+
+| Layer | Technology |
+|---|---|
+| Physical inspection | Conveyor, IR presence sensor, camera, external LED strip |
+| Edge computer | Raspberry Pi 5 |
+| Image processing | OpenCV |
+| Vision detection | YOLOv8 Nano |
+| Base vision runtime | ONNX Runtime CPU |
+| Optional vision acceleration | Hailo NPU, HailoRT, AI HAT+ / AI HAT+ 2 |
+| Advisory model | Llama 3.2 Instruct family |
+| Advisory runtime | ExecuTorch on Raspberry Pi ARM CPU |
+| Operator interface | HTML, CSS and JavaScript |
+| Record synchronization | Firebase Realtime Database |
+| Data contract | JSON Schema |
+
+## 8. Dataset strategy
+
+The committee reference lists MVTec AD, NEU Surface Defect and KolektorSDD as starter anomaly/surface-defect references. These are not direct substitutes for PCB target labels: NEU is a steel-surface dataset and KolektorSDD concerns electrical commutators. PCB-specific references include DeepPCB and Tiny-Defect-Detection-for-PCB, together with project camera captures.
+
+Dataset identity, license, class mapping and split provenance are recorded separately from model evaluation. Only sources confirmed by the exact final training configuration should be described as training data.
+
+## 9. Evaluation framework
+
+| Area | Evaluation evidence |
+|---|---|
+| Detection quality | Precision, recall, F1, per-class confusion, false alarms and missed defects |
+| Real-time vision | FPS, per-image latency, end-to-end latency, memory and power on Raspberry Pi 5 |
+| Llama runtime | Time to first token, tokens per second, total response time and peak memory |
+| Advice quality | Relevance to the structured finding, action usefulness and grounding |
+| Operator experience | Alert clarity, review flow and traceable inspection history |
+| Runtime architecture | Separate CPU vision and ExecuTorch advisory pipelines; optional Hailo vision path |
+
+No performance figures are asserted without the underlying test configuration and measurement output. The source checkout does not include the final trained three-class detector binary, a complete processed dataset archive, the ExecuTorch model binary or a validated target-device benchmark report.
+
+## 10. Source repository
+
+- `raspberry_pi/` — edge inference, IR-triggered station controller and Firebase event publishing.
+- `dashboard/` — operator interface.
+- `llm_advisory/` — structured prompt builder.
+- `schemas/` — event contract and example.
+- `models/` — class map and release metadata.
+- `datasets/` — data provenance.
+- `docs/` — architecture and project records.
+- `demo_video/` — physical system demonstration.
+
+**Repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection
