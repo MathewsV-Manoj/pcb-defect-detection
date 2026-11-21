@@ -1,107 +1,82 @@
-# Submission checklist and evaluation
+# Phase 1 deliverables and evaluation
 
-This file lists what needs to be included in the submission and how the station should be tested. Use the checkboxes only after the corresponding evidence has been collected.
+This checklist is specific to the Bharat AI-SoC Challenge 2026–27, Problem Statement 5: Real-time industrial defect detection and quality-control assistant. The official Phase 1 deadline is **23 November 2026**. The official deliverables are source code, application, demonstration video and technical report.
 
-## What the submission should contain
+## Phase 1 deliverables
 
-| Item | Evidence to include | Current source status |
+| Required deliverable | Repository evidence | Status |
 |---|---|---|
-| Pi station software | Controller, API, camera capture and inspection coordinator | In repository |
-| Operator page | Pi-hosted dashboard and browser-to-Pi request | In repository |
-| Vision model | Final three-class checkpoint, ONNX file, hash and class map | Model files not included |
-| Llama advisory | ExecuTorch .pte, matching tokenizer and runtime version | Model files not included |
-| Dataset | Source list, import manifest, board-level split and label mapping | Templates and source list included; full dataset absent |
-| Physical test | Video and completed Pi commissioning record | Needs recording on the station |
-| Performance results | ONNX benchmark, end-to-end timing and Llama timing | No Pi measurements included |
-| Technical report | Station sequence, model details, tests and measured results | Report included; add results after testing |
+| Source code | Raspberry Pi controller, OpenCV/ONNX inference, ExecuTorch runner source, dashboard, schemas, dataset and training utilities | Source is present; trained/runtime model assets are not |
+| Application | Pi-hosted operator page and local inspection API | Source is present; final end-to-end target-device validation is outstanding |
+| Demonstration video | `demo_video/pcb-inspection-demo.mp4` | File is present; confirm the clip shows the real live sequence and final result |
+| Technical report | `docs/PROJECT_REPORT.md` | Present; add final measured results and actual model/runtime identities after testing |
 
-## Station acceptance test
+## Required technology check
 
-Run this sequence on the actual Pi with the final model files installed.
-
-| Test | Pass condition | Evidence |
+| Challenge requirement | Project implementation | Status |
 |---|---|---|
-| Initial arming | A continuous three-second hand presence arms the station | Status response or short video |
-| Short IR activation | Releasing before three seconds does not arm it | Status response |
-| Armed state | After release, the station remains armed | Status response |
-| Board trigger | The next IR activation starts a single capture | Capture file and event log |
-| Illumination | LED driver turns on during capture and then turns off | Video or measured signal |
-| Image preview | Browser displays the most recent capture | Browser recording |
-| Operator command | Run button starts processing on the Pi | API response and log |
-| Vision result | An event and annotated image are written | JSON and image |
-| Advisory result | A valid four-field response is displayed | Event JSON |
-| Next board | A second board is captured without re-arming | Two consecutive event records |
+| Llama-family reasoning/advisory model | Text-only structured advisory prompt and ExecuTorch runner source | Not complete: `.pte` model and matching tokenizer are absent |
+| ExecuTorch on-device runtime | `llm_advisory/run_executorch.py` uses `TextLLMRunner` | Not complete: runtime/model/tokenizer have not been verified on the Pi |
+| Arm-based edge platform | Raspberry Pi 5 CPU deployment path | Described in source; target-device commissioning is not recorded |
+| Industrial defect detection and operator guidance | Three-class YOLO detector source, inspection event and operator advisory interface | Model artifacts, severity policy and end-to-end validation remain outstanding |
 
-Repeat the board cycle at least 20 times. Record the number of attempts, successful captures, missed triggers, duplicate triggers, unreadable images and failed runs.
+A Raspberry Pi 5 CPU-only configuration is an accepted platform for PS5. Hailo hardware is not required for this project and is not part of the implemented station path.
 
-The sensor reports presence at its trigger point; it does not measure exact image alignment. Confirm that the board is in the camera field through mechanical setup and the saved preview.
+## Defect model evaluation
 
-The detailed test sheet is in [PI5_COMMISSIONING.md](PI5_COMMISSIONING.md).
+Use a held-out test set of PCB boards or board/capture groups. Images from the same physical PCB or capture session must not be split between training and test data.
 
-## Detection evaluation
+Record at minimum:
 
-Use a held-out set of boards or board groups. Images from one physical PCB or capture session must not be divided across training and test splits.
-
-Report, at minimum:
-
-- precision, recall and F1 for each of the three classes;
-- the confusion matrix;
-- false positives and missed defects;
+- per-class precision, recall and F1;
+- confusion matrix and precision-recall curves;
 - mAP@50 and mAP@50–95;
-- sample predictions on boards that were not used for training.
+- false positives on good boards and missed target defects;
+- visual examples of correct detections, false positives and false negatives;
+- the exact checkpoint hash, dataset split, image size and confidence/NMS thresholds.
 
-The results must be generated from the final checkpoint and the exact test split listed in the release record. Do not reuse the older six-class DeepPCB baseline figures as three-class model results.
+Do not use training images as evidence of generalization. Do not map an upstream dataset label to a target class without checking what the source annotation actually represents.
 
-## Raspberry Pi runtime
+## Severity and decision wording
 
-Run raspberry_pi/benchmark_onnx.py on a folder of representative held-out images. Keep its JSON output with the model hash and Pi configuration.
+The current event uses `UNASSESSED` for severity. Do not replace this with LOW/MEDIUM/HIGH until a board-specific rule based on defect type, physical extent and board function has been defined and checked. Detector confidence is not severity.
 
-The script measures image preprocessing, ONNX inference and detector post-processing. It reports per-image latency percentiles, sequential FPS, peak process RSS and thermal readings.
+The dashboard must describe an empty detection list as “No configured target defect detected in this frame”. It must not call the board “defect-free”.
 
-It does not measure:
-- sensor-to-capture time;
-- camera-to-browser transfer time;
-- the complete inspection time including Llama;
-- electrical power;
-- detection accuracy.
+## Raspberry Pi commissioning
 
-Measure those separately. Use an external power meter for power. Record the start/end conditions and measurement method.
+Run the checks on the actual Raspberry Pi 5 with the final model assets installed:
 
-## Llama runtime
+1. Confirm the GPIO pins and sensor/driver polarity against the physical wiring.
+2. Confirm the three-second initial arming sequence and armed state after release.
+3. Confirm the next IR activation starts one capture cycle.
+4. Confirm the LED driver is enabled for capture and switched off afterward.
+5. Confirm the current captured frame appears in the browser.
+6. Confirm the operator run button starts inference on the Pi.
+7. Confirm the event JSON and annotated image are written.
+8. Confirm the ExecuTorch advisory returns valid structured output.
+9. Confirm the next PCB is captured without repeating the arming sequence.
+10. Repeat the cycle and record attempts, successful runs, missed triggers, duplicate triggers and failures.
 
-For the exact .pte model and tokenizer installed on the Pi, record:
-- model and tokenizer hashes;
-- ExecuTorch revision and build options;
-- time to first token;
-- tokens generated and tokens per second;
-- total response time;
-- peak process memory;
-- whether the output passed the four-field JSON check.
+Use `docs/PI5_COMMISSIONING.md` to record actual pins, environment versions and results.
 
-Also check that the advisory does not introduce, remove or change a detector result.
+## Performance and reproducibility
 
-## Severity
+Measure on the Raspberry Pi, not on the training workstation:
 
-The current detector leaves severity as UNASSESSED. Do not assign LOW, MEDIUM or HIGH until the project has a board-specific rule based on defect type, physical extent and board function. Confidence is not a severity score.
+- detector preprocessing, inference and post-processing latency;
+- p50 and p95 latency and sequential FPS;
+- peak RAM and CPU temperature;
+- complete capture-to-dashboard-result time;
+- Llama time to first token, generation speed, total response time and peak RAM;
+- power only if measured with an appropriate external meter.
 
-## Demonstration video
+For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method.
 
-The video should be recorded on the actual station. It should show the initial three-second hold, release, PCB loading, conveyor movement, IR trigger, LED capture, laptop preview, operator run button, Pi-side processing and the returned result. Do not use a simulated dashboard result as evidence of live hardware operation.
+## Eligibility and submission-form checks
 
-A shot list is kept in demo_video/README.md.
+The official challenge page states that teams may have 1–3 members; student teams must be from the same college, have a faculty mentor and be nominated by their college. The Team Leader submits the registration. The public repository cannot confirm nomination, team registration or the submitted form details. Verify those against the team's registration record before submitting.
 
-## Reproducibility record
+## Current assessment
 
-For every reported result, save:
-
-- Pi model and RAM configuration;
-- operating system and kernel;
-- Python, OpenCV, ONNX Runtime and ExecuTorch versions;
-- model hashes and class order;
-- tokenizer identity;
-- dataset version and held-out split;
-- image size and detector thresholds;
-- number of images and repeated station cycles;
-- measurement method, including any external instrument.
-
-Only include values that were measured on the stated hardware. Workstation measurements must be labelled as workstation measurements.
+The source-code and documentation deliverables are present. A demonstration MP4 is committed. The project is **not yet submission-complete** because the required Llama/ExecuTorch model package is missing, the trained YOLO release artifacts and measured test evidence are absent, severity remains unassessed, and Raspberry Pi commissioning is not recorded. Do not mark these items complete without evidence.
