@@ -14,12 +14,12 @@ station or camera setup.
 | Publisher/author | Sulojan Rajkumar |
 | Hugging Face repository | https://huggingface.co/Sulojan/pcb-defect-yolov8s |
 | Source-code repository | https://github.com/Sulojan2027/PCB_Defect_Detect |
-| Artifact | \`best.pt\`, 22.5 MB |
-| Upstream model-file commit | \`c6d4b68\` |
-| Published SHA-256 | \`1acd655ce93a474f0ed00958ddd1079afb46c74868f916af6187bf63dad5bb3d\` |
+| Artifact | `best.pt`, 22.5 MB |
+| Upstream model-file commit | `c6d4b68` |
+| Published SHA-256 | `1acd655ce93a474f0ed00958ddd1079afb46c74868f916af6187bf63dad5bb3d` |
 | Model-card license declaration | MIT |
-| Dataset reported by author | Kaggle \`akhatova/pcb-defects\` |
-| Class order | \`missing_hole, mouse_bite, open_circuit, short, spur, spurious_copper\` |
+| Dataset reported by author | Kaggle `akhatova/pcb-defects` |
+| Class order | `missing_hole, mouse_bite, open_circuit, short, spur, spurious_copper` |
 | Input | 640 × 640 |
 
 The model card identifies the six classes, training setup, test split and
@@ -73,7 +73,7 @@ schema has three classes. The sidecar created by the baseline exporter maps:
 | spurious_copper | ignored |
 
 This uses the author's class names; it does not reinterpret DeepPCB's
-\`pin-hole\` label as \`missing_hole\`. The Pi decoder reads the ONNX sidecar,
+`pin-hole` label as `missing_hole`. The Pi decoder reads the ONNX sidecar,
 validates the number of output channels and runs NMS only for the three
 mapped application classes. Original six-class order and mapping are kept
 in the inspection event for traceability.
@@ -86,12 +86,12 @@ From the repository root:
     python models/pretrained/download_sulojan_pcb_yolov8s.py
 
 The downloader verifies the published SHA-256 before retaining the file.
-It writes a local \`model_manifest.json\`. Large model files are ignored by
+It writes a local `model_manifest.json`. Large model files are ignored by
 Git and are not copied into this repository.
 
 ## Export the six-class ONNX baseline for Raspberry Pi
 
-Install the training/export dependencies from \`pcb_engine_kit/\`, then run
+Install the training/export dependencies from `pcb_engine_kit/`, then run
 from the repository root:
 
     python -m pip install -r pcb_engine_kit/requirements-train.txt
@@ -101,9 +101,9 @@ from the repository root:
       --size 640 \
       --out deployment_upstream
 
-Copy the generated \`deployment_upstream/best.onnx\` and
-\`deployment_upstream/best.onnx.json\` to the Pi as
-\`models/best.onnx\` and \`models/best.onnx.json\`. The Pi inference and
+Copy the generated `deployment_upstream/best.onnx` and
+`deployment_upstream/best.onnx.json` to the Pi as
+`models/best.onnx` and `models/best.onnx.json`. The Pi inference and
 benchmark scripts will read the sidecar and apply the three-class mapping.
 
 This is a direct use of a published pretrained model with the documented
@@ -124,7 +124,7 @@ The training wrapper accepts only the documented six-class source checkpoint
 or the project's canonical three-class checkpoint, checks the dataset class
 order and verifies that the saved best checkpoint has the project's
 three-class order. Validate that resulting checkpoint on held-out board
-groups, export using \`export-onnx\`, and report those metrics separately.
+groups, export using `export-onnx`, and report those metrics separately.
 
 ## License and attribution
 
