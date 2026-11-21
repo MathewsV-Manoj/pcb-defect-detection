@@ -135,3 +135,13 @@ The source code and automated tests are in the repository. The final three-class
 No detection score, speed figure or end-to-end success rate is claimed here without the corresponding model, test split and device measurements.
 
 Project files: [Flowchart](docs/inspection_workflow.svg) · [Project report](docs/PROJECT_REPORT.md) · [Pi setup](docs/PI5_DEPLOYMENT.md) · [Pi commissioning checklist](docs/PI5_COMMISSIONING.md) · [Llama setup](llm_advisory/README.md) · [Pi benchmark](raspberry_pi/benchmark_onnx.py) · [Demo video shot list](demo_video/README.md).
+
+---
+
+## Team
+
+**R Disaster Team**
+
+- **Matthew C Manoj** — S5, Electronics and Communication Engineering, Muthoot Institute of Technology and Science
+- **Jordan Noby Eralil** — S5, Electronics and Communication Engineering, Muthoot Institute of Technology and Science
+- **Deon Lukose Shince** — S5, Electronics and Communication Engineering, Muthoot Institute of Technology and Science
