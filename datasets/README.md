@@ -1,20 +1,31 @@
-# Dataset provenance
+# Dataset provenance and selection
 
-The project targets open-circuit, short-circuit and missing-hole detection on PCB images. Dataset suitability is assessed against those labels and the actual inspection-camera domain.
+The model target is PCB inspection with three defect classes: `open_circuit`, `short_circuit` and `missing_hole`. Dataset choice is therefore evaluated by image domain, annotation meaning, class compatibility and capture conditions.
 
-## Dataset references
+## Committee-listed reference datasets
 
-| Dataset | Domain | Relevance to this project |
+| Dataset | Image domain | Published contents | Role in this project |
+|---|---|---|---|
+| [MVTec AD](https://www.mvtec.com/company/research/datasets/mvtec-ad) | Industrial objects and textures | Anomaly-detection images across 15 object and texture categories | General anomaly-detection reference; it does not supply the project's three PCB labels |
+| [NEU Surface Defect / NEU-DET](https://faculty.neu.edu.cn/songkc/en/zdylm/263265) | Hot-rolled steel strip | 1,800 grayscale images, six steel-surface defect categories, with NEU-DET bounding-box annotations | Surface-inspection reference; its steel labels are not PCB defect labels |
+| [KolektorSDD](https://www.vicos.si/resources/kolektorsdd/) | Electrical commutator surfaces | 399 grayscale images, including defective and non-defective examples, with fine or box annotation releases | Industrial surface-defect reference; it is not a PCB dataset |
+
+KolektorSDD is distributed under CC BY-NC-SA 4.0 on the dataset owner's page. Use is non-commercial under that licence; commercial use requires contacting the dataset owner. The MVTec and NEU datasets are governed by their respective provider terms. No third-party dataset is redistributed in this repository.
+
+## PCB-specific data sources
+
+| Dataset | Source | Annotation consideration |
 |---|---|---|
-| DeepPCB | PCB defects | PCB-specific source reference for defect-detection experiments |
-| Tiny-Defect-Detection-for-PCB | PCB defects | PCB-specific source reference; annotation labels require mapping review |
-| MVTec AD | Industrial anomaly detection across multiple object/texture categories | General anomaly-detection reference; not a direct source of the three PCB defect labels |
-| NEU Surface Defect | Steel surface defects | General surface-inspection reference; not PCB imagery |
-| KolektorSDD | Electrical commutator surface cracks | Industrial defect reference; not PCB imagery |
-| Project camera captures | The assembled inspection station | Domain-specific evaluation and training material, subject to contributor permissions |
+| DeepPCB | [Project repository](https://github.com/tangsanli5201/DeepPCB) | Inspect upstream class IDs and label semantics before mapping to the project's classes |
+| Tiny-Defect-Detection-for-PCB | [Project repository](https://github.com/Ixiaohuihuihui/Tiny-Defect-Detection-for-PCB) | Verify each source label and annotation convention before conversion |
+| Project camera captures | Assembled inspection station | Captures the actual camera, lens, LED illumination and PCB appearance used by the inspection setup |
 
-The committee-listed MVTec AD, NEU Surface Defect and KolektorSDD datasets are useful references for industrial anomaly detection, but their labels and image domains do not directly represent the three PCB target classes. PCB-specific data and project camera captures are required for task-aligned evaluation.
+A source annotation is not automatically mapped to a project class based on its name alone. In particular, a `pin_hole` or hole-related source label is not assumed to mean `missing_hole` until its annotation semantics are reviewed.
 
-## Provenance policy
+## Provenance and evaluation policy
 
-The source manifest records dataset identity, source URL, license/terms, annotation classes and whether use in a specific checkpoint is verified. A source is not described as training data unless the exact training configuration and records establish that it was used. Raw datasets are not included in this repository.
+`SOURCE_MANIFEST.csv` records the source URL, domain, reuse terms and relationship to the PCB task. The `training_use_status` field distinguishes a dataset reference from a source verified in the exact training run.
+
+A dataset is described as training data only when its use is supported by the corresponding training configuration, annotation mapping and split records. Board-aware splitting keeps images from the same physical PCB or capture group within one split, reducing leakage between training and evaluation.
+
+Raw and processed dataset archives are not included in this repository. Each model release is associated with its dataset version, annotation map, split manifest and source checksums.
