@@ -1,16 +1,23 @@
 {
-  "schema_version": 1,
-  "status": "SOURCE_CHECKOUT_WITHOUT_FINAL_MODEL_BINARIES",
+  "schema_version": 2,
+  "status": "SOURCE_CHECKOUT_WITH_REQUIRED_MODEL_ASSETS_MISSING",
   "vision": {
     "architecture": "YOLOv8 Nano",
-    "runtime_primary": "ONNX Runtime CPU on Raspberry Pi 5 ARM",
-    "runtime_accelerated": "Optional HailoRT on Hailo NPU / AI HAT+ / AI HAT+ 2",
+    "runtime": "ONNX Runtime CPU on Raspberry Pi 5",
     "class_order": [
       "missing_hole",
       "open_circuit",
       "short_circuit"
     ],
-    "class_order_source": "raspberry_pi/inspect_image.py and models/class_names.txt",
+    "input": {
+      "size": [640, 640],
+      "channels": 3,
+      "color_order": "RGB",
+      "layout": "NCHW",
+      "dtype": "float32",
+      "normalization": "0_to_1",
+      "resize": "letterbox"
+    },
     "best_pt": {
       "path": "models/best.pt",
       "sha256": null,
@@ -21,41 +28,25 @@
       "sha256": null,
       "present": false
     },
-    "detector_tflite": {
-      "path": "models/detector.tflite",
-      "sha256": null,
-      "present": false
-    },
+    "onnx_metadata_path": "models/best.onnx.json",
     "metrics": null,
     "validated_on_pi": false,
-    "onnx_export_script": "pcb_engine_kit/train_export.py export-onnx",
-    "onnx_metadata_path": "models/best.onnx.json",
     "runtime_benchmark_script": "raspberry_pi/benchmark_onnx.py",
     "runtime_benchmark_results_present": false
   },
   "advisory": {
-    "model_family": "Llama 3.2 Instruct 1B or 3B",
+    "required_for_challenge": true,
+    "model_family": "Llama family",
     "runtime": "ExecuTorch",
     "processor": "Raspberry Pi 5 ARM CPU",
     "prompt_builder_present": true,
-    "model_package_present": false,
-    "benchmark": null,
     "runner_source_present": true,
+    "runner_api": "ExecuTorch TextLLMRunner",
+    "model_package_present": false,
     "tokenizer_present": false,
-    "coordinator_source": "raspberry_pi/run_inspection.py",
-    "runner_source": "llm_advisory/run_executorch.py",
-    "runner_api": "ExecuTorch TextLLMRunner (Python bindings)",
-    "python_bindings_build_required": "EXECUTORCH_BUILD_PYBIND=ON",
-    "runner_api_experimental": true,
     "validated_on_pi": false,
-    "export_config_example": "llm_advisory/llama3_2_1b_xnnpack.example.yaml",
-    "optional_pi5_16gb_model": {
-      "name": "Arm Llama 3.2 1B Instruct INT8 XNNPACK ExecuTorch",
-      "source_url": "https://huggingface.co/Arm/llama3-2-1b-instruct-int8-xnnpack-executorch-raspberrypi5",
-      "reference_device": "Raspberry Pi 5 with 16 GB RAM",
-      "downloaded": false,
-      "validated_with_project_runner": false
-    }
+    "coordinator_source": "raspberry_pi/run_inspection.py",
+    "runner_source": "llm_advisory/run_executorch.py"
   },
   "dataset": {
     "raw_dataset_archive_present": false,
@@ -65,11 +56,11 @@
     "import_manifest_template": "datasets/import_manifest.example.csv"
   },
   "hardware": {
+    "platform": "Raspberry Pi 5 CPU",
     "conveyor": true,
     "ir_presence_sensor": true,
     "external_led_illumination": true,
     "camera": true,
-    "raspberry_pi_gpio_controller_source": "raspberry_pi/station_controller.py",
     "station_controller_source": "raspberry_pi/station_controller.py",
     "inspection_orchestrator_source": "raspberry_pi/run_inspection.py",
     "gpio_pin_mapping_verified": false,
@@ -79,10 +70,11 @@
     "commissioning_record_completed": false,
     "full_cycle_validation_on_pi": false
   },
-  "note": "The source repository documents the built physical inspection station and runtime architecture. Model binaries, ExecuTorch package, dataset archive and measured target-device results are not bundled in this source checkout.",
   "demo_video": {
-    "recorded": false,
-    "shot_list": "demo_video/README.md"
+    "path": "demo_video/pcb-inspection-demo.mp4",
+    "file_present": true,
+    "content_reviewed_for_submission": false
   },
-  "severity_policy_configured": false
+  "severity_policy_configured": false,
+  "note": "This manifest reflects the current source checkout. Do not treat missing model artifacts or uncompleted device tests as complete."
 }
