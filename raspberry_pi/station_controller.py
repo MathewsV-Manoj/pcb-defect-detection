@@ -208,8 +208,6 @@ class StationRuntime:
             capture.release()
 
     def _capture_worker(self) -> None:
-        import cv2
-
         now = datetime.now(timezone.utc)
         board_id = "PCB-" + now.strftime("%Y%m%dT%H%M%S-%f")
         safe_id = re.sub(r"[^A-Za-z0-9_.-]", "_", board_id)
@@ -218,6 +216,8 @@ class StationRuntime:
         annotated_path = self.output_dir / f"{safe_id}_annotated.jpg"
 
         try:
+            import cv2
+
             self.illumination.on()
             self.update(illumination_status="ON", camera_status="SETTLING")
             time.sleep(self.settle)
@@ -261,7 +261,11 @@ class StationRuntime:
 
     def start_inspection(self) -> tuple[bool, str]:
         with self.lock:
-            if self.state["state"] != "AWAITING_OPERATOR_RUN" or not self.capture_path:
+            if (
+                self.state["state"] != "AWAITING_OPERATOR_RUN"
+                or not self.capture_path
+                or not self.capture_path.is_file()
+            ):
                 return False, "A captured PCB frame is not waiting for operator approval."
             if self.state["busy"]:
                 return False, "An inspection is already running."
@@ -454,6 +458,7 @@ def make_handler(runtime: StationRuntime):
             except ValueError:
                 return self.send_json({"error": "Invalid Content-Length."}, 400)
             if content_length < 0 or content_length > 2048:
+                self.close_connection = True
                 return self.send_json({"error": "Request body is too large."}, 413)
             body = self.rfile.read(content_length) if content_length else b""
             if body:
