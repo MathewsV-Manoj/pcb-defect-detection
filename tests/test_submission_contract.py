@@ -148,7 +148,9 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("911221e0f49d3354cbd4697a9c09feee25cadec7", downloader)
         self.assertIn("Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte", downloader)
         self.assertIn("tokenizer.model", downloader)
-        self.assertIn("examples/raspberry_pi/setup.sh pi5", build)
+        self.assertIn("setup-local-sysroot.sh", build)
+        self.assertIn("985c1ceccc8bb8b6a32294f71aeb5d2f299562f7", build)
+        self.assertIn('EXECUTORCH_SYSROOT:-/', build)
         self.assertIn("llama_main", build)
         self.assertIn("executorch_cpp_llama_main", runner)
         self.assertIn('"--prompt=', runner)
@@ -198,6 +200,28 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertFalse(manifest["local_execution"]["runtime_internet_required_for_inference"])
         self.assertFalse(manifest["local_execution"]["offline_validation_completed"])
         self.assertFalse(manifest["local_execution"]["firebase_record_sync"]["default_enabled"])
+
+    def test_severity_policy_is_configured_and_provisional(self):
+        policy = json.loads((ROOT / "models" / "severity_policy.json").read_text(encoding="utf-8"))
+        detector = (ROOT / "raspberry_pi" / "inspect_image.py").read_text(encoding="utf-8")
+        self.assertEqual(policy["status"], "PROVISIONAL_REQUIRES_BOARD_LEVEL_VALIDATION")
+        self.assertEqual(policy["rules"]["missing_hole"]["severity"], "MEDIUM")
+        self.assertEqual(policy["rules"]["open_circuit"]["severity"], "HIGH")
+        self.assertEqual(policy["rules"]["short_circuit"]["severity"], "HIGH")
+        self.assertIn("classify_severity(target_name, severity_policy)", detector)
+        self.assertIn('"severity_policy": {', detector)
+
+    def test_one_command_pi_provisioning_is_documented(self):
+        provisioner = (ROOT / "scripts" / "provision_pi5.sh").read_text(encoding="utf-8")
+        runtime_test = (ROOT / "scripts" / "validate_pi5_runtime.py").read_text(encoding="utf-8")
+        launcher = (ROOT / "scripts" / "run_station_pi5.sh").read_text(encoding="utf-8")
+        self.assertIn("download_sulojan_pcb_yolov8s.py", provisioner)
+        self.assertIn("export-upstream-onnx", provisioner)
+        self.assertIn("download_model.py", provisioner)
+        self.assertIn("build_pi5_runner.sh", provisioner)
+        self.assertIn("CPUExecutionProvider", runtime_test)
+        self.assertIn("llama_main", runtime_test)
+        self.assertIn("station_controller.py", launcher)
 
     def test_external_benchmarks_are_explicitly_separate_from_project_measurements(self):
         reference = (ROOT / "docs" / "REFERENCE_BENCHMARKS.md").read_text(encoding="utf-8")
