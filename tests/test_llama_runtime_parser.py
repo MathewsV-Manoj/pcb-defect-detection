@@ -18,12 +18,13 @@ class ExecuTorchTelemetryTests(unittest.TestCase):
             "some runner log\n"
             'PyTorchObserver {"prompt_tokens":20,"generated_tokens":10,'
             '"inference_start_ms":1000,"first_token_ms":1150,'
-            '"inference_end_ms":1700,"SCALING_FACTOR_UNITS_PER_SECOND":1000}\n'
+            '"prompt_eval_end_ms":1300,"inference_end_ms":1700,'
+            '"SCALING_FACTOR_UNITS_PER_SECOND":1000}\n'
         )
         stats = parse_pytorch_observer(output)
         self.assertIsNotNone(stats)
         self.assertEqual(observer_ttft_ms(stats), 150.0)
-        self.assertEqual(observer_tokens_per_second(stats), 14.29)
+        self.assertEqual(observer_tokens_per_second(stats), 25.0)
 
     def test_missing_or_invalid_observer_keeps_metrics_unavailable(self):
         self.assertIsNone(parse_pytorch_observer("runner output without stats"))
@@ -36,6 +37,7 @@ class ExecuTorchTelemetryTests(unittest.TestCase):
             "generated_tokens": 0,
             "inference_start_ms": 100,
             "first_token_ms": 90,
+            "prompt_eval_end_ms": 100,
             "inference_end_ms": 100,
         }
         self.assertIsNone(observer_ttft_ms(stats))
