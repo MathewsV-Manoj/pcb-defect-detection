@@ -36,6 +36,16 @@
 | Demo content | MP4 file is present but not independently reviewed | Watch it and confirm the current hardware, detector output, Llama advisory and dashboard are shown |
 | Eligibility | README lists three students from Muthoot Institute of Technology and Science | Verify Team Leader, faculty mentor, college nomination and registration details |
 
+## Open-source vision baseline
+
+The repository now includes a hash-verified downloader for Sulojan Rajkumar's
+MIT-declared YOLOv8s PCB checkpoint, an ONNX export mode with a six-to-three
+class mapping, and a Pi decoder that reads that metadata sidecar. The model's
+published test results are documented with attribution in
+`docs/PCB_UPSTREAM_BASELINE.md`. The upstream weights remain local deployment
+assets and are not committed to Git; the exact SHA-256 is checked by the
+downloader. The author-reported metrics are not project test metrics.
+
 ## Llama deployment: configured, not papered over
 
 The default station configuration now points to the pinned Llama 3.2 1B
