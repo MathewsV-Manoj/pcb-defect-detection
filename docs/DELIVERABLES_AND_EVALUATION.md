@@ -25,7 +25,7 @@ This checklist is specific to the Bharat AI-SoC Challenge 2026–27, Problem Sta
 | Edge operation without cloud dependence | Local capture, detector and advisory path; Firebase mirrors records only when configured | Offline operation must be demonstrated on the Pi |
 | Real-time operation | Pi-side ONNX detector benchmark and full still-image vision-plus-Llama pipeline benchmark | Scripts are committed; execute on target Pi and compare measured percentiles to the separately cited external references |
 
-The PS5 hardware list includes a Raspberry Pi 5 CPU-only configuration. The project's documented station path is ONNX Runtime on the Raspberry Pi CPU.
+The PS5 hardware list includes a Raspberry Pi 5 CPU-only configuration. The configured station path is OpenCV + ONNX Runtime CPU for vision and Llama + ExecuTorch C++ on the Raspberry Pi 5 CPU. The browser is an operator interface only; Firebase event replication is disabled by default and is not used for inference.
 
 ## Defect model evaluation
 
@@ -73,7 +73,7 @@ Then:
 6. Confirm the operator run button starts inference on the Pi.
 7. Confirm the event JSON and annotated image are written.
 8. Confirm the ExecuTorch advisory returns valid structured output.
-9. Disconnect the network and confirm the full local inspection and advisory still work.
+9. Disconnect the WAN/internet uplink while keeping the Raspberry Pi and operator browser connected to the same private LAN; confirm the full local inspection and advisory still work.
 10. Confirm the next PCB is captured without repeating the arming sequence.
 11. Repeat the cycle and record attempts, successful runs, missed triggers, duplicate triggers and failures.
 
@@ -90,7 +90,7 @@ Measure on the Raspberry Pi, not on the training workstation:
 - Llama total response time and peak RAM; TTFT/tokens per second when the runner emits ExecuTorch observer telemetry, otherwise leave them null;
 - power only if measured with an appropriate external meter.
 
-For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method.
+For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method. Clearly label publisher-reported PCB model metrics, Arm's Pi 5 runtime reference and other published Llama results as external references. The DLMR vision-language paper is unrelated to PCB detection and is not a valid metric source for this system. See [LOCAL_EXECUTION_AND_PERFORMANCE.md](LOCAL_EXECUTION_AND_PERFORMANCE.md).
 
 ## Eligibility and submission-form checks
 
