@@ -119,6 +119,8 @@ The ExecuTorch Python runner API is revision-dependent. Run the actual project a
 
 Firebase event synchronization can be enabled through the station configuration. Local capture, detector inference and advisory generation run on the Pi.
 
+For the challenge's local-execution demonstration, leave `PCB_FIREBASE_PUBLISH=false` (the example default). Model downloads and software installation happen during provisioning; after the model, tokenizer and ExecuTorch runner are on the Pi, inference is local. To test offline operation, disconnect only the WAN/internet uplink and keep the Pi and laptop browser connected to the same private LAN. A full loss of LAN connectivity would also disconnect the remote browser from the Pi-hosted dashboard. Follow [docs/LOCAL_EXECUTION_AND_PERFORMANCE.md](LOCAL_EXECUTION_AND_PERFORMANCE.md) and save the completed evidence.
+
 ## 7. Record target-device results
 
 Run the detector benchmark on held-out representative PCB images:
