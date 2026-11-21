@@ -9,7 +9,7 @@ A conveyor-fed PCB inspection prototype built around a Raspberry Pi 5. It captur
 3. The Pi switches on the external LED driver, waits for the configured settling interval and captures a frame.
 4. The Pi serves the captured image to the laptop browser. The operator checks the image.
 5. The operator selects **Run inspection on Raspberry Pi**. The browser sends `POST /api/run-inspection`; it does not run inference.
-6. The Pi applies OpenCV preprocessing and runs the three-class YOLOv8 Nano model through ONNX Runtime on the Pi CPU.
+6. The Pi applies OpenCV preprocessing and runs the selected YOLO ONNX checkpoint through ONNX Runtime on the Pi CPU. For the published six-class YOLOv8s baseline, the ONNX sidecar maps the three target defects into the application's fixed three-class event schema.
 7. The Pi decodes detections, writes an annotated image and saves a structured inspection event.
 8. The ExecuTorch text runner receives only the structured event and produces the operator advisory. It does not receive the image and cannot change detector results.
 9. The dashboard displays the image, detections, advisory and local inspection history. The Pi can synchronize completed event records to Firebase Realtime Database when that connection is configured.
