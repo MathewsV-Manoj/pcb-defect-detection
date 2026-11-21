@@ -54,6 +54,28 @@ def parse_advisory_json(text: str) -> dict[str, Any] | None:
     return value if isinstance(value, dict) else None
 
 
+def validate_advisory(value: dict[str, Any] | None) -> dict[str, Any]:
+    """Require the bounded, machine-readable response expected by the operator UI."""
+    required = {"explanation", "recommended_actions", "severity_note", "log_entry"}
+    if value is None or set(value) != required:
+        raise RuntimeError(
+            "Llama response is not the required JSON object with keys: "
+            "explanation, recommended_actions, severity_note, log_entry"
+        )
+    if not isinstance(value["explanation"], str) or not value["explanation"].strip():
+        raise RuntimeError("Llama advisory 'explanation' must be a non-empty string")
+    if (
+        not isinstance(value["recommended_actions"], list)
+        or not all(isinstance(item, str) and item.strip() for item in value["recommended_actions"])
+    ):
+        raise RuntimeError("Llama advisory 'recommended_actions' must be an array of non-empty strings")
+    if not isinstance(value["severity_note"], str) or not value["severity_note"].strip():
+        raise RuntimeError("Llama advisory 'severity_note' must be a non-empty string")
+    if not isinstance(value["log_entry"], str) or not value["log_entry"].strip():
+        raise RuntimeError("Llama advisory 'log_entry' must be a non-empty string")
+    return value
+
+
 def run_advisory(
     event: dict[str, Any],
     model_path: Path,
@@ -133,6 +155,7 @@ def run_advisory(
     if not advisory_text:
         raise RuntimeError("ExecuTorch returned an empty advisory")
 
+    parsed_advisory = validate_advisory(parse_advisory_json(advisory_text))
     result: dict[str, Any] = {
         "record_id": event["record_id"],
         "board_id": event["board_id"],
@@ -143,7 +166,7 @@ def run_advisory(
         "ttft_ms": round(first_token_ms, 2) if first_token_ms is not None else None,
         "total_response_ms": round(total_ms, 2),
         "generation_stats": stats,
-        "advisory": parse_advisory_json(advisory_text),
+        "advisory": parsed_advisory,
     }
 
     try:
