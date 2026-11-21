@@ -26,3 +26,6 @@ models/llama/*
 models/pretrained/**/*.pt
 !models/pretrained/**/README.md
 !models/pretrained/**/*.py
+
+# Hugging Face local_dir cache and verified upstream weights stay local.
+models/pretrained/sulojan_pcb_yolov8s/
