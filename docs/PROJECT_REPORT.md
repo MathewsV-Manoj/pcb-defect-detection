@@ -45,9 +45,9 @@ The Raspberry Pi station-controller source supports configurable IR input and il
 | Raspberry Pi 5 ARM CPU with ONNX Runtime | Raspberry Pi 5 ARM CPU with ExecuTorch |
 | YOLOv8 Nano detector | Llama 3.2 Instruct family, 1B or 3B class |
 | Predicts, classifies and localizes defects | Explains findings, suggests actions and writes log text |
-| Optional HailoRT execution on Hailo NPU / AI HAT+ or AI HAT+ 2 | Remains on the Pi ARM CPU in both CPU and Hailo vision configurations |
+| Optional HailoRT architecture path on Hailo NPU / AI HAT+ or AI HAT+ 2 (not implemented in the current source checkout) | Remains on the Pi ARM CPU in both CPU and Hailo vision configurations |
 
-The Hailo accelerator is an optional vision-runtime path. It does not replace the Llama/ExecuTorch advisory runtime. If no Hailo accelerator is installed, the vision model runs on the Raspberry Pi CPU.
+The current source checkout implements the Raspberry Pi CPU vision path through ONNX Runtime. HailoRT on Hailo NPU / AI HAT+ / AI HAT+ 2 is a committee-listed optional architecture path, but no Hailo-compiled detector or Hailo runtime integration is included here. It does not replace the separate Llama/ExecuTorch advisory runtime.
 
 ## 3. Vision detection
 
