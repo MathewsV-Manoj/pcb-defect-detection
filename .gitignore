@@ -10,3 +10,7 @@ datasets/raw/
 datasets/processed/
 *.log
 .DS_Store
+inspection_runs/
+*.pte
+*.tokenizer
+*.tokenizer.bin
