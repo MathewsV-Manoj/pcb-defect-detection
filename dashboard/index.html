@@ -127,11 +127,22 @@ function renderResult(status){
  $("decision").textContent=(event.decision||status.decision||"Awaiting inspection").replaceAll("_"," ");
  $("decision").className=(event.decision||status.decision)==="NO_TARGET_DEFECT_DETECTED"?"badge good":"badge";
  $("resultSource").textContent=event.source||"NO RESULT";
- $("defects").innerHTML=detections.length?detections.map(d=>{
-  const loc=d.location?.bbox_xyxy||d.bbox_xyxy||[];
-  const coords=loc.length===4?loc.map(v=>Number(v).toFixed(0)).join(", "):"Location unavailable";
-  return '<div class="result"><strong>'+escapeHTML(d.class_name||d.class_id)+'</strong><div class="muted">Severity: '+escapeHTML(d.severity||"UNASSESSED")+' · Confidence: '+percent(d.confidence)+'<br>Box: ['+coords+']</div></div>';
- }).join(""):'<div class="muted" style="padding:12px 0">No configured target defects detected in this frame.</div>';
+ if(detections.length){
+  $("defects").innerHTML=detections.map(d=>{
+   const loc=d.location?.bbox_xyxy||d.bbox_xyxy||[];
+   const coords=loc.length===4?loc.map(v=>Number(v).toFixed(0)).join(", "):"Location unavailable";
+   return '<div class="result"><strong>'+escapeHTML(d.class_name||d.class_id)+'</strong><div class="muted">Severity: '+escapeHTML(d.severity||"UNASSESSED")+' · Confidence: '+percent(d.confidence)+'<br>Box: ['+coords+']</div></div>';
+  }).join("");
+ }else if(event.decision||status.decision){
+  $("defects").innerHTML='<div class="muted" style="padding:12px 0">No configured target defects detected in this frame.</div>';
+  $("confBar").style.width="0";
+  $("confidence").textContent="—";
+ }else{
+  const text=status.state==="RUNNING_INSPECTION"?"Vision inference is running on the Raspberry Pi…":"Inspection has not been run for this captured frame.";
+  $("defects").innerHTML='<div class="muted" style="padding:12px 0">'+text+'</div>';
+  $("confBar").style.width="0";
+  $("confidence").textContent="—";
+ }
  const advisory=event.advisory??status.advisory;
  if(!advisory){$("advisory").textContent="No advisory response has been returned.";}
  else if(typeof advisory==="string"){$("advisory").textContent=advisory;}
