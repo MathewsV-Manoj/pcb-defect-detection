@@ -1,35 +1,22 @@
 # Demonstration video
 
-The video still needs to be recorded on the physical station. This shot list is a guide for that recording; it is not a substitute for the video.
+The repository contains `pcb-inspection-demo.mp4`. Check this exact file before submitting it: confirm that the footage is from the physical station and that it demonstrates the actual implementation rather than a simulated interface or edited example output.
 
-## Suggested recording order
+## Required content check
 
-| Shot | What to film | What the viewer should be able to see |
-|---|---|---|
-| 1 | Full station, powered off | Conveyor, camera, IR sensor, LED strip and Raspberry Pi |
-| 2 | Operator holds a hand in front of the IR sensor | Continuous hold for about three seconds |
-| 3 | Operator releases the sensor | Dashboard changes to the armed/waiting state |
-| 4 | PCB placed on the conveyor | Board moving towards the inspection area |
-| 5 | Close view of the IR trigger point | Sensor activates as the PCB reaches the camera area |
-| 6 | LED and camera | LED turns on, frame is captured and LED turns off |
-| 7 | Laptop browser | The captured frame appears on the Pi-hosted page |
-| 8 | Operator clicks Run inspection | Button acknowledges the request |
-| 9 | Raspberry Pi processing | Show the Pi terminal/log if useful; do not show secrets or tokens |
-| 10 | Dashboard result | Show the annotated image, class, confidence, location and advisory |
-| 11 | Second PCB | Show that the station remains armed and accepts the next board |
+- [ ] Full station is visible: conveyor, camera, IR sensor, LED illumination and Raspberry Pi.
+- [ ] Initial three-second IR hand-hold and release are shown.
+- [ ] The station remains armed after release.
+- [ ] A PCB moves to the camera trigger point and activates the IR sensor.
+- [ ] The LED driver illuminates the board and the camera captures a frame.
+- [ ] The captured image appears on the Pi-hosted operator page.
+- [ ] The operator presses **Run inspection on Raspberry Pi**.
+- [ ] The Pi performs local inference and produces a structured inspection result.
+- [ ] The annotated image and defect classes/confidence are visible.
+- [ ] The Llama/ExecuTorch advisory is shown running on the device.
+- [ ] The dashboard displays the resulting inspection.
+- [ ] A subsequent PCB can be captured without repeating the initial arming gesture.
 
-## Recording notes
+The video should use the actual Pi-hosted page, actual camera frames and actual inference results. Do not use a simulated dashboard result as proof of live hardware operation. Do not show Wi-Fi passwords, Firebase tokens or other credentials.
 
-- Use the actual Pi-hosted dashboard address, not a locally opened copy of the HTML file.
-- Keep the camera frame and the dashboard readable.
-- Include at least one real inspection result from the final model.
-- Show both the captured image and the annotated image.
-- Do not use the hidden simulation mode or edited screenshots as proof of hardware operation.
-- If a stage fails during filming, correct it and record another take. Do not hide a failed run by presenting it as a successful live inspection.
-- Do not show Wi-Fi passwords, Firebase tokens, model download tokens or other credentials.
-
-## Suggested narration
-
-“This is the PCB inspection station. At the start of a session, the operator holds a hand in front of the IR sensor for about three seconds. After the sensor is released, the station stays armed. The PCB travels along the conveyor and the IR sensor triggers capture when the board reaches the camera area. The Raspberry Pi switches on the LED driver and saves an image. The operator checks the image in the browser and starts inspection from the laptop. The Pi runs the detector locally and returns the annotated result and operator advisory to the page.”
-
-Keep the narration consistent with what the camera actually shows. The IR sensor confirms board presence at its trigger point; it does not measure precise image alignment.
+For the submission form, provide a shareable public/unlisted video URL if the form does not accept the repository MP4 directly.
