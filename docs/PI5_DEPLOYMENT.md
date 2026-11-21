@@ -105,7 +105,7 @@ After the operator command, the station service invokes `raspberry_pi/run_inspec
 5. Advisory and runtime telemetry insertion into the event.
 6. Optional Firebase publication when enabled.
 
-The complete run requires `models/best.onnx`, an ExecuTorch Llama `.pte` model and its matching tokenizer. If the advisory assets are absent or the runner fails, the UI reports that the vision result is available but the required advisory did not complete. A vision-only commissioning run is not the full submission workflow.
+The complete run requires `models/best.onnx`, an ExecuTorch Llama `.pte` model and its matching tokenizer. `llm_advisory/run_executorch.py` uses the text-only `TextLLMRunner` Python binding, plus the LLM custom-op and quantized-kernel registrations required by the exported model. The `.pte`, tokenizer and runtime binding build must be a verified compatible set on ARM64. If the advisory assets are absent or the runner fails, the UI reports that the vision result is available but the required advisory did not complete. A vision-only commissioning run is not the full submission workflow.
 
 ## Local records and optional Firebase
 
