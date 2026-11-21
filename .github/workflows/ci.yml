@@ -1,0 +1,32 @@
+name: Repository checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  python-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile Python source
+        run: python -m compileall -q raspberry_pi llm_advisory pcb_engine_kit tests
+
+      - name: Test advisory prompt contract
+        run: python -m unittest discover -s tests -v
+
+      - name: Test dataset utility contracts
+        working-directory: pcb_engine_kit
+        run: python -m unittest -v test_contracts.py
