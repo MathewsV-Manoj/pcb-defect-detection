@@ -13,10 +13,10 @@ Fetch and hash-verify the weights with:
     python models/pretrained/download_sulojan_pcb_yolov8s.py
 
 The 22.5 MB checkpoint is stored locally under
-\`sulojan_pcb_yolov8s/best.pt\` and is intentionally ignored by Git.
-Keep \`model_manifest.json\` with the downloaded file when transferring it.
+`sulojan_pcb_yolov8s/best.pt` and is intentionally ignored by Git.
+Keep `model_manifest.json` with the downloaded file when transferring it.
 
 The upstream model has six classes. The ONNX exporter produces a metadata
-sidecar that maps only \`missing_hole\`, \`open_circuit\` and \`short\` to the
+sidecar that maps only `missing_hole`, `open_circuit` and `short` to the
 application's three output classes. Do not label the upstream model or its
 published benchmark as trained or measured by this project.
