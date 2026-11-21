@@ -50,6 +50,17 @@ exact TTFT, tokens/s, RAM use or total inspection cycle. The actual result
 depends on the PTE build, prompt length, context length, CPU cooling, memory
 pressure, runtime version and operating system.
 
+## Exact SpinQuant PTE model-card reference (different device)
+
+The model card for the **same Llama 3.2 1B SpinQuant PTE family** reports
+ExecuTorch ARM CPU results on an **Android OnePlus 12**, not a Raspberry Pi 5:
+50.2 generated tokens/s, 0.3 s time-to-first-token, 260.5 prompt tokens/s,
+1,083 MB PTE file size and 1,921 MB RSS. The TTFT uses a 64-token prompt.
+These numbers are useful for model-file and memory planning, but they are
+phone results and must not be represented as Pi 5 results.
+
+Source: [ExecuTorch community model card — inference time](https://huggingface.co/executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET).
+
 ## Project measurements: currently unpopulated
 
 Run these commands on the actual Pi after copying the final model assets and
