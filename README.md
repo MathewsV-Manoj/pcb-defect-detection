@@ -25,7 +25,7 @@ The three target classes are **open circuit**, **short circuit** and **missing h
 | Inspection camera | Captures the illuminated board |
 | Raspberry Pi 5 | Hosts the operator UI, handles the sensor sequence and runs local inference |
 
-The IR input is used as a latched two-phase state sequence: a continuous activation of approximately three seconds arms the station once; after the sensor is released, the next active transition is interpreted as the PCB reaching the camera position. After an inspection completes, the controller stays armed and accepts the next board-arrival transition without requiring another hand-hold sequence. Restarting the station controller resets the arming state.
+The IR input is used as a latched two-phase state sequence: a continuous activation of approximately three seconds arms the station once; after the sensor is released, the next active transition confirms board presence at the IR trigger point beside the camera. The IR sensor is a binary presence detector, not a measurement of precise PCB alignment; camera-field alignment is established mechanically. After an inspection completes, the controller stays armed and accepts the next board-arrival transition without requiring another hand-hold sequence. Restarting the station controller resets the arming state.
 
 The LED strip is powered through its external driver and suitable supply. A Raspberry Pi GPIO pin is used only as the driver's logic-level control signal. Conveyor transport is provided by the physical conveyor assembly; the inspection controller coordinates sensing, illumination, capture and processing.
 
