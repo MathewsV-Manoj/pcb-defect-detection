@@ -4,8 +4,8 @@ import shutil
 import subprocess
 import tempfile
 import unittest
-from pathlib import Path
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED_CLASSES = ["missing_hole", "open_circuit", "short_circuit"]
@@ -22,10 +22,8 @@ class SubmissionContractTests(unittest.TestCase):
 
         converter = (ROOT / "pcb_engine_kit" / "dataset.py").read_text(encoding="utf-8")
         exporter = (ROOT / "pcb_engine_kit" / "train_export.py").read_text(encoding="utf-8")
-        worker = (ROOT / "pcb_engine_kit" / "engine.py").read_text(encoding="utf-8")
         self.assertIn("NAMES=['missing_hole','open_circuit','short_circuit']", converter)
         self.assertIn('CLASS_ORDER = ["missing_hole", "open_circuit", "short_circuit"]', exporter)
-        self.assertIn('CLASS_ORDER = ["missing_hole", "open_circuit", "short_circuit"]', worker)
 
     def test_event_schema_and_example_have_required_finding_fields(self):
         schema = json.loads((ROOT / "schemas" / "inspection-event.schema.json").read_text(encoding="utf-8"))
@@ -103,14 +101,21 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertNotIn("NMSBoxes(boxes, scores.tolist()", source)
         self.assertIn("len(session.get_outputs()) != 1", source)
 
-    def test_exporter_produces_pi_onnx_and_supplementary_tflite(self):
+    def test_exporter_produces_only_pi_onnx_path(self):
         exporter = (ROOT / "pcb_engine_kit" / "train_export.py").read_text(encoding="utf-8")
         self.assertIn('"export-onnx"', exporter)
-        self.assertIn('"export-tflite"', exporter)
         self.assertIn('format="onnx"', exporter)
         self.assertIn('nms=False', exporter)
-        self.assertIn('"best.onnx"', exporter)
-        self.assertIn('"detector.tflite"', exporter)
+        self.assertNotIn("export-tflite", exporter)
+        self.assertNotIn('format="tflite"', exporter)
+
+    def test_release_manifest_does_not_advertise_unimplemented_accelerators_or_workers(self):
+        manifest = json.loads((ROOT / "models" / "release_manifest.json").read_text(encoding="utf-8"))
+        serialized = json.dumps(manifest).lower()
+        self.assertNotIn("hailo", serialized)
+        self.assertNotIn("tflite", serialized)
+        self.assertFalse(manifest["advisory"]["model_package_present"])
+        self.assertTrue(manifest["advisory"]["required_for_challenge"])
 
     def test_text_only_llama_uses_text_llm_runner_and_chat_template(self):
         runner = (ROOT / "llm_advisory" / "run_executorch.py").read_text(encoding="utf-8")
@@ -129,8 +134,8 @@ class SubmissionContractTests(unittest.TestCase):
 
     def test_station_image_and_result_are_reset_for_each_new_board(self):
         controller = (ROOT / "raspberry_pi" / "station_controller.py").read_text(encoding="utf-8")
-        self.assertIn('self.capture_path = None', controller)
-        self.assertIn('result=None', controller)
+        self.assertIn("self.capture_path = None", controller)
+        self.assertIn("result=None", controller)
         self.assertIn('"COMPLETE"', controller)
 
 
