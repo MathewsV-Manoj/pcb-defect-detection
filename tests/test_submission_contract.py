@@ -1,4 +1,8 @@
 import json
+import re
+import shutil
+import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -36,6 +40,22 @@ class SubmissionContractTests(unittest.TestCase):
 
     def test_architecture_diagram_is_valid_svg(self):
         ET.parse(ROOT / "docs" / "inspection_workflow.svg")
+
+    def test_dashboard_module_javascript_syntax(self):
+        node = shutil.which("node")
+        if node is None:
+            self.skipTest("Node.js is not installed in this test environment")
+        html = (ROOT / "dashboard" / "index.html").read_text(encoding="utf-8")
+        match = re.search(r'<script\\s+type="module"\\s*>(.*?)</script>', html, re.DOTALL)
+        self.assertIsNotNone(match, "Dashboard module script was not found")
+        with tempfile.NamedTemporaryFile("w", suffix=".mjs", encoding="utf-8", delete=False) as handle:
+            handle.write(match.group(1))
+            script_path = Path(handle.name)
+        try:
+            checked = subprocess.run([node, "--check", str(script_path)], capture_output=True, text=True)
+            self.assertEqual(checked.returncode, 0, checked.stderr)
+        finally:
+            script_path.unlink(missing_ok=True)
 
     def test_dashboard_exposes_station_and_review_fields_without_demo_tools(self):
         html = (ROOT / "dashboard" / "index.html").read_text(encoding="utf-8")
