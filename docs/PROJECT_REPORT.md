@@ -49,6 +49,35 @@ Source annotation names are checked before conversion. DeepPCB open/short annota
 
 The current repository has the dataset importer and training/export scripts, but its source checkout does not include the final processed dataset or trained model binaries. Therefore, the final training run, held-out metrics and ONNX parity have not been established by the repository itself.
 
+## 4.1 Public pretrained baseline
+
+An additional pretrained PCB model is referenced as a transfer-learning and
+deployment baseline: Sulojan Rajkumar's YOLOv8s checkpoint published on
+Hugging Face. The model card declares an MIT license. Its source repository
+describes training on the Kaggle `akhatova/pcb-defects` dataset with six
+classes. The source checkpoint and its published SHA-256 are recorded in
+`models/pretrained/` and `models/release_manifest.json`.
+
+The original author reports a held-out test split of 70 images and 286
+bounding boxes, with precision 0.972, recall 0.912, mAP@50 0.941,
+mAP@50–95 0.503 and 18.4 ms/image in the author's test environment. Per-class
+mAP@50 is 0.995 for `missing_hole`, 0.992 for `open_circuit` and 0.975 for
+`short`. These figures belong to the original publisher's test setup and
+are cited as external baseline results, not as measurements obtained by this
+project or its Raspberry Pi station.
+
+The checkpoint has six classes. The Pi's ONNX sidecar maps `missing_hole`,
+`open_circuit` and `short` to the project's three event classes and ignores
+the other source classes. The original source class order and mapping are
+preserved in each inspection event. A separate training mode permits this
+checkpoint to initialize training on the project's own three-class dataset;
+metrics from any resulting checkpoint must be generated on the project's
+own held-out board groups.
+
+See [PCB upstream baseline](PCB_UPSTREAM_BASELINE.md) for model provenance,
+license declaration, checkpoint checksum, dataset and source links, detailed
+metrics and exact download/export commands.
+
 ## 5. Inspection event and operator advisory
 
 Each inspection event includes a record ID, board ID, timestamp, source type, model filename and class order, thresholds, inference latency, detections and station information. Each detection stores a class ID/name, confidence, bounding box and image-relative location.
