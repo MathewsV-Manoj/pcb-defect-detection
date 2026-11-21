@@ -4,7 +4,7 @@ The project demonstration video documents the built conveyor-based PCB inspectio
 
 ## Demonstrated operating sequence
 
-1. **Station arming:** an operator holds a hand in front of the IR sensor for approximately three seconds.
+1. **Station arming:** at the beginning of the station session, an operator holds a hand in front of the IR sensor for approximately three seconds. The station remains armed for subsequent PCB cycles.
 2. **Release and loading:** the sensor is released and a PCB is placed on the conveyor.
 3. **Conveyor transport:** the belt moves the PCB towards the camera position.
 4. **Board-position confirmation:** the IR sensor detects the PCB at the camera position.
