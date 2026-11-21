@@ -95,7 +95,7 @@ let current=null, records=[], displayedCapture=null;
 const states={
  WAITING_FOR_ARM:1,ARMING:1,ARMED_WAIT_RELEASE:2,WAITING_FOR_BOARD:2,
  CAPTURING:4,AWAITING_OPERATOR_RUN:4,RUNNING_INSPECTION:5,
- COMPLETE:6,VISION_COMPLETE_ADVISORY_INCOMPLETE:6,ERROR:0
+ COMPLETE:6,COMPLETE_SYNC_WARNING:6,VISION_COMPLETE_ADVISORY_INCOMPLETE:6,ERROR:0
 };
 function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function percent(value){if(value===undefined||value===null)return"—";let n=Number(value);return(n<=1?n*100:n).toFixed(1)+"%";}
@@ -113,8 +113,9 @@ function renderCapture(status){
    }
  }else if(status.state==="CAPTURING"){
    $("captureArea").innerHTML='<div class="empty"><div class="cam">◌</div><strong>Capturing illuminated PCB…</strong><div>The Raspberry Pi is acquiring the camera frame.</div></div>';
- }else if(!displayedCapture||status.state==="WAITING_FOR_ARM"||status.state==="ARMING"||status.state==="WAITING_FOR_BOARD"){
-   $("captureArea").innerHTML='<div class="empty"><div class="cam">▧</div><strong>No PCB frame captured yet</strong><div>Arm the station and let the conveyor bring the board under the camera.</div></div>';
+   displayedCapture=null;
+ }else if(status.state==="ERROR"||!displayedCapture||status.state==="WAITING_FOR_ARM"||status.state==="ARMING"||status.state==="WAITING_FOR_BOARD"){
+   $("captureArea").innerHTML='<div class="empty"><div class="cam">▧</div><strong>No current PCB frame captured</strong><div>Arm the station and let the conveyor bring the board under the camera.</div></div>';
    displayedCapture=null;
  }
 }
@@ -140,8 +141,10 @@ function renderResult(status){
  }
  if(status.state==="VISION_COMPLETE_ADVISORY_INCOMPLETE"){
   $("runtimeNote").textContent="Vision results are available, but the required ExecuTorch advisory did not complete. Check the Pi model, tokenizer and runner assets.";
+ }else if(status.state==="COMPLETE_SYNC_WARNING"){
+  $("runtimeNote").textContent="Vision and Llama advisory completed on the Pi. Record synchronization or a secondary operation reported a warning; the local event is saved.";
  }else if(status.state==="COMPLETE"){
-  $("runtimeNote").textContent="Vision and Llama advisory completed on the Raspberry Pi.";
+  $("runtimeNote").textContent="Vision and Llama advisory completed on the Raspberry Pi. The station remains armed for the next board.";
  }else{
   $("runtimeNote").textContent="Vision and advisory run as separate local processes on the Raspberry Pi 5.";
  }
