@@ -1,30 +1,54 @@
 {
-  "status": "FAULT_DETECTOR_ARTIFACTS_MISSING_CLASS_ORDER_CONFLICT",
-  "trace_extractor_checkpoint": {
-    "path": "pcb_engine_kit/optional_unet/pcb_ultra_resatt_unet.pth",
-    "sha256": "23107a1805c13e57f3bccace4aa20bd59e5b400468cb3c0b26f6dba0bce1426c",
-    "size_bytes": 32897063,
-    "present_in_supplied_zip": true,
-    "uploaded_to_repository": false,
-    "purpose": "Five-channel PCB trace extraction; not a three-class defect detector"
-  },
-  "fault_detector": {
-    "training_run_expected_in_pi_handoff": "runs/pcb3/",
-    "candidate_class_orders": {
-      "zip_training_code": ["open_circuit", "short_circuit", "missing_hole"],
-      "separate_pi5_handoff": ["missing_hole", "open_circuit", "short_circuit"]
+  "schema_version": 1,
+  "status": "SOURCE_CHECKOUT_WITHOUT_FINAL_MODEL_BINARIES",
+  "vision": {
+    "architecture": "YOLOv8 Nano",
+    "runtime_primary": "ONNX Runtime CPU on Raspberry Pi 5 ARM",
+    "runtime_accelerated": "Optional HailoRT on Hailo NPU / AI HAT+ / AI HAT+ 2",
+    "class_order": [
+      "missing_hole",
+      "open_circuit",
+      "short_circuit"
+    ],
+    "class_order_source": "raspberry_pi/inspect_image.py and models/class_names.txt",
+    "best_pt": {
+      "path": "models/best.pt",
+      "sha256": null,
+      "present": false
     },
-    "class_order_verified": false,
-    "best_pt": {"path": "models/best.pt", "sha256": null, "present": false},
-    "best_onnx": {"path": "models/best.onnx", "sha256": null, "present": false},
-    "detector_tflite": {"path": "models/detector.tflite", "sha256": null, "present": false},
+    "best_onnx": {
+      "path": "models/best.onnx",
+      "sha256": null,
+      "present": false
+    },
+    "detector_tflite": {
+      "path": "models/detector.tflite",
+      "sha256": null,
+      "present": false
+    },
     "metrics": null,
-    "validated": false
+    "validated_on_pi": false
+  },
+  "advisory": {
+    "model_family": "Llama 3.2 Instruct 1B or 3B",
+    "runtime": "ExecuTorch",
+    "processor": "Raspberry Pi 5 ARM CPU",
+    "prompt_builder_present": true,
+    "model_package_present": false,
+    "benchmark": null
   },
   "dataset": {
-    "archive_present": false,
-    "data_yaml_present": false,
-    "license_review_complete": false
+    "raw_dataset_archive_present": false,
+    "processed_dataset_present": false,
+    "training_yaml_present": false,
+    "provenance_manifest": "datasets/SOURCE_MANIFEST.csv"
   },
-  "notes": "Do not claim final fault detector or dataset was uploaded. Resolve class order from the actual training run/checkpoint."
+  "hardware": {
+    "conveyor": true,
+    "ir_presence_sensor": true,
+    "external_led_illumination": true,
+    "camera": true,
+    "raspberry_pi_gpio_controller_source": "raspberry_pi/station_controller.py"
+  },
+  "note": "The source repository documents the built physical inspection station and runtime architecture. Model binaries, ExecuTorch package, dataset archive and measured target-device results are not bundled in this source checkout."
 }
