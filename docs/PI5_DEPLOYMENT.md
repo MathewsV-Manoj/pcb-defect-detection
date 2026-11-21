@@ -62,8 +62,11 @@ On 64-bit Raspberry Pi OS:
 ```bash
 sudo apt update
 sudo apt install -y python3-venv python3-pip python3-opencv python3-gpiozero
+```
 
-# Install this package only when the inspection camera is connected over CSI.
+For a CSI camera, install the Raspberry Pi OS camera package:
+
+```bash
 sudo apt install -y python3-picamera2
 
 git clone https://github.com/MathewsV-Manoj/pcb-defect-detection.git
@@ -109,6 +112,31 @@ After the operator command, the station service invokes `raspberry_pi/run_inspec
 4. `llm_advisory/run_executorch.py` with the text-only findings prompt.
 5. Advisory and runtime telemetry insertion into the event.
 6. Optional Firebase publication when enabled.
+
+## ExecuTorch Python LLM runner
+
+The inspection coordinator in this repository uses ExecuTorch's Python `TextLLMRunner` binding. This is a text-only runner; the advisory receives structured detector findings and no image pixels.
+
+The Python runner binding must be built/installed for the Raspberry Pi's ARM64 Python environment. The ExecuTorch LLM Runner documentation specifies `EXECUTORCH_BUILD_PYBIND=ON` for the Python extension and requires the LLM custom-op and quantized-kernel registration imports. A source-build example is:
+
+```bash
+git clone https://github.com/pytorch/executorch.git
+cd executorch
+bash install_executorch.sh
+```
+
+The exact ExecuTorch commit/tag, Python version, compiler and model-export configuration must be recorded together for a reproducible deployment. Verify the imports in the Pi's station virtual environment:
+
+```bash
+python - <<'PY'
+from executorch.extension.llm.custom_ops import custom_ops
+from executorch.kernels import quantized
+from executorch.extension.llm.runner import GenerationConfig, TextLLMRunner
+print("ExecuTorch TextLLMRunner bindings are available")
+PY
+```
+
+This repository uses the Python `TextLLMRunner` API, not the C++ `llama_main` executable used by the upstream Raspberry Pi tutorial. The Python LLM Runner API is experimental; its installed binding must match the model package and tokenizer. See the [ExecuTorch LLM Runner README](https://github.com/pytorch/executorch/tree/main/extension/llm/runner) and [Raspberry Pi Llama deployment tutorial](https://docs.pytorch.org/executorch/stable/raspberry_pi_llama_tutorial.html).
 
 The complete run requires `models/best.onnx`, an ExecuTorch Llama `.pte` model and its matching tokenizer. `llm_advisory/run_executorch.py` uses the text-only `TextLLMRunner` Python binding, plus the LLM custom-op and quantized-kernel registrations required by the exported model. The `.pte`, tokenizer and runtime binding build must be a verified compatible set on ARM64. If the advisory assets are absent or the runner fails, the UI reports that the vision result is available but the required advisory did not complete. A vision-only commissioning run is not the full submission workflow.
 
