@@ -151,7 +151,7 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("llama_main", build)
         self.assertIn("executorch_cpp_llama_main", runner)
         self.assertIn('"--prompt=', runner)
-        self.assertIn('os.getenv("PCB_LLAMA_REQUIRED", True)', coordinator)
+        self.assertIn('env_bool("PCB_LLAMA_REQUIRED", True)', coordinator)
         self.assertIn("PCB_LLAMA_REQUIRED=true", env_example)
         self.assertTrue(manifest["advisory"]["required_for_challenge"])
         self.assertTrue(manifest["advisory"]["deployment_recipe_present"])
