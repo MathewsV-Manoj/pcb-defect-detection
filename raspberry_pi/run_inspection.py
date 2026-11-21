@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Coordinate one PCB inspection: vision -> Llama advisory -> local log -> Firebase."""
+"""Coordinate one PCB inspection: vision -> ExecuTorch advisory -> local log -> optional Firebase."""
 from __future__ import annotations
 
 import argparse
@@ -22,6 +22,12 @@ def env_bool(name: str, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def resolve_path(value: str | Path) -> Path:
+    """Resolve deployment paths relative to the repository, not the caller's CWD."""
+    path = Path(value).expanduser()
+    return path.resolve() if path.is_absolute() else (ROOT / path).resolve()
+
+
 def read_json(path: Path) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -35,12 +41,12 @@ def read_json(path: Path) -> dict[str, Any]:
 def write_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix(path.suffix + ".tmp")
-    temp.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
+    temp.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     os.replace(temp, path)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run a complete local PCB inspection cycle")
+    parser = argparse.ArgumentParser(description="Run one complete local PCB inspection cycle")
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--source", help="PCB image file")
     source.add_argument("--camera", type=int, help="USB/UVC camera index")
@@ -54,19 +60,27 @@ def main() -> int:
     parser.add_argument("--publish", action="store_true")
     args = parser.parse_args()
 
-    event_path = Path(args.output).expanduser()
-    annotated_path = Path(args.annotated).expanduser()
-    if not event_path.is_absolute():
-        event_path = ROOT / event_path
-    if not annotated_path.is_absolute():
-        annotated_path = ROOT / annotated_path
+    if not (0.0 <= args.conf <= 1.0 and 0.0 <= args.iou <= 1.0):
+        parser.error("--conf and --iou must both be between 0 and 1")
 
+    event_path = resolve_path(args.output)
+    annotated_path = resolve_path(args.annotated)
+    weights_path = resolve_path(args.weights)
+    source_path = resolve_path(args.source) if args.source else None
+
+    if source_path and not source_path.is_file():
+        parser.error(f"Source image does not exist: {source_path}")
+    if not weights_path.is_file():
+        parser.error(f"Vision model does not exist: {weights_path}")
     if not VISION_ENTRY.is_file() or not ADVISORY_ENTRY.is_file():
         raise RuntimeError("Vision or advisory entry point is missing from the source tree")
 
+    event_path.parent.mkdir(parents=True, exist_ok=True)
+    annotated_path.parent.mkdir(parents=True, exist_ok=True)
+
     vision_command = [
         sys.executable, str(VISION_ENTRY),
-        "--weights", str(Path(args.weights).resolve() if not Path(args.weights).is_absolute() else Path(args.weights)),
+        "--weights", str(weights_path),
         "--output", str(event_path),
         "--annotated", str(annotated_path),
         "--conf", str(args.conf),
@@ -74,8 +88,8 @@ def main() -> int:
     ]
     if args.board_id:
         vision_command.extend(["--board-id", args.board_id])
-    if args.source:
-        vision_command.extend(["--source", args.source])
+    if source_path:
+        vision_command.extend(["--source", str(source_path)])
     elif args.picamera2:
         vision_command.append("--picamera2")
     else:
@@ -86,23 +100,25 @@ def main() -> int:
         return vision_run.returncode
 
     event = read_json(event_path)
-    model_path = Path(os.getenv("PCB_LLAMA_MODEL_PATH", "")).expanduser()
-    tokenizer_path = Path(os.getenv("PCB_LLAMA_TOKENIZER_PATH", "")).expanduser()
+    model_path = resolve_path(os.getenv("PCB_LLAMA_MODEL_PATH", ""))
+    tokenizer_path = resolve_path(os.getenv("PCB_LLAMA_TOKENIZER_PATH", ""))
     require_advisory = env_bool("PCB_LLAMA_REQUIRED", True)
-
     advisory_result_path = event_path.with_name(event_path.stem + "_advisory.json")
+
     if not model_path.is_file() or not tokenizer_path.is_file():
         event["advisory"] = {
             "status": "MODEL_ASSETS_MISSING",
-            "message": "The ExecuTorch model and matching tokenizer were not found.",
+            "message": "The ExecuTorch model and matching tokenizer were not found on the Raspberry Pi.",
         }
         event["advisory_runtime"] = {"runtime": "ExecuTorch", "status": "NOT_RUN"}
+        event["firebase_sync"] = {"status": "NOT_ATTEMPTED"}
         write_json(event_path, event)
         print(f"[inspection] Vision event saved; advisory model assets are missing: {event_path}", file=sys.stderr)
         if require_advisory:
             print(
-                "[inspection] Complete inspection requires PCB_LLAMA_MODEL_PATH and "
-                "PCB_LLAMA_TOKENIZER_PATH. Set PCB_LLAMA_REQUIRED=false only for vision-only commissioning.",
+                "[inspection] Complete inspection requires valid PCB_LLAMA_MODEL_PATH and "
+                "PCB_LLAMA_TOKENIZER_PATH files. PCB_LLAMA_REQUIRED=false is reserved for "
+                "vision-only commissioning.",
                 file=sys.stderr,
             )
             return 2
@@ -110,17 +126,18 @@ def main() -> int:
         advisory_command = [
             sys.executable, str(ADVISORY_ENTRY),
             "--event", str(event_path),
-            "--model", str(model_path.resolve()),
-            "--tokenizer", str(tokenizer_path.resolve()),
+            "--model", str(model_path),
+            "--tokenizer", str(tokenizer_path),
             "--output", str(advisory_result_path),
         ]
-        advisory_run = subprocess.run(advisory_command, cwd=ADVISORY_ENTRY.parent, check=False)
+        advisory_run = subprocess.run(advisory_command, cwd=ROOT, check=False)
         if advisory_run.returncode != 0:
             event["advisory"] = {
                 "status": "INFERENCE_FAILED",
                 "message": "ExecuTorch advisory generation failed; human review is required.",
             }
             event["advisory_runtime"] = {"runtime": "ExecuTorch", "status": "FAILED"}
+            event["firebase_sync"] = {"status": "NOT_ATTEMPTED"}
             write_json(event_path, event)
             if require_advisory:
                 return advisory_run.returncode or 2
@@ -140,10 +157,24 @@ def main() -> int:
             }
             write_json(event_path, event)
 
-    # Local JSON is the inspection log. Firebase is an optional synchronization layer.
+    # The local event is the primary inspection log. Firebase is optional synchronization.
     if args.publish:
-        from firebase_client import publish_event
-        publish_event(event)
+        try:
+            from firebase_client import publish_event
+            publish_event(event)
+            event["firebase_sync"] = {"status": "PUBLISHED"}
+            write_json(event_path, event)
+        except Exception as exc:
+            event["firebase_sync"] = {"status": "FAILED", "message": str(exc)}
+            write_json(event_path, event)
+            print(
+                f"[inspection] Local inspection record is saved, but Firebase synchronization failed: {exc}",
+                file=sys.stderr,
+            )
+            return 3
+    else:
+        event["firebase_sync"] = {"status": "DISABLED"}
+        write_json(event_path, event)
 
     print(f"[inspection] Complete event: {event_path}")
     print(f"[inspection] Annotated image: {annotated_path}")
