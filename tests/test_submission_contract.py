@@ -24,7 +24,7 @@ class SubmissionContractTests(unittest.TestCase):
         exporter = (ROOT / "pcb_engine_kit" / "train_export.py").read_text(encoding="utf-8")
         worker = (ROOT / "pcb_engine_kit" / "engine.py").read_text(encoding="utf-8")
         self.assertIn("NAMES=['missing_hole','open_circuit','short_circuit']", converter)
-        self.assertIn("['missing_hole','open_circuit','short_circuit']", exporter)
+        self.assertIn('CLASS_ORDER = ["missing_hole", "open_circuit", "short_circuit"]', exporter)
         self.assertIn("['missing_hole','open_circuit','short_circuit']", worker)
 
     def test_event_schema_and_example_have_required_finding_fields(self):
