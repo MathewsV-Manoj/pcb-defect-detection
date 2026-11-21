@@ -81,5 +81,3 @@ This writes `best.onnx` and `best.onnx.json`. Copy both into the repository's `m
 - `label.py` — draw and save YOLO bounding boxes with OpenCV.
 - `safe_extract.py` — extract a dataset ZIP after checking for path traversal, symlinks and oversized archives.
 - `test_contracts.py` — dependency-light checks for archive extraction and dataset-import contracts.
-
-The deployed station path is ONNX Runtime on the Raspberry Pi CPU. This repository does not include a separate TFLite worker or reference-based component detector.
