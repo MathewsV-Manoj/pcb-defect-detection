@@ -37,7 +37,9 @@
     "model_package_present": false,
     "benchmark": null,
     "runner_source_present": true,
-    "tokenizer_present": false
+    "tokenizer_present": false,
+    "coordinator_source": "raspberry_pi/run_inspection.py",
+    "runner_source": "llm_advisory/run_executorch.py"
   },
   "dataset": {
     "raw_dataset_archive_present": false,
@@ -50,7 +52,9 @@
     "ir_presence_sensor": true,
     "external_led_illumination": true,
     "camera": true,
-    "raspberry_pi_gpio_controller_source": "raspberry_pi/station_controller.py"
+    "raspberry_pi_gpio_controller_source": "raspberry_pi/station_controller.py",
+    "station_controller_source": "raspberry_pi/station_controller.py",
+    "inspection_orchestrator_source": "raspberry_pi/run_inspection.py"
   },
   "note": "The source repository documents the built physical inspection station and runtime architecture. Model binaries, ExecuTorch package, dataset archive and measured target-device results are not bundled in this source checkout."
 }
