@@ -7,7 +7,7 @@
 
 The project combines a built conveyor-based PCB inspection station with a Raspberry Pi-hosted operator interface and two independent on-device inference pipelines. The physical station uses an IR presence sensor, a conveyor, an inspection camera and an externally powered LED strip.
 
-The station follows a two-phase IR sequence. First, the operator holds a hand in front of the IR sensor for approximately three seconds to arm the station. After release, the PCB is placed on the conveyor. The conveyor transports the PCB to the camera position, where the next IR activation confirms board presence and triggers image capture. The Raspberry Pi illuminates the board through the external LED driver and captures a frame.
+The station follows a latched two-phase IR sequence. At the start of a station session, the operator holds a hand in front of the IR sensor for approximately three seconds to arm the station. After release, the PCB is placed on the conveyor. Arming remains active across subsequent board inspections until the station controller is restarted. The conveyor transports the PCB to the camera position, where the next IR activation confirms board presence and triggers image capture. The Raspberry Pi illuminates the board through the external LED driver and captures a frame.
 
 The Pi serves the captured image to a laptop browser for operator verification. The operator then selects **Run inspection on Raspberry Pi**. This sends a command to the Pi-hosted station service; the laptop does not perform inference. The Raspberry Pi preprocesses the captured image, runs YOLO-based defect localization, passes structured findings to the separate Llama/ExecuTorch advisory and returns the result to the operator UI.
 
@@ -18,7 +18,7 @@ The three target defect classes are open circuit, short circuit and missing hole
 | Element | Function |
 |---|---|
 | Conveyor assembly | Transports the PCB from loading position to the imaging zone |
-| IR presence sensor | Three-second continuous activation arms the station; the next activation detects PCB arrival at the camera position |
+| IR presence sensor | Three-second continuous activation arms the station once; subsequent active transitions detect each PCB at the camera position |
 | External LED strip | Illuminates the PCB during image capture |
 | External LED driver | Switches the separately powered LED strip |
 | Camera | Captures the illuminated PCB frame |
@@ -29,7 +29,7 @@ The LED strip is supplied through its external driver and power source. The Rasp
 
 ## 2. Operating sequence and operator interaction
 
-1. **IR arming:** the operator holds a hand in front of the IR sensor for about three seconds.
+1. **IR arming:** at the start of a station session, the operator holds a hand in front of the IR sensor for about three seconds. This latches the station into its armed state for subsequent boards.
 2. **Armed state:** the sensor is released and the station enters the board-waiting state.
 3. **PCB loading:** the PCB is placed on the conveyor.
 4. **Conveyor transport:** the belt carries the PCB towards the inspection camera.
