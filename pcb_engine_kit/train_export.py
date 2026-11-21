@@ -5,6 +5,7 @@ import argparse
 import hashlib
 import json
 import shutil
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -156,6 +157,8 @@ def main() -> int:
     parser.add_argument("--batch", type=int, default=4)
     parser.add_argument("--device", default="0")
     parser.add_argument("--out", default="deployment")
+    parser.add_argument("--report-out", default="docs/results/project_test_metrics.json",
+                        help="JSON report destination for held-out test validation")
     args = parser.parse_args()
 
     if args.size < 32 or args.size % 32:
@@ -219,14 +222,111 @@ def main() -> int:
 
     if args.mode == "validate":
         check_dataset_class_order(args.data)
-        model.val(
+        metrics = model.val(
             data=args.data,
             split="test",
             imgsz=args.size,
             device=args.device,
             plots=True,
         )
-        print("Test evaluation completed. See the generated Ultralytics run directory and plots.")
+        box = metrics.box
+
+        def floats(value):
+            if hasattr(value, "tolist"):
+                value = value.tolist()
+            if isinstance(value, (list, tuple)):
+                return [float(item) for item in value]
+            return []
+
+        precision_values = floats(getattr(box, "p", []))
+        recall_values = floats(getattr(box, "r", []))
+        map50_values = floats(getattr(box, "ap50", []))
+        map_values = floats(getattr(box, "ap", []))
+        class_indices = [int(item) for item in floats(getattr(box, "ap_class_index", []))]
+        class_to_slot = {class_id: slot for slot, class_id in enumerate(class_indices)}
+        per_class = []
+        for class_id, class_name in enumerate(CLASS_ORDER):
+            slot = class_to_slot.get(class_id)
+            precision = precision_values[slot] if slot is not None and slot < len(precision_values) else None
+            recall = recall_values[slot] if slot is not None and slot < len(recall_values) else None
+            class_map50 = map50_values[slot] if slot is not None and slot < len(map50_values) else None
+            class_map = map_values[slot] if slot is not None and slot < len(map_values) else None
+            f1 = (
+                (2 * precision * recall / (precision + recall))
+                if precision is not None and recall is not None and precision + recall > 0
+                else None
+            )
+            per_class.append({
+                "class_id": class_id,
+                "class_name": class_name,
+                "precision": precision,
+                "recall": recall,
+                "f1": f1,
+                "map50": class_map50,
+                "map50_95": class_map,
+            })
+
+        def scalar(value):
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return None
+
+        checkpoint_path = Path(args.weights).expanduser().resolve()
+        dataset_path = Path(args.data).expanduser().resolve()
+        checkpoint_sha = hashlib.sha256(checkpoint_path.read_bytes()).hexdigest()
+        dataset_sha = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
+        mean_precision = scalar(box.mp)
+        mean_recall = scalar(box.mr)
+        overall_f1 = (
+            2 * mean_precision * mean_recall / (mean_precision + mean_recall)
+            if mean_precision is not None and mean_recall is not None
+            and mean_precision + mean_recall > 0 else None
+        )
+        report = {
+            "schema_version": 1,
+            "measurement_type": "project_held_out_test_accuracy",
+            "measured_at_utc": datetime.now(timezone.utc).isoformat(),
+            "model": {
+                "checkpoint": str(checkpoint_path),
+                "checkpoint_sha256": checkpoint_sha,
+                "class_order": CLASS_ORDER,
+                "input_size": args.size,
+            },
+            "dataset": {
+                "yaml": str(dataset_path),
+                "yaml_sha256": dataset_sha,
+                "split": "test",
+                "group_split_policy": "Keep each physical PCB/design/capture group within exactly one split.",
+            },
+            "overall": {
+                "precision": mean_precision,
+                "recall": mean_recall,
+                "f1": overall_f1,
+                "map50": scalar(box.map50),
+                "map50_95": scalar(box.map),
+            },
+            "per_class": per_class,
+            "inference_speed_ms_per_image": {
+                key: scalar(value) for key, value in getattr(metrics, "speed", {}).items()
+            },
+            "ultralytics_results_dict": {
+                str(key): scalar(value) for key, value in metrics.results_dict.items()
+            },
+            "ultralytics_run_directory": str(getattr(metrics, "save_dir", "")),
+            "notes": [
+                "Metrics are generated by this command from the supplied checkpoint and dataset test split.",
+                "Do not report these values as project results until this report exists and the dataset split is audited.",
+                "The upstream pretrained model-card metrics are not substituted into this report.",
+            ],
+        }
+        report_path = Path(args.report_out).expanduser()
+        if not report_path.is_absolute():
+            report_path = Path(__file__).resolve().parents[1] / report_path
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        print(f"Test evaluation completed. Machine-readable report: {report_path}")
+        print(json.dumps(report["overall"], indent=2))
         return 0
 
     out = Path(args.out).expanduser().resolve()
