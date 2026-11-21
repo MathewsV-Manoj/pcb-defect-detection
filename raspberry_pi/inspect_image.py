@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """One-image/one-frame YOLOv8 ONNX inference for the 3-class PCB detector."""
 from __future__ import annotations
-import argparse, json, os, sys, time, uuid
+import argparse, hashlib, json, os, sys, time, uuid
 from datetime import datetime, timezone
 from pathlib import Path
 import cv2
@@ -10,6 +10,42 @@ import onnxruntime as ort
 
 CLASS_NAMES = ["missing_hole", "open_circuit", "short_circuit"]
 SIZE = 640
+
+
+SOURCE_CLASS_ORDER_UPSTREAM = [
+    "missing_hole", "mouse_bite", "open_circuit", "short", "spur", "spurious_copper"
+]
+DEFAULT_CLASS_MAP = {name: name for name in CLASS_NAMES}
+
+
+def load_model_contract(model_path: str | Path):
+    """Load output class metadata from the ONNX sidecar, or use the native 3-class contract."""
+    path = Path(model_path)
+    sidecar = path.with_suffix(".onnx.json")
+    if not sidecar.is_file():
+        return CLASS_NAMES, DEFAULT_CLASS_MAP, None
+    try:
+        metadata = json.loads(sidecar.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise RuntimeError(f"Invalid ONNX metadata sidecar {sidecar}: {exc}") from exc
+    class_order = metadata.get("class_order")
+    if not isinstance(class_order, list) or not class_order or not all(
+        isinstance(name, str) for name in class_order
+    ):
+        raise RuntimeError(f"ONNX sidecar must declare a non-empty class_order: {sidecar}")
+    target_map = metadata.get("target_class_map")
+    if target_map is None:
+        if class_order != CLASS_NAMES:
+            raise RuntimeError("Non-native ONNX class order requires target_class_map in its sidecar")
+        target_map = DEFAULT_CLASS_MAP
+    if not isinstance(target_map, dict):
+        raise RuntimeError("target_class_map must be a JSON object")
+    for source_name, target_name in target_map.items():
+        if source_name not in class_order or target_name not in CLASS_NAMES:
+            raise RuntimeError(f"Invalid ONNX target class mapping: {source_name} -> {target_name}")
+    if not target_map:
+        raise RuntimeError("target_class_map must map at least one source class")
+    return class_order, target_map, metadata
 
 
 def letterbox(image, size=SIZE):
@@ -27,19 +63,28 @@ def letterbox(image, size=SIZE):
     return padded, scale, (left, top)
 
 
-def decode(output, original_shape, scale, pad, conf=0.25, iou=0.45):
+def decode(
+    output, original_shape, scale, pad, conf=0.25, iou=0.45,
+    model_class_names=None, target_class_map=None,
+):
+    model_class_names = model_class_names or CLASS_NAMES
+    target_class_map = target_class_map or {name: name for name in model_class_names if name in CLASS_NAMES}
+    attribute_count = 4 + len(model_class_names)
     pred = np.squeeze(np.asarray(output))
     if pred.ndim != 2:
         raise RuntimeError(f"Unexpected YOLO output rank/shape: {pred.shape}")
-    if pred.shape[0] == 7:
+    if pred.shape[0] == attribute_count:
         pred = pred.T
-    elif pred.shape[1] != 7:
-        raise RuntimeError(f"Expected 7 values per anchor (4 boxes + 3 classes), got {pred.shape}")
+    elif pred.shape[1] != attribute_count:
+        raise RuntimeError(
+            f"Expected {attribute_count} values per anchor (4 boxes + {len(model_class_names)} classes), "
+            f"got {pred.shape}"
+        )
     if not np.isfinite(pred).all():
         raise RuntimeError("ONNX output contains NaN/Inf")
 
     xywh = pred[:, :4]
-    class_scores = pred[:, 4:7]
+    class_scores = pred[:, 4:attribute_count]
     class_ids = class_scores.argmax(axis=1)
     scores = class_scores.max(axis=1)
     keep = (scores >= conf) & (xywh[:, 2] > 0) & (xywh[:, 3] > 0)
@@ -62,8 +107,12 @@ def decode(output, original_shape, scale, pad, conf=0.25, iou=0.45):
     h, w = original_shape
     px, py = pad
     found = []
-    for cid in range(len(CLASS_NAMES)):
-        positions = np.flatnonzero(class_ids == cid)
+    for source_id, source_name in enumerate(model_class_names):
+        target_name = target_class_map.get(source_name)
+        if target_name not in CLASS_NAMES:
+            continue
+        target_id = CLASS_NAMES.index(target_name)
+        positions = np.flatnonzero(class_ids == source_id)
         if not len(positions):
             continue
         class_boxes = [boxes[int(position)] for position in positions]
@@ -84,8 +133,8 @@ def decode(output, original_shape, scale, pad, conf=0.25, iou=0.45):
 
             bbox = [round(x1, 2), round(y1, 2), round(x2, 2), round(y2, 2)]
             found.append({
-                "class_id": cid,
-                "class_name": CLASS_NAMES[cid],
+                "class_id": target_id,
+                "class_name": target_name,
                 "confidence": float(scores[i]),
                 "bbox_xyxy": bbox,
                 "severity": "UNASSESSED",
@@ -157,6 +206,7 @@ def main():
         p.error("conf/iou must be in [0,1]")
     try:
         image, source_type = read_frame(args)
+        model_class_names, target_class_map, model_metadata = load_model_contract(args.weights)
         session = ort.InferenceSession(args.weights, providers=["CPUExecutionProvider"])
         inputs = session.get_inputs()
         if len(inputs) != 1:
@@ -184,7 +234,10 @@ def main():
         latency = (time.perf_counter() - start) * 1000
         if not outputs:
             raise RuntimeError("ONNX returned no output")
-        detections = decode(outputs[0], image.shape[:2], scale, pad, args.conf, args.iou)
+        detections = decode(
+            outputs[0], image.shape[:2], scale, pad, args.conf, args.iou,
+            model_class_names=model_class_names, target_class_map=target_class_map,
+        )
         now = datetime.now(timezone.utc)
         board_id = args.board_id or f"PCB-{now.strftime('%Y%m%dT%H%M%S')}-{uuid.uuid4().hex[:6]}"
         station_capture = os.getenv("PCB_STATION_CAPTURE", "0").lower() in {"1", "true", "yes"}
@@ -199,6 +252,10 @@ def main():
             "source": source_type,
             "model_file": Path(args.weights).name,
             "model_class_order": CLASS_NAMES,
+            "source_model_class_order": model_class_names,
+            "source_model_target_class_map": target_class_map,
+            "source_model_sha256": hashlib.sha256(Path(args.weights).read_bytes()).hexdigest(),
+            "source_model_metadata": model_metadata,
             "input_size": [SIZE, SIZE],
             "preprocessing": ["letterbox", "BGR_TO_RGB", "float32_normalize_0_1", "NCHW"],
             "confidence_threshold": args.conf,
