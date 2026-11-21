@@ -19,7 +19,7 @@ The three target classes are **open circuit**, **short circuit** and **missing h
 | Hardware element | Function |
 |---|---|
 | Conveyor assembly | Transports the PCB from the loading position to the camera zone |
-| IR presence sensor | Provides the three-second arming event and then detects the PCB at the camera position |
+| IR presence sensor | One-time three-second station arming, followed by PCB-at-camera detection for each board |
 | External LED strip | Illuminates the PCB during capture |
 | External LED driver | Switches the separately powered LED strip |
 | Inspection camera | Captures the illuminated board |
