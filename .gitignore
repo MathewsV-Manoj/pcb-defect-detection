@@ -17,3 +17,7 @@ inspection_runs/
 *.pte
 *.tokenizer
 *.tokenizer.bin
+
+# Large, licensed Llama model assets and locally built Pi runtime stay out of Git.
+models/llama/*
+!models/llama/README.md
