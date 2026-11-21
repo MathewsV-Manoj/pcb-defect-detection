@@ -64,10 +64,6 @@ Arm's published Raspberry Pi 5 benchmark for its separate YOLO26n INT8 ONNX mode
 
 Public Raspberry Pi 5 measurements for Llama 3.2 1B using llama.cpp/GGUF report approximately 10.8–14.5 generated tokens/s in their stated configurations. Those are not ExecuTorch SpinQuant PTE measurements. The ExecuTorch community model-card result for the matching SpinQuant PTE family is from a OnePlus 12 Android device, not a Raspberry Pi 5; it must not be copied as Pi performance. See [REFERENCE_BENCHMARKS.md](REFERENCE_BENCHMARKS.md).
 
-### DLMR metric applicability
-
-The 2026 DLMR paper means *Dual-Latent Memory Routing for Vision-Language Reasoning*. Its reported evaluations use multimodal language-model benchmarks and backbones such as Qwen2.5-VL and InternVL; they are not PCB defect-detection metrics and are not measurements of this Raspberry Pi/YOLO/ExecuTorch pipeline. DLMR scores are therefore not included as project performance results.
-
 ## Project measurements: not yet recorded
 
 The repository contains benchmark scripts, but no valid Pi 5 benchmark output or project-owned held-out accuracy report is currently committed. The detector, full software pipeline and physical station must be measured separately.
