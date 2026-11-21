@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
-"""Run a text-only Llama advisory from a structured PCB inspection event.
-
-The ExecuTorch TextLLMRunner receives no image or camera data. Detector
-findings remain unchanged; generated text is stored separately as advisory data.
-"""
+"""Generate a bounded, text-only Llama advisory using ExecuTorch on-device."""
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import resource
+import subprocess
 import sys
 import time
 from pathlib import Path
 from typing import Any
 
 from prompt import build_prompt
+
+REQUIRED_KEYS = {"explanation", "recommended_actions", "severity_note", "log_entry"}
+DEFAULT_MODEL = "models/llama/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte"
+DEFAULT_TOKENIZER = "models/llama/tokenizer.model"
+DEFAULT_RUNNER = "models/llama/runtime/llama_main"
+
+
+def resolve_path(value: str | Path) -> Path:
+    return Path(value).expanduser().resolve()
 
 
 def load_event(path: Path) -> dict[str, Any]:
@@ -24,192 +31,230 @@ def load_event(path: Path) -> dict[str, Any]:
         raise RuntimeError(f"Cannot load inspection event {path}: {exc}") from exc
     if not isinstance(event, dict):
         raise RuntimeError("Inspection event must be a JSON object")
-
     required = {"record_id", "board_id", "timestamp", "decision", "source", "detections"}
     missing = sorted(required.difference(event))
     if missing:
-        raise RuntimeError(f"Inspection event is missing required fields: {', '.join(missing)}")
+        raise RuntimeError(f"Inspection event is missing: {', '.join(missing)}")
     if not isinstance(event["detections"], list):
         raise RuntimeError("Inspection event detections must be a list")
     return event
 
 
-def parse_advisory_json(text: str) -> dict[str, Any] | None:
-    """Parse JSON even when the model wraps it in a Markdown code fence."""
-    candidate = text.strip()
-    if candidate.startswith("```"):
-        candidate = candidate.split("\n", 1)[-1]
-        if candidate.rstrip().endswith("```"):
-            candidate = candidate.rstrip()[:-3].strip()
-    try:
-        value = json.loads(candidate)
-    except json.JSONDecodeError:
-        start, end = candidate.find("{"), candidate.rfind("}")
-        if start < 0 or end <= start:
-            return None
+def parse_advisory_json(raw_text: str) -> dict[str, Any] | None:
+    """Find a complete advisory object even when the runner prints log lines."""
+    decoder = json.JSONDecoder()
+    for start, char in enumerate(raw_text):
+        if char != "{":
+            continue
         try:
-            value = json.loads(candidate[start:end + 1])
+            value, _ = decoder.raw_decode(raw_text[start:])
         except json.JSONDecodeError:
-            return None
-    return value if isinstance(value, dict) else None
+            continue
+        if isinstance(value, dict) and set(value) == REQUIRED_KEYS:
+            return value
+    return None
 
 
 def validate_advisory(value: dict[str, Any] | None) -> dict[str, Any]:
-    """Require the bounded, machine-readable response expected by the operator UI."""
-    required = {"explanation", "recommended_actions", "severity_note", "log_entry"}
-    if value is None or set(value) != required:
+    if value is None or set(value) != REQUIRED_KEYS:
         raise RuntimeError(
-            "Llama response is not the required JSON object with keys: "
+            "Llama output must contain one JSON object with exactly: "
             "explanation, recommended_actions, severity_note, log_entry"
         )
-    if not isinstance(value["explanation"], str) or not value["explanation"].strip():
-        raise RuntimeError("Llama advisory 'explanation' must be a non-empty string")
-    if (
-        not isinstance(value["recommended_actions"], list)
-        or not all(isinstance(item, str) and item.strip() for item in value["recommended_actions"])
+    for key in ("explanation", "severity_note", "log_entry"):
+        if not isinstance(value[key], str) or not value[key].strip():
+            raise RuntimeError(f"Llama field '{key}' must be a non-empty string")
+    actions = value["recommended_actions"]
+    if not isinstance(actions, list) or not all(
+        isinstance(item, str) and item.strip() for item in actions
     ):
-        raise RuntimeError("Llama advisory 'recommended_actions' must be an array of non-empty strings")
-    if not isinstance(value["severity_note"], str) or not value["severity_note"].strip():
-        raise RuntimeError("Llama advisory 'severity_note' must be a non-empty string")
-    if not isinstance(value["log_entry"], str) or not value["log_entry"].strip():
-        raise RuntimeError("Llama advisory 'log_entry' must be a non-empty string")
+        raise RuntimeError("Llama 'recommended_actions' must be an array of non-empty strings")
     return value
 
 
-def run_advisory(
-    event: dict[str, Any],
-    model_path: Path,
-    tokenizer_path: Path,
-    max_new_tokens: int = 192,
-    temperature: float = 0.1,
-) -> dict[str, Any]:
-    if not model_path.is_file():
-        raise RuntimeError(f"ExecuTorch model file not found: {model_path}")
-    if not tokenizer_path.is_file():
-        raise RuntimeError(f"Tokenizer file not found: {tokenizer_path}")
-    if max_new_tokens < 1:
-        raise ValueError("max_new_tokens must be positive")
-    if not 0.0 <= temperature <= 1.0:
-        raise ValueError("temperature must be between 0 and 1")
-
+def linux_peak_child_rss_kib() -> int | None:
     try:
-        # These imports register the LLM custom kernels required by many exported PTEs.
+        # Linux reports ru_maxrss in KiB. This is the maximum child-process
+        # resident set size observed by this coordinator process.
+        return int(resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss)
+    except (AttributeError, OSError, ValueError):
+        return None
+
+
+def run_cli(
+    event: dict[str, Any], model_path: Path, tokenizer_path: Path,
+    runner_path: Path, seq_len: int, timeout_seconds: int,
+) -> dict[str, Any]:
+    if not runner_path.is_file():
+        raise RuntimeError(
+            f"ExecuTorch llama_main was not found at {runner_path}. "
+            "Build it with 'bash llm_advisory/build_pi5_runner.sh' on a Linux x86_64 host "
+            "and copy models/llama/runtime to the Pi."
+        )
+    if not os.access(runner_path, os.X_OK):
+        raise RuntimeError(f"ExecuTorch runner is not executable: {runner_path}")
+
+    prompt = build_prompt(event)
+    command = [
+        str(runner_path),
+        f"--model_path={model_path}",
+        f"--tokenizer_path={tokenizer_path}",
+        "--temperature=0",
+        f"--seq_len={seq_len}",
+        f"--prompt={prompt}",
+    ]
+    env = os.environ.copy()
+    lib_path = str(runner_path.parent)
+    env["LD_LIBRARY_PATH"] = lib_path + os.pathsep + env.get("LD_LIBRARY_PATH", "")
+    started = time.perf_counter()
+    try:
+        completed = subprocess.run(
+            command, capture_output=True, text=True, check=False,
+            timeout=timeout_seconds, env=env,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(
+            f"ExecuTorch Llama exceeded the {timeout_seconds}s timeout. "
+            "Check model/runtime compatibility, available RAM and cooling."
+        ) from exc
+    total_ms = (time.perf_counter() - started) * 1000.0
+    combined = (completed.stdout or "") + "\n" + (completed.stderr or "")
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "No diagnostic output")[-3000:]
+        raise RuntimeError(f"ExecuTorch llama_main exited {completed.returncode}: {detail}")
+    advisory = validate_advisory(parse_advisory_json(combined))
+    return {
+        "advisory": advisory,
+        "advisory_text": json.dumps(advisory, ensure_ascii=False),
+        "runner_backend": "executorch_cpp_llama_main",
+        "ttft_ms": None,
+        "total_response_ms": round(total_ms, 2),
+        "tokens_per_second": None,
+        "process_peak_rss_kb": linux_peak_child_rss_kib(),
+        "telemetry_note": (
+            "The C++ runner output does not expose stable per-token timing in this integration; "
+            "TTFT and tokens/s are left null rather than estimated."
+        ),
+    }
+
+
+def run_python(
+    event: dict[str, Any], model_path: Path, tokenizer_path: Path,
+    max_new_tokens: int, temperature: float,
+) -> dict[str, Any]:
+    """Optional ExecuTorch Python binding backend for hosts with built pybindings."""
+    try:
         from executorch.extension.llm.custom_ops import custom_ops  # noqa: F401
         from executorch.kernels import quantized  # noqa: F401
         from executorch.extension.llm.runner import GenerationConfig, TextLLMRunner
     except ImportError as exc:
         raise RuntimeError(
-            "ExecuTorch TextLLMRunner Python bindings or required LLM kernels are unavailable. "
-            "Build/install ExecuTorch with EXECUTORCH_BUILD_PYBIND=ON and register the "
-            "custom_ops and quantized kernels for the exported model."
+            "ExecuTorch TextLLMRunner Python bindings are unavailable. "
+            "Use the default C++ llama_main backend on Raspberry Pi 5, or build "
+            "ExecuTorch with EXECUTORCH_BUILD_PYBIND=ON."
         ) from exc
 
-    # Only structured inspection fields are passed to the text-only model.
-    # No image, image path, image tensor, or camera frame is passed to ExecuTorch.
     prompt = build_prompt(event)
     runner = TextLLMRunner(str(model_path), str(tokenizer_path))
     config = GenerationConfig(
-        max_new_tokens=max_new_tokens,
-        temperature=temperature,
-        echo=False,
+        max_new_tokens=max_new_tokens, temperature=temperature, echo=False
     )
-
     chunks: list[str] = []
     stats: dict[str, Any] = {}
     started = time.perf_counter()
-    first_token_ms: float | None = None
+    ttft: float | None = None
 
     def token_callback(token: str) -> None:
-        nonlocal first_token_ms
-        if first_token_ms is None:
-            first_token_ms = (time.perf_counter() - started) * 1000.0
+        nonlocal ttft
+        if ttft is None:
+            ttft = (time.perf_counter() - started) * 1000.0
         chunks.append(str(token))
 
     def stats_callback(value: Any) -> None:
-        for name in (
-            "num_prompt_tokens",
-            "num_generated_tokens",
-            "inference_start_ms",
-            "inference_end_ms",
-            "model_load_start_ms",
-            "model_load_end_ms",
-            "first_token_ms",
-        ):
+        for name in ("num_prompt_tokens", "num_generated_tokens",
+                     "inference_start_ms", "inference_end_ms"):
             metric = getattr(value, name, None)
             if metric is not None:
                 stats[name] = metric
 
     try:
-        # TextLLMRunner.generate(prompt, config, token_callback, stats_callback)
-        # is the ExecuTorch API for text-only Llama-family models.
         runner.generate(prompt, config, token_callback, stats_callback)
     finally:
-        # Clear KV-cache state before the runner is released.
         try:
             runner.reset()
         except Exception:
             pass
 
     total_ms = (time.perf_counter() - started) * 1000.0
-    advisory_text = "".join(chunks).strip()
-    if not advisory_text:
-        raise RuntimeError("ExecuTorch returned an empty advisory")
-
-    parsed_advisory = validate_advisory(parse_advisory_json(advisory_text))
-    result: dict[str, Any] = {
-        "record_id": event["record_id"],
-        "board_id": event["board_id"],
-        "advisory_text": advisory_text,
-        "runtime": "ExecuTorch",
-        "runner": "TextLLMRunner",
-        "model_file": model_path.name,
-        "ttft_ms": round(first_token_ms, 2) if first_token_ms is not None else None,
-        "total_response_ms": round(total_ms, 2),
-        "generation_stats": stats,
-        "advisory": parsed_advisory,
-    }
-
-    try:
-        # On Linux (including Raspberry Pi OS), ru_maxrss is reported in KiB.
-        result["process_peak_rss_kb"] = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
-    except (AttributeError, OSError):
-        result["process_peak_rss_kb"] = None
-
+    raw_text = "".join(chunks).strip()
+    advisory = validate_advisory(parse_advisory_json(raw_text))
     generated = stats.get("num_generated_tokens")
-    start_ms = stats.get("inference_start_ms")
-    end_ms = stats.get("inference_end_ms")
+    start_ms, end_ms = stats.get("inference_start_ms"), stats.get("inference_end_ms")
+    tokens_per_second = None
     if generated is not None and start_ms is not None and end_ms is not None and end_ms > start_ms:
-        result["tokens_per_second"] = round(float(generated) * 1000.0 / (end_ms - start_ms), 2)
-    else:
-        result["tokens_per_second"] = None
-    return result
+        tokens_per_second = round(float(generated) * 1000.0 / (end_ms - start_ms), 2)
+    return {
+        "advisory": advisory,
+        "advisory_text": raw_text,
+        "runner_backend": "executorch_python_text_llm_runner",
+        "ttft_ms": round(ttft, 2) if ttft is not None else None,
+        "total_response_ms": round(total_ms, 2),
+        "tokens_per_second": tokens_per_second,
+        "process_peak_rss_kb": int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss),
+        "generation_stats": stats,
+    }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run a text-only ExecuTorch PCB advisory")
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--event", required=True, help="Structured inspection event JSON")
-    parser.add_argument("--model", required=True, help="ExecuTorch Llama .pte model")
-    parser.add_argument("--tokenizer", required=True, help="Matching tokenizer binary")
+    parser.add_argument("--model", default=os.getenv("PCB_LLAMA_MODEL_PATH", DEFAULT_MODEL))
+    parser.add_argument("--tokenizer", default=os.getenv("PCB_LLAMA_TOKENIZER_PATH", DEFAULT_TOKENIZER))
+    parser.add_argument("--runner", default=os.getenv("PCB_LLAMA_RUNNER_PATH", DEFAULT_RUNNER))
+    parser.add_argument("--backend", choices=("cli", "python"), default=os.getenv("PCB_LLAMA_BACKEND", "cli"))
+    parser.add_argument("--seq-len", type=int, default=int(os.getenv("PCB_LLAMA_SEQ_LEN", "1024")))
+    parser.add_argument("--timeout-seconds", type=int, default=int(os.getenv("PCB_LLAMA_TIMEOUT_SECONDS", "180")))
     parser.add_argument("--max-new-tokens", type=int, default=192)
-    parser.add_argument("--temperature", type=float, default=0.1)
+    parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--output", help="Optional advisory result JSON path")
     args = parser.parse_args()
 
     try:
-        event = load_event(Path(args.event).expanduser().resolve())
-        result = run_advisory(
-            event,
-            Path(args.model).expanduser().resolve(),
-            Path(args.tokenizer).expanduser().resolve(),
-            max_new_tokens=args.max_new_tokens,
-            temperature=args.temperature,
-        )
+        event_path = resolve_path(args.event)
+        model_path, tokenizer_path = resolve_path(args.model), resolve_path(args.tokenizer)
+        if not model_path.is_file():
+            raise RuntimeError(
+                f"Llama .pte model not found: {model_path}. Run "
+                "'python llm_advisory/download_model.py' after accepting the upstream license."
+            )
+        if not tokenizer_path.is_file():
+            raise RuntimeError(f"Matching Llama tokenizer not found: {tokenizer_path}")
+        if args.seq_len < 128 or args.timeout_seconds < 1:
+            raise RuntimeError("--seq-len must be >=128 and --timeout-seconds must be positive")
+        event = load_event(event_path)
+        if args.backend == "cli":
+            result = run_cli(
+                event, model_path, tokenizer_path, resolve_path(args.runner),
+                args.seq_len, args.timeout_seconds,
+            )
+        else:
+            result = run_python(
+                event, model_path, tokenizer_path, args.max_new_tokens, args.temperature
+            )
+        result.update({
+            "record_id": event["record_id"],
+            "board_id": event["board_id"],
+            "runtime": "ExecuTorch",
+            "model_file": model_path.name,
+            "tokenizer_file": tokenizer_path.name,
+            "model_path": str(model_path),
+        })
         if args.output:
-            output_path = Path(args.output).expanduser().resolve()
+            output_path = resolve_path(args.output)
             output_path.parent.mkdir(parents=True, exist_ok=True)
-            temp_path = output_path.with_suffix(output_path.suffix + ".tmp")
-            temp_path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-            temp_path.replace(output_path)
+            temporary = output_path.with_suffix(output_path.suffix + ".tmp")
+            temporary.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            temporary.replace(output_path)
         print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0
     except Exception as exc:
