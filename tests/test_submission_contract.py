@@ -64,6 +64,20 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("No configured target defects detected in this frame.", html)
         self.assertIn('status.state==="RUNNING_INSPECTION"', html)
 
+    def test_dashboard_javascript_references_existing_elements(self):
+        html = (ROOT / "dashboard" / "index.html").read_text(encoding="utf-8")
+        declared = set(re.findall(r'\\bid="([^"]+)"', html))
+        referenced = set(re.findall(r'\\$\\("([^"]+)"\\)', html))
+        self.assertEqual(referenced - declared, set(), "Dashboard JavaScript references missing element IDs")
+
+    def test_pi_onnx_benchmark_reports_runtime_only_and_model_identity(self):
+        source = (ROOT / "raspberry_pi" / "benchmark_onnx.py").read_text(encoding="utf-8")
+        self.assertIn('"measurement_type": "onnx_detector_runtime_only"', source)
+        self.assertIn('"sha256": sha256_file(model_path)', source)
+        self.assertIn('"total_p95"', source)
+        self.assertIn('"power_watts": None', source)
+        self.assertIn("It does not calculate precision, recall or mAP", source)
+
     def test_dashboard_exposes_station_and_review_fields_without_demo_tools(self):
         html = (ROOT / "dashboard" / "index.html").read_text(encoding="utf-8")
         for marker in (
