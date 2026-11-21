@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Run a text-only Llama advisory from a structured PCB inspection event.
 
-The ExecuTorch model receives no image or camera data. Detector findings are
-kept unchanged and the generated text is stored separately under "advisory".
+The ExecuTorch TextLLMRunner receives no image or camera data. Detector
+findings remain unchanged; generated text is stored separately as advisory data.
 """
 from __future__ import annotations
 
@@ -24,6 +24,7 @@ def load_event(path: Path) -> dict[str, Any]:
         raise RuntimeError(f"Cannot load inspection event {path}: {exc}") from exc
     if not isinstance(event, dict):
         raise RuntimeError("Inspection event must be a JSON object")
+
     required = {"record_id", "board_id", "timestamp", "decision", "source", "detections"}
     missing = sorted(required.difference(event))
     if missing:
@@ -31,6 +32,26 @@ def load_event(path: Path) -> dict[str, Any]:
     if not isinstance(event["detections"], list):
         raise RuntimeError("Inspection event detections must be a list")
     return event
+
+
+def parse_advisory_json(text: str) -> dict[str, Any] | None:
+    """Parse JSON even when the model wraps it in a Markdown code fence."""
+    candidate = text.strip()
+    if candidate.startswith("```"):
+        candidate = candidate.split("\n", 1)[-1]
+        if candidate.rstrip().endswith("```"):
+            candidate = candidate.rstrip()[:-3].strip()
+    try:
+        value = json.loads(candidate)
+    except json.JSONDecodeError:
+        start, end = candidate.find("{"), candidate.rfind("}")
+        if start < 0 or end <= start:
+            return None
+        try:
+            value = json.loads(candidate[start:end + 1])
+        except json.JSONDecodeError:
+            return None
+    return value if isinstance(value, dict) else None
 
 
 def run_advisory(
@@ -50,21 +71,21 @@ def run_advisory(
         raise ValueError("temperature must be between 0 and 1")
 
     try:
-        from executorch.extension.llm.runner import (
-            GenerationConfig,
-            MultimodalRunner,
-            make_text_input,
-        )
+        # These imports register the LLM custom kernels required by many exported PTEs.
+        from executorch.extension.llm.custom_ops import custom_ops  # noqa: F401
+        from executorch.kernels import quantized  # noqa: F401
+        from executorch.extension.llm.runner import GenerationConfig, TextLLMRunner
     except ImportError as exc:
         raise RuntimeError(
-            "ExecuTorch LLM Python bindings are not available. "
-            "Build/install ExecuTorch with its LLM runner Python bindings on the target."
+            "ExecuTorch TextLLMRunner Python bindings or required LLM kernels are unavailable. "
+            "Build/install ExecuTorch with EXECUTORCH_BUILD_PYBIND=ON and register the "
+            "custom_ops and quantized kernels for the exported model."
         ) from exc
 
-    # Only structured inspection fields are serialized into the prompt.
+    # Only structured inspection fields are passed to the text-only model.
     # No image, image path, image tensor, or camera frame is passed to ExecuTorch.
     prompt = build_prompt(event)
-    runner = MultimodalRunner(str(model_path), str(tokenizer_path))
+    runner = TextLLMRunner(str(model_path), str(tokenizer_path))
     config = GenerationConfig(
         max_new_tokens=max_new_tokens,
         temperature=temperature,
@@ -90,12 +111,23 @@ def run_advisory(
             "inference_end_ms",
             "model_load_start_ms",
             "model_load_end_ms",
+            "first_token_ms",
         ):
             metric = getattr(value, name, None)
             if metric is not None:
                 stats[name] = metric
 
-    runner.generate([make_text_input(prompt)], config, token_callback, stats_callback)
+    try:
+        # TextLLMRunner.generate(prompt, config, token_callback, stats_callback)
+        # is the ExecuTorch API for text-only Llama-family models.
+        runner.generate(prompt, config, token_callback, stats_callback)
+    finally:
+        # Clear KV-cache state before the runner is released.
+        try:
+            runner.reset()
+        except Exception:
+            pass
+
     total_ms = (time.perf_counter() - started) * 1000.0
     advisory_text = "".join(chunks).strip()
     if not advisory_text:
@@ -106,17 +138,16 @@ def run_advisory(
         "board_id": event["board_id"],
         "advisory_text": advisory_text,
         "runtime": "ExecuTorch",
+        "runner": "TextLLMRunner",
         "model_file": model_path.name,
         "ttft_ms": round(first_token_ms, 2) if first_token_ms is not None else None,
         "total_response_ms": round(total_ms, 2),
         "generation_stats": stats,
+        "advisory": parse_advisory_json(advisory_text),
     }
-    try:
-        result["advisory"] = json.loads(advisory_text)
-    except json.JSONDecodeError:
-        result["advisory"] = None
 
     try:
+        # On Linux (including Raspberry Pi OS), ru_maxrss is reported in KiB.
         result["process_peak_rss_kb"] = int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     except (AttributeError, OSError):
         result["process_peak_rss_kb"] = None
@@ -124,7 +155,7 @@ def run_advisory(
     generated = stats.get("num_generated_tokens")
     start_ms = stats.get("inference_start_ms")
     end_ms = stats.get("inference_end_ms")
-    if generated and start_ms is not None and end_ms is not None and end_ms > start_ms:
+    if generated is not None and start_ms is not None and end_ms is not None and end_ms > start_ms:
         result["tokens_per_second"] = round(float(generated) * 1000.0 / (end_ms - start_ms), 2)
     else:
         result["tokens_per_second"] = None
@@ -142,17 +173,21 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        event = load_event(Path(args.event))
+        event = load_event(Path(args.event).expanduser().resolve())
         result = run_advisory(
             event,
-            Path(args.model),
-            Path(args.tokenizer),
+            Path(args.model).expanduser().resolve(),
+            Path(args.tokenizer).expanduser().resolve(),
             max_new_tokens=args.max_new_tokens,
             temperature=args.temperature,
         )
         if args.output:
-            Path(args.output).write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-        print(json.dumps(result, indent=2))
+            output_path = Path(args.output).expanduser().resolve()
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            temp_path = output_path.with_suffix(output_path.suffix + ".tmp")
+            temp_path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+            temp_path.replace(output_path)
+        print(json.dumps(result, indent=2, ensure_ascii=False))
         return 0
     except Exception as exc:
         print(f"ExecuTorch advisory failed: {exc}", file=sys.stderr)
