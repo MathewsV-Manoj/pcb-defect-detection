@@ -1,0 +1,25 @@
+# Example export configuration for a Llama 3.2 1B Instruct CPU model.
+# Replace both absolute paths with the files downloaded under the Meta Llama licence.
+base:
+  model_class: llama3_2
+  checkpoint: /absolute/path/to/consolidated.00.pth
+  params: /absolute/path/to/params.json
+  metadata: '{"get_bos_id":128000, "get_eos_ids":[128009, 128001]}'
+
+model:
+  use_kv_cache: true
+  use_sdpa_with_kv_cache: true
+
+quantization:
+  qmode: 8da4w
+  embedding_quantize: "4,32"
+
+backend:
+  xnnpack:
+    enabled: true
+    extended_ops: true
+
+export:
+  max_seq_length: 2048
+  max_context_length: 2048
+  output_name: /absolute/path/to/pcb_llama3_2_1b_xnnpack.pte
