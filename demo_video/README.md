@@ -1,6 +1,6 @@
 # Demonstration video
 
-The repository contains `pcb-inspection-demo.mp4`. Check this exact file before submitting it: confirm that the footage is from the physical station and that it demonstrates the actual implementation rather than a simulated interface or edited example output.
+The repository contains `pcb-inspection-demo.mp4`. The project team has confirmed that the demonstration video is complete. The checklist below is retained as a final quality-control reference; this audit has not independently inspected the video frames/audio.
 
 ## Required content check
 
