@@ -11,16 +11,21 @@ This checklist is specific to the Bharat AI-SoC Challenge 2026–27, Problem Sta
 | Demonstration video | `demo_video/pcb-inspection-demo.mp4` | File is present; confirm the clip shows the real live sequence and final result |
 | Technical report | `docs/PROJECT_REPORT.md` | Present; add final measured results and actual model/runtime identities after testing |
 
-## Required technology check
+## Required technology and functional checks
 
 | Challenge requirement | Project implementation | Status |
 |---|---|---|
 | Llama-family reasoning/advisory model | Text-only structured advisory prompt and ExecuTorch runner source | Not complete: `.pte` model and matching tokenizer are absent |
 | ExecuTorch on-device runtime | `llm_advisory/run_executorch.py` uses `TextLLMRunner` | Not complete: runtime/model/tokenizer have not been verified on the Pi |
 | Arm-based edge platform | Raspberry Pi 5 CPU deployment path | Described in source; target-device commissioning is not recorded |
-| Industrial defect detection and operator guidance | Three-class YOLO detector source, inspection event and operator advisory interface | Model artifacts, severity policy and end-to-end validation remain outstanding |
+| Detect visual defects | Three-class YOLO detector source and annotated-image output | Model artifacts and held-out detection evidence are absent |
+| Classify defect type and severity | Three target classes; event severity is `UNASSESSED` | Severity policy is not implemented or validated |
+| Actionable operator guidance | Structured Llama advisory source and dashboard field | Not complete until the Llama model/runtime is installed and tested |
+| Inspection logging | Local JSON events, annotated images and history endpoint | Source is present; physical repeated-cycle validation is outstanding |
+| Edge operation without cloud dependence | Local capture, detector and advisory path; Firebase mirrors records only when configured | Offline operation must be demonstrated on the Pi |
+| Real-time operation | Pi-side ONNX benchmark script | No benchmark results are committed; do not claim real-time performance yet |
 
-A Raspberry Pi 5 CPU-only configuration is an accepted platform for PS5. Hailo hardware is not required for this project and is not part of the implemented station path.
+The PS5 hardware list includes a Raspberry Pi 5 CPU-only configuration. The project's documented station path is ONNX Runtime on the Raspberry Pi CPU.
 
 ## Defect model evaluation
 
@@ -55,8 +60,9 @@ Run the checks on the actual Raspberry Pi 5 with the final model assets installe
 6. Confirm the operator run button starts inference on the Pi.
 7. Confirm the event JSON and annotated image are written.
 8. Confirm the ExecuTorch advisory returns valid structured output.
-9. Confirm the next PCB is captured without repeating the arming sequence.
-10. Repeat the cycle and record attempts, successful runs, missed triggers, duplicate triggers and failures.
+9. Disconnect the network and confirm the full local inspection and advisory still work.
+10. Confirm the next PCB is captured without repeating the arming sequence.
+11. Repeat the cycle and record attempts, successful runs, missed triggers, duplicate triggers and failures.
 
 Use `docs/PI5_COMMISSIONING.md` to record actual pins, environment versions and results.
 
@@ -80,3 +86,5 @@ The official challenge page states that teams may have 1–3 members; student te
 ## Current assessment
 
 The source-code and documentation deliverables are present. A demonstration MP4 is committed. The project is **not yet submission-complete** because the required Llama/ExecuTorch model package is missing, the trained YOLO release artifacts and measured test evidence are absent, severity remains unassessed, and Raspberry Pi commissioning is not recorded. Do not mark these items complete without evidence.
+
+Official challenge information: https://armbharatchallenge.com/
