@@ -31,7 +31,7 @@ def main() -> int:
     try:
         shutil.copyfile(source, partial)
         # Flush data before publishing its final queue filename.
-        with partial.open("rb") as handle:
+        with partial.open("rb+") as handle:
             os.fsync(handle.fileno())
         os.replace(partial, destination)
     except Exception:
