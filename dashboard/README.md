@@ -1,26 +1,24 @@
-# Pi-hosted operator dashboard
+# Operator page
 
-The operator dashboard is served by `raspberry_pi/station_controller.py` from this directory. It is accessed remotely from a laptop browser using the Raspberry Pi's IP address and configured HTTP port.
+The Pi serves index.html from raspberry_pi/station_controller.py. Open the Pi's address from a laptop on the same private network.
 
-## Operator sequence
+## Using the page
 
-1. At the beginning of the station session, hold a hand in front of the IR sensor for approximately three seconds to arm it. The armed state remains active across subsequent boards until the controller is restarted.
-2. Release the sensor and place the PCB on the conveyor.
-3. The conveyor transports the board to the camera position.
-4. The IR input's next active transition triggers illumination and image capture.
-5. The Pi serves the captured image to the browser for verification.
-6. The operator selects **Run inspection on Raspberry Pi**.
-7. The browser sends `POST /api/run-inspection` to the Pi.
-8. The Pi runs OpenCV/YOLO and the separate Llama/ExecuTorch advisory; the page displays the returned status and event data. The station remains armed for the next PCB arrival.
+1. Arm the station once with a three-second hand hold in front of the IR sensor.
+2. Release the sensor and load a PCB onto the conveyor.
+3. When the board reaches the IR trigger point, the Pi turns on the LED driver and captures a frame.
+4. Check the image shown on the page.
+5. Press **Run inspection on Raspberry Pi**.
+6. The Pi runs the detector and advisory, then updates the page with the result.
 
-## Browser-to-Pi API
+The station remains armed for the next PCB until the controller is restarted.
 
-- `GET /api/status` — live station, capture and inference state.
-- `GET /api/capture.jpg` — captured frame for operator review.
-- `GET /api/annotated.jpg` — annotated detector output.
-- `GET /api/history` — recent local JSON inspection events.
-- `POST /api/run-inspection` — starts the Pi-side inspection process.
+## API routes
 
-The dashboard does not perform inference in the browser. It is an operator console for the Raspberry Pi's local camera, vision and advisory processes. Use it only over a trusted private network.
+- GET /api/status — station, sensor, capture and inference state.
+- GET /api/capture.jpg — raw captured frame.
+- GET /api/annotated.jpg — detector output.
+- GET /api/history — recent local event records.
+- POST /api/run-inspection — starts processing on the Pi.
 
-Firebase Realtime Database is optional for synchronizing completed records; the local run button and image preview use the Pi-hosted API directly.
+The browser only displays information and sends the run request. It does not load model weights or run inference. Firebase is optional; the page uses the Pi API for capture and inspection.
