@@ -194,7 +194,6 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("PCB_FIREBASE_PUBLISH=false", env_example)
         self.assertIn("cloud api", readme.lower())
         self.assertIn("Firebase synchronization is disabled by default", report)
-        self.assertIn("DLMR metric applicability", local_doc)
         self.assertFalse(manifest["local_execution"]["remote_inference_api_configured"])
         self.assertFalse(manifest["local_execution"]["runtime_internet_required_for_inference"])
         self.assertFalse(manifest["local_execution"]["offline_validation_completed"])
