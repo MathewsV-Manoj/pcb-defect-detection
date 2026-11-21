@@ -1,75 +1,84 @@
-# On-device Llama advisory — ExecuTorch
+# Llama advisory
 
-## Role in the inspection system
+The advisory runs after the YOLO detector. The Pi sends it the inspection event as text: board ID, timestamp, defect name, severity, location and confidence. It does not receive the camera image.
 
-The advisory pipeline is a required component of the complete PCB inspection workflow. It runs locally on the Raspberry Pi 5 ARM CPU using ExecuTorch and a Llama 3.2 Instruct 1B or 3B model.
+The model is not used to find defects or change the detector output. Its job is to explain the reported findings and suggest checks for the operator.
 
-Vision and advisory inference are separate:
+## Response format
 
-- The vision runtime detects, classifies and localizes PCB defects.
-- The advisory runtime explains the structured findings, recommends operator verification actions and generates log text.
-- The advisory does not receive image pixels or a camera frame.
+The runner expects one JSON object with these fields:
 
-The vision runtime may be ONNX Runtime on the Pi CPU or an optional HailoRT vision path. Hailo does not replace the ExecuTorch advisory.
+- explanation: a short description of the findings;
+- recommended_actions: a list of checks for the operator;
+- severity_note: a note about the assigned or unassigned severity;
+- log_entry: a concise line for the inspection record.
 
-## Input contract
+The runner rejects a response that is empty, invalid JSON or missing a required field. A failed response is shown as an advisory failure; it is not treated as a completed recommendation.
 
-`prompt.py` constructs the Llama prompt from:
+The prompt is assembled in prompt.py. The process wrapper is run_executorch.py.
 
-- Board ID and inspection timestamp.
-- Defect type.
-- Assigned severity.
-- Image-coordinate bounding box and normalized location.
-- Detector confidence.
+## Model and tokenizer
 
-No image, image path or pixel tensor is included.
+The repository does not include Llama weights, an ExecuTorch .pte file or a tokenizer. These must be prepared separately.
 
-## Advisory output
+The reference configuration in llama3_2_1b_xnnpack.example.yaml is for Llama 3.2 1B Instruct using the XNNPACK CPU backend. Before exporting, obtain the model files from Meta or an authorized Hugging Face repository and accept the model licence. The original files required by the export flow are:
 
-The model is prompted to return JSON with four fields:
+- consolidated.00.pth
+- params.json
+- tokenizer.model
 
-| Key | Content |
-|---|---|
-| `explanation` | Concise explanation of the structured finding |
-| `recommended_actions` | Operator verification steps |
-| `severity_note` | Severity context, including human review when severity is UNASSESSED |
-| `log_entry` | Human-readable inspection log text |
+Do not upload the original checkpoint or tokenizer to this public source repository unless their licence explicitly permits redistribution.
 
-The advisory is bounded by the inspection record. It cannot add, remove, relabel or suppress detections, infer severity from confidence, or independently issue a PASS/REJECT decision. The detector output remains unchanged.
+On the machine used for export, install ExecuTorch and the LLM export dependencies in a dedicated Python environment. Follow the setup instructions for the exact ExecuTorch revision you intend to install. Then copy the example YAML, edit the checkpoint, parameter and output paths, and export:
 
-## Runtime implementation
+~~~bash
+git clone https://github.com/pytorch/executorch.git
+cd executorch
+bash install_executorch.sh
+pip install -e ./extension/llm/tokenizers/
 
-| File | Responsibility |
-|---|---|
-| `prompt.py` | Builds the text-only structured prompt |
-| `run_executorch.py` | Loads the ExecuTorch model and tokenizer, runs text generation and captures telemetry |
-| `../raspberry_pi/run_inspection.py` | Calls the advisory after vision inference and appends the result to the local inspection event |
+# Copy the example into this ExecuTorch checkout and edit its absolute paths.
+cp /path/to/pcb-defect-detection/llm_advisory/llama3_2_1b_xnnpack.example.yaml ./llama3_2_1b_xnnpack.yaml
 
-The runner uses ExecuTorch's `TextLLMRunner`, which is the text-only runner for Llama-family models. The implementation imports the LLM custom-op and quantized-kernel registration modules before loading the model. The ExecuTorch build must expose the Python LLM runner bindings (`EXECUTORCH_BUILD_PYBIND=ON`) and the exported `.pte` model must match the runtime, tokenizer and registered operators.
+python -m extension.llm.export.export_llm \
+  --config llama3_2_1b_xnnpack.yaml
+~~~
 
-## Model packaging
+The export command creates the .pte file at the path set in export.output_name. For the Llama 3.x tokenizer expected by the runner, copy the matching tokenizer.model file to a file named tokenizer.bin:
 
-The reference model family is Llama 3.2 Instruct 1B or 3B. The exported ExecuTorch `.pte` model and matching tokenizer binary are separate deployment artifacts and are not stored in the public source repository. They must be built for the Pi's ARM64 runtime and tested with the exact ExecuTorch build that provides the `TextLLMRunner` Python extension. The model package and tokenizer must be a matched pair for the runner.
+~~~bash
+cp /path/to/tokenizer.model /path/to/tokenizer.bin
+~~~
 
-Fine-tuning is not required for the structured advisory workflow. A pretrained Instruct model with a controlled prompt is the reference configuration.
+Keep the checkpoint identity, tokenizer hash, ExecuTorch Git commit, Python/PyTorch versions and export configuration with the model release. The .pte file and tokenizer must come from the same model release.
 
-## Runtime telemetry
+## Install the Python runner on the Pi
 
-The runner records:
+The Raspberry Pi needs an ExecuTorch build that includes the Python LLM runner binding and the XNNPACK operators used by the exported model. The Python runner API is experimental. Follow the Python-binding build instructions in the ExecuTorch LLM Runner documentation for the same source revision used to export the model.
 
-- Time to first generated token.
-- Total response time.
-- Generated-token statistics exposed by the ExecuTorch runner.
-- Tokens per second when the installed runner exposes compatible timing statistics.
-- Process peak resident memory where supported.
+Check the imports on the Pi before copying model files into the station:
 
-These measurements are captured on the target Pi 5 for advisory benchmarking. They are not inferred from workstation performance.
+~~~bash
+python - <<'PY'
+from executorch.extension.llm.custom_ops import custom_ops
+from executorch.kernels import quantized
+from executorch.extension.llm.runner import GenerationConfig, TextLLMRunner
+print("TextLLMRunner is available")
+PY
+~~~
 
-## Offline execution
+Set these environment variables in raspberry_pi/.env:
 
-The advisory model runs locally on the Pi. Internet access is not part of the inference path; model and tokenizer assets are present on the device before an inspection session begins.
+~~~text
+PCB_LLAMA_MODEL_PATH=/absolute/path/to/pcb_llama3_2_1b_xnnpack.pte
+PCB_LLAMA_TOKENIZER_PATH=/absolute/path/to/tokenizer.bin
+PCB_LLAMA_REQUIRED=true
+~~~
 
-## Runtime references
+The runner is created in run_executorch.py. It uses TextLLMRunner with GenerationConfig and passes only the text prompt. The process resets its KV cache after generation.
 
-- [ExecuTorch LLM Runner Python API](https://github.com/pytorch/executorch/tree/main/extension/llm/runner)
-- [ExecuTorch Llama model support and export workflow](https://github.com/pytorch/executorch/tree/main/examples/models/llama)
+## References
+
+- [ExecuTorch: exporting LLMs](https://docs.pytorch.org/executorch/stable/llm/export-llm.html)
+- [ExecuTorch: LLM Runner and Python bindings](https://github.com/pytorch/executorch/tree/main/extension/llm/runner)
+- [Meta Llama downloads](https://www.llama.com/llama-downloads/)
