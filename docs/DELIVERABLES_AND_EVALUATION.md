@@ -72,7 +72,7 @@ Evaluation uses held-out boards or capture groups so views of the same physical 
 
 ## Operator experience
 
-The operator workflow is evaluated for the reliability of the three-second arming sequence, board-position trigger, capture preview, clear Run command acknowledgement, result clarity, advisory usefulness and inspection-history traceability.
+The operator workflow is evaluated for the one-time three-second session-arming sequence, persistent armed state across subsequent boards, board-position trigger, capture preview, clear Run command acknowledgement, result clarity, advisory usefulness and inspection-history traceability.
 
 ## Reproducibility
 
