@@ -34,5 +34,7 @@ def publish_event(event):
         "camera_status":"CONNECTED" if event["source"]=="LIVE" else "NOT_CONNECTED",
         "decision":event["decision"],"detections":event["detections"],
         "advisory":event.get("advisory"),"inference_latency_ms":event.get("inference_latency_ms"),
-        "device_status":"Raspberry Pi 5","source":event["source"],"timestamp":event["timestamp"]
+        "device_status":"Raspberry Pi 5","source":event["source"],"timestamp":event["timestamp"],
+        "ir_sensor_status":event.get("station",{}).get("ir_sensor_status","UNKNOWN"),
+        "illumination_status":event.get("station",{}).get("illumination_status","UNKNOWN")
     })
