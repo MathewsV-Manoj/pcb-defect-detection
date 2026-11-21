@@ -104,15 +104,20 @@ def observer_ttft_ms(stats: dict[str, Any] | None) -> float | None:
 def observer_tokens_per_second(stats: dict[str, Any] | None) -> float | None:
     if not stats:
         return None
+    # Prefer ExecuTorch's explicit decode rate. Otherwise compute only from
+    # generation time (after prompt_eval_end), never from prompt+decode time.
+    decode_rate = stats.get("decode_token_per_sec")
+    if isinstance(decode_rate, (int, float)) and decode_rate > 0:
+        return round(float(decode_rate), 2)
     generated = stats.get("generated_tokens")
-    start = stats.get("inference_start_ms")
+    decode_start = stats.get("prompt_eval_end_ms")
     end = stats.get("inference_end_ms")
     if (
         isinstance(generated, (int, float)) and generated > 0
-        and isinstance(start, (int, float)) and isinstance(end, (int, float))
-        and end > start
+        and isinstance(decode_start, (int, float)) and isinstance(end, (int, float))
+        and end > decode_start
     ):
-        return round(float(generated) * 1000.0 / float(end - start), 2)
+        return round(float(generated) * 1000.0 / float(end - decode_start), 2)
     return None
 
 
