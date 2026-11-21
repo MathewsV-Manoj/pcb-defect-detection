@@ -19,10 +19,13 @@ Use this checklist when the final detector and advisory files have been copied t
 
 ## Software and model files
 
-From the repository root on the Pi:
+From the repository root on the Pi, load the same environment file used by the station controller before checking the model paths:
 
 ~~~bash
 source .venv/bin/activate
+set -a
+source raspberry_pi/.env
+set +a
 python -m pip show onnxruntime opencv-python gpiozero
 ls -lh models/best.onnx
 ls -lh "$PCB_LLAMA_MODEL_PATH" "$PCB_LLAMA_TOKENIZER_PATH"
