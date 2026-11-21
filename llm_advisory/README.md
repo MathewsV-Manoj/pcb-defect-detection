@@ -122,6 +122,13 @@ image-to-advisory wall time, and excludes physical conveyor/camera/LED/browser
 latency. Record actual physical cycles separately in
 `docs/PI5_COMMISSIONING.md`.
 
+The Meta Llama 3.2 Acceptable Use Policy restricts use in operations of
+critical infrastructure, transportation technologies and heavy machinery.
+Keep this deployment within a supervised educational/laboratory demonstration
+and outside those operational contexts. A text-only advisory that cannot
+control actuators is a useful safety boundary, but it does not override the
+upstream license restrictions. Review the current policy before use.
+
 ## Model license and safe scope
 
 Review the Meta Llama 3.2 Community License, acceptable-use policy and the
