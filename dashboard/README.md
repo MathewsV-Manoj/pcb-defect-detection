@@ -4,14 +4,14 @@ The operator dashboard is served by `raspberry_pi/station_controller.py` from th
 
 ## Operator sequence
 
-1. Hold a hand in front of the IR sensor for approximately three seconds to arm the station.
+1. At the beginning of the station session, hold a hand in front of the IR sensor for approximately three seconds to arm it. The armed state remains active across subsequent boards until the controller is restarted.
 2. Release the sensor and place the PCB on the conveyor.
 3. The conveyor transports the board to the camera position.
 4. The IR input's next active transition triggers illumination and image capture.
 5. The Pi serves the captured image to the browser for verification.
 6. The operator selects **Run inspection on Raspberry Pi**.
 7. The browser sends `POST /api/run-inspection` to the Pi.
-8. The Pi runs OpenCV/YOLO and the separate Llama/ExecuTorch advisory; the page displays the returned status and event data.
+8. The Pi runs OpenCV/YOLO and the separate Llama/ExecuTorch advisory; the page displays the returned status and event data. The station remains armed for the next PCB arrival.
 
 ## Browser-to-Pi API
 
