@@ -21,6 +21,8 @@ The prompt is assembled in prompt.py. The process wrapper is run_executorch.py.
 
 The repository does not include Llama weights, an ExecuTorch .pte file or a tokenizer. These must be prepared separately.
 
+There is also an [ARM-optimized Llama 3.2 1B ExecuTorch model for Raspberry Pi 5](https://huggingface.co/Arm/llama3-2-1b-instruct-int8-xnnpack-executorch-raspberrypi5). Its published reference device is a 16 GB Pi 5. Use it only if the station has that memory configuration, and check its runtime/export compatibility with the installed TextLLMRunner before using it. The repository's Python advisory wrapper has not been validated against that prebuilt package.
+
 The example configuration in llama3_2_1b_xnnpack.example.yaml uses the ExecuTorch Llama 3.2 exporter with the XNNPACK CPU backend. It requests 8-bit dynamic activation / 4-bit weight quantization with a group size of 32. This is a starting export configuration; it is not the same as Meta's pre-quantized QAT+LoRA or SpinQuant releases, and its memory use and output quality have not been measured on the Pi. Before exporting, obtain the model files from Meta or an authorized Hugging Face repository and accept the model licence. The original files required by the export flow are:
 
 - consolidated.00.pth
