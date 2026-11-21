@@ -1,5 +1,7 @@
-dataset_name,version,source_url,license_or_terms,download_date,local_archive_sha256,classes_original,classes_mapped,used_for_checkpoint,notes
-Mendeley Mixed PCB Defect Dataset,version 4,TO_VERIFY,TO_VERIFY,TO_FILL,TO_FILL,TO_VERIFY,TO_VERIFY,UNKNOWN,Confirm against the exact training run before claiming use
-DeepPCB,official repository,https://github.com/tangsanli5201/DeepPCB,REVIEW_UPSTREAM_TERMS,TO_FILL,TO_FILL,TO_VERIFY,TO_VERIFY,UNKNOWN,Do not map pin-hole to missing_hole without annotation evidence
-Tiny-Defect-Detection-for-PCB,repository dataset links,https://github.com/Ixiaohuihuihui/Tiny-Defect-Detection-for-PCB,REVIEW_UPSTREAM_TERMS,TO_FILL,TO_FILL,TO_VERIFY,TO_VERIFY,UNKNOWN,Verify annotation format and labels
-Own PCB camera images,project captures,INTERNAL,OBTAIN_CONTRIBUTOR_PERMISSION,TO_FILL,TO_FILL,open_circuit;short_circuit;missing_hole,TO_VERIFY,UNKNOWN,Keep physical board groups intact across splits
+dataset_name,domain,source_url,license_or_terms,relationship_to_target_task,training_use_status
+DeepPCB,PCB defect detection,https://github.com/tangsanli5201/DeepPCB,Review upstream terms,PCB-specific reference; verify exact class mapping,Not verified against final checkpoint
+Tiny-Defect-Detection-for-PCB,PCB defect detection,https://github.com/Ixiaohuihuihui/Tiny-Defect-Detection-for-PCB,Review upstream terms,PCB-specific reference; verify annotation semantics,Not verified against final checkpoint
+MVTec AD,Industrial anomaly detection,https://www.mvtec.com/company/research/datasets/mvtec-ad,Review dataset terms,General anomaly-detection reference; not a direct source of PCB defect labels,Not verified against final checkpoint
+NEU Surface Defect,Steel surface defects,Dataset project source,Review dataset terms,General surface-inspection reference; not PCB imagery,Not verified against final checkpoint
+KolektorSDD,Electrical commutator defects,Dataset project source,Review dataset terms,Industrial defect reference; not PCB imagery,Not verified against final checkpoint
+Project camera captures,PCB inspection station,Project-generated captures,Project contributor permissions,Task-domain images captured using the assembled inspection station,Local project material; dataset archive not included here
