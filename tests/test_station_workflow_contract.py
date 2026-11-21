@@ -56,6 +56,27 @@ class StationWorkflowContractTests(unittest.TestCase):
         self.assertFalse(accepted)
         self.assertIn("captured PCB frame", message)
 
+    def test_station_stays_armed_for_subsequent_boards(self):
+        runtime = self.make_runtime()
+        runtime.ir_pressed()
+        runtime.ir_held()
+        runtime.ir_released()
+        self.assertEqual(runtime.snapshot()["state"], "WAITING_FOR_BOARD")
+        self.assertTrue(runtime.snapshot()["armed"])
+
+        # Replace the hardware capture worker so this contract test remains Pi-independent.
+        runtime._capture_worker = lambda: None
+        runtime.ir_pressed()
+        self.assertEqual(runtime.snapshot()["state"], "CAPTURING")
+        self.assertTrue(runtime.snapshot()["armed"])
+
+        # A completed inspection does not require the hand-hold arming sequence again.
+        runtime.update(state="COMPLETE", busy=False)
+        runtime.ir_released()
+        runtime.ir_pressed()
+        self.assertEqual(runtime.snapshot()["state"], "CAPTURING")
+        self.assertTrue(runtime.snapshot()["armed"])
+
     def test_controller_has_three_second_hold_and_pi_run_api(self):
         root = Path(__file__).resolve().parents[1]
         controller = (root / "raspberry_pi" / "station_controller.py").read_text(encoding="utf-8")
