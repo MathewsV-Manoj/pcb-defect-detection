@@ -21,7 +21,7 @@ The prompt is assembled in prompt.py. The process wrapper is run_executorch.py.
 
 The repository does not include Llama weights, an ExecuTorch .pte file or a tokenizer. These must be prepared separately.
 
-The reference configuration in llama3_2_1b_xnnpack.example.yaml is for Llama 3.2 1B Instruct using the XNNPACK CPU backend. Before exporting, obtain the model files from Meta or an authorized Hugging Face repository and accept the model licence. The original files required by the export flow are:
+The example configuration in llama3_2_1b_xnnpack.example.yaml uses the ExecuTorch Llama 3.2 exporter with the XNNPACK CPU backend. It requests 8-bit dynamic activation / 4-bit weight quantization with a group size of 32. This is a starting export configuration; it is not the same as Meta's pre-quantized QAT+LoRA or SpinQuant releases, and its memory use and output quality have not been measured on the Pi. Before exporting, obtain the model files from Meta or an authorized Hugging Face repository and accept the model licence. The original files required by the export flow are:
 
 - consolidated.00.pth
 - params.json
@@ -35,16 +35,17 @@ On the machine used for export, install ExecuTorch and the LLM export dependenci
 git clone https://github.com/pytorch/executorch.git
 cd executorch
 bash install_executorch.sh
-pip install -e ./extension/llm/tokenizers/
+bash examples/models/llama/install_requirements.sh
 
-# Copy the example into this ExecuTorch checkout and edit its absolute paths.
+# Copy the example into this ExecuTorch checkout and edit checkpoint,
+# parameter, tokenizer and output paths.
 cp /path/to/pcb-defect-detection/llm_advisory/llama3_2_1b_xnnpack.example.yaml ./llama3_2_1b_xnnpack.yaml
 
 python -m extension.llm.export.export_llm \
   --config llama3_2_1b_xnnpack.yaml
 ~~~
 
-The export command creates the .pte file at the path set in export.output_name. For the Llama 3.x tokenizer expected by the runner, copy the matching tokenizer.model file to a file named tokenizer.bin:
+The export command creates the .pte file at the path set in export.output_name. The example configuration's base.tokenizer_path must point to the same tokenizer.model that belongs to the checkpoint. For the Llama 3.x tokenizer expected by the runner, copy that matching tokenizer.model file to a file named tokenizer.bin:
 
 ~~~bash
 cp /path/to/tokenizer.model /path/to/tokenizer.bin
