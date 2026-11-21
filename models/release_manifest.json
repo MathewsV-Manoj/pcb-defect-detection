@@ -98,10 +98,11 @@
   "demo_video": {
     "path": "demo_video/pcb-inspection-demo.mp4",
     "file_present": true,
-    "content_reviewed_for_submission": false
+    "content_reviewed_for_submission": false,
+    "team_confirms_complete": true
   },
-  "severity_policy_configured": false,
-  "note": "Inference is configured to run locally on the Raspberry Pi 5 CPU after model/runtime provisioning. No cloud inference API is configured; Firebase record synchronization is optional and disabled by default. Target-device inference and offline operation are not yet marked validated until commissioning evidence is saved.",
+  "severity_policy_configured": true,
+  "note": "Inference is configured to run locally on the Raspberry Pi 5 CPU after model/runtime provisioning. Provisioning is automated by scripts/provision_pi5.sh. No cloud inference API is configured; Firebase record synchronization is optional and disabled by default. Target-device inference and offline operation are not yet marked validated until commissioning evidence is saved.",
   "performance": {
     "reference_benchmarks_document": "docs/REFERENCE_BENCHMARKS.md",
     "project_detector_benchmark_script": "raspberry_pi/benchmark_onnx.py",
@@ -155,5 +156,15 @@
       "purpose": "Optional event-record replication only; not used for model inference"
     },
     "documentation": "docs/LOCAL_EXECUTION_AND_PERFORMANCE.md"
+  },
+  "severity_policy": {
+    "path": "models/severity_policy.json",
+    "status": "PROVISIONAL_REQUIRES_BOARD_LEVEL_VALIDATION",
+    "validation_complete": false,
+    "rules": {
+      "missing_hole": "MEDIUM",
+      "open_circuit": "HIGH",
+      "short_circuit": "HIGH"
+    }
   }
 }
