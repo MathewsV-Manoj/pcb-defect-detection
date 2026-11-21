@@ -87,7 +87,7 @@ Measure on the Raspberry Pi, not on the training workstation:
 - p50 and p95 latency and sequential FPS;
 - peak RAM and CPU temperature;
 - complete capture-to-dashboard-result time;
-- Llama total response time and peak RAM; TTFT/tokens per second only where the selected runner emits those measurements (the production C++ wrapper currently leaves them null);
+- Llama total response time and peak RAM; TTFT/tokens per second when the runner emits ExecuTorch observer telemetry, otherwise leave them null;
 - power only if measured with an appropriate external meter.
 
 For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method.
