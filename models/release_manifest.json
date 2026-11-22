@@ -56,35 +56,12 @@
     },
     "external_pcb_detector_weights_used_by_current_provisioner": false,
     "validation_metrics": {
-      "status": "TEAM_SUPPLIED_SCREENSHOT_TRANSCRIPTION_ONLY",
-      "split": "validation",
-      "precision_percent": 98.3,
-      "recall_percent": 98.4,
-      "map50_percent": 98.9,
-      "map50_95_percent": 62.5,
-      "per_class": {
-        "missing_hole": {
-          "precision_percent": 97.8,
-          "recall_percent": 98.2,
-          "map50_percent": 98.5
-        },
-        "open_circuit": {
-          "precision_percent": 99.1,
-          "recall_percent": 99.6,
-          "map50_percent": 99.5
-        },
-        "short_circuit": {
-          "precision_percent": 97.9,
-          "recall_percent": 97.6,
-          "map50_percent": 98.8
-        }
-      },
+      "status": "NOT_PROVIDED",
+      "reason": "No verifiable accuracy result is included. Screenshot-derived figures were excluded because checkpoint, dataset, split and raw evaluator provenance could not be established.",
       "source_report": "docs/results/PROJECT_VALIDATION_RESULTS.md",
       "machine_readable_record": "docs/results/project_validation_metrics.json",
-      "checkpoint_identity_known": false,
-      "dataset_identity_known": false,
-      "raw_evaluator_output_present": false,
       "independent_test_metrics_present": false,
+      "checkpoint_dataset_provenance_complete": false,
       "reproduced_by_repository_validation_script": false
     },
     "auxiliary_trace_extractor": {
@@ -188,13 +165,24 @@
     "physical_evidence_status": "TEAM_REPORTED_COMPLETE_EVIDENCE_PENDING"
   },
   "demo_video": {
-    "path": null,
-    "file_present": false,
-    "repository_status": "NOT_STORED_REMOVED_BY_TEAM_REQUEST",
+    "path": "demo_video/WhatsApp Video 2026-11-21 at 5.48.59 PM.mp4",
+    "file_present": true,
+    "file_size_bytes": 23681336,
+    "sha256": "fc562f5889e80173a06e5220328c2bdb5140c02e762a50c3a6640fc9a1348003",
+    "repository_status": "PRESENT",
     "team_reported_uploaded_externally": true,
     "external_submission_link_recorded": false,
-    "review_status": "TEAM_REPORTED_UPLOADED_EXTERNAL_LINK_NOT_ARCHIVED",
-    "note": "The team confirms that the video has been uploaded separately. The repository does not retain the MP4 or the submission URL/receipt."
+    "review_status": "SAMPLED_REVIEW_SIMULATION_RESULT_ONLY",
+    "observations": {
+      "physical_conveyor_and_pcbs_visible": true,
+      "operator_facing_dashboard_visible": true,
+      "raspberry_pi_board_identifiable": false,
+      "simulated_inspection_result_overlay_visible": true,
+      "live_yolo_inference_demonstrated": false,
+      "live_executorch_llama_response_demonstrated": false,
+      "dashboard_matches_current_repository_source": false
+    },
+    "note": "A sampled review found a visible 'SIMULATED INSPECTION COMPLETE' overlay and a simulated defect finding. The video demonstrates a physical setup and simulated UI flow, not live detector accuracy or live Llama execution. The separate official upload is team-reported; its portal receipt/link is not archived here."
   },
   "third_party_components": [
     "Ultralytics YOLO architecture and training/runtime code",
@@ -213,5 +201,5 @@
     "individual_contribution_and_ai_assistance_declaration_reported_available": true,
     "declaration_receipt_or_signed_copy_archived": false
   },
-  "release_note": "The uploaded PCB_ENGINE_KIT archive contains an auxiliary ResAttentionUNet trace-mask checkpoint, not the primary three-class fault detector. Its SHA-256 matches the archive manifest, the state dictionary loads strictly into the included architecture and a dummy forward pass is finite; training provenance, data and evaluation are absent. The repository still does not contain the primary YOLO checkpoint, ONNX export or dataset. The team reports physical build/tests complete, with evidence not yet committed. The team also reports the demo video and contribution/AI-assistance declaration have been uploaded/are available separately; their external receipt/link is not archived in this repository. Do not claim unverified model metrics."
+  "release_note": "The supplied PCB_ENGINE_KIT archive contains an auxiliary ResAttentionUNet trace-mask checkpoint, not the primary three-class fault detector. Its archive integrity and architecture smoke check passed, but training provenance, dataset and evaluation are absent. The repository does not contain the primary YOLO checkpoint, ONNX export or dataset. No screenshot-derived accuracy figures are included because their checkpoint/dataset/evaluator provenance could not be established. The team reports physical build/tests complete. The original demo video is present in the repository; sampled review shows a simulated result overlay rather than live YOLO or Llama execution. The team reports a separate official video upload and an individual-contribution/AI-assistance declaration; the external receipt/copy is not archived here."
 }
