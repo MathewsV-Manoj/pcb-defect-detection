@@ -60,7 +60,21 @@ python pcb_engine_kit/train_export.py export-onnx \
   --size 640 --out deployment
 ```
 
-The exporter writes `best.onnx` and `best.onnx.json`. The metadata binds the ONNX file to the project checkpoint SHA-256, dataset audit and training-provenance hashes. Export success alone does not prove prediction parity or Raspberry Pi performance. Those must be tested separately on labelled images and on the actual target device.
+The exporter writes `best.onnx` and `best.onnx.json`. The metadata binds the ONNX file to the project checkpoint SHA-256, dataset audit and training-provenance hashes. Export success alone does not prove prediction parity or Raspberry Pi performance.
+
+Run the parity checker against the exact held-out test split:
+
+```bash
+python pcb_engine_kit/compare_pt_onnx.py \
+  --checkpoint runs/pcb/weights/best.pt \
+  --onnx deployment/best.onnx \
+  --data datasets/processed/pcb3/data.yaml \
+  --images-dir datasets/processed/pcb3/images/test \
+  --report-out docs/results/project_onnx_parity.json \
+  --mark-verified
+```
+
+The tool checks the checkpoint, ONNX sidecar, training-provenance and dataset hashes before running both models with the same CPU settings. It matches predictions by class ID and bounding-box IoU, and checks confidence/coordinate differences. It requires the exact test folder named in `data.yaml`; `--mark-verified` is refused for a partial image sample. It updates the sidecar parity flag only when the full test directory passes. This is prediction parity, not detection accuracy or Pi performance.
 
 ## Portable release audit
 
