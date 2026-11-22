@@ -50,6 +50,17 @@ The current one-command provisioner downloads the six-class YOLOv8s checkpoint p
 | mAP@0.50:0.95 | 50.3% |
 | Inference time | 18.4 ms/image in the publisher's test environment |
 
+Per-class mAP on the same publisher-reported test set is:
+
+| Source class | Application mapping | mAP@0.50 | mAP@0.50:0.95 |
+|---|---|---:|---:|
+| missing_hole | missing_hole | 99.5% | 65.7% |
+| mouse_bite | Ignored | 92.2% | 51.2% |
+| open_circuit | open_circuit | 99.2% | 53.8% |
+| short | short_circuit | 97.5% | 50.2% |
+| spur | Ignored | 90.4% | 44.8% |
+| spurious_copper | Ignored | 86.1% | 36.2% |
+
 The six source classes are `missing_hole`, `mouse_bite`, `open_circuit`, `short`, `spur` and `spurious_copper`. This repository's deployment sidecar maps only `missing_hole`, `open_circuit` and `short` to the application's three classes. The author-reported figures above are for the original six-class checkpoint and its own evaluation, not a measured result after this project's export, class filtering, ONNX decoding or Raspberry Pi deployment.
 
 Source model: https://huggingface.co/Sulojan/pcb-defect-yolov8s
