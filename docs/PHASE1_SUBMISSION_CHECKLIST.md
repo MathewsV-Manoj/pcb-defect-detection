@@ -12,7 +12,7 @@ This checklist records what is visible in the repository. A file existing is not
 |---|---|---|
 | Source code | Repository root, raspberry_pi/, dashboard/, pcb_engine_kit/, llm_advisory/ | Published |
 | Application | Pi-targeted station API and browser dashboard | Source published; target hardware operation unverified |
-| Demonstration video | demo_video/pcb-inspection-demo.mp4 | File present; content not independently reviewed |
+| Demonstration video | Not stored in this repository (removed at team request) | If required, provide the final approved video through the official submission channel and record its external link |
 | Technical report | docs/PROJECT_REPORT.md | Published; no independently reproduced test/performance results |
 
 ## Screenshot-reported validation metrics
@@ -30,7 +30,7 @@ Per-class values are recorded in docs/results/PROJECT_VALIDATION_RESULTS.md and 
 
 ## Final evidence checklist
 
-- [ ] Recover the exact model checkpoint and training output that produced the validation screenshot, or keep those values explicitly unverified.
+- [ ] Recover the exact three-class fault-detector checkpoint and training output that produced the validation screenshot, or keep those values explicitly unverified. The uploaded `PCB_ENGINE_KIT(2).zip` contains a trace-mask U-Net, not this detector.
 - [ ] Provide the actual dataset and completed import_manifest.csv; the example CSV is only a template.
 - [ ] Record actual source URLs, licence/permission basis, team rights-review declaration and human annotation-review declaration for every row.
 - [ ] Use stable group IDs so every view/crop from one PCB/design/capture session remains in only one split.
@@ -41,10 +41,10 @@ Per-class values are recorded in docs/results/PROJECT_VALIDATION_RESULTS.md and 
 - [ ] Evaluate a separate held-out test split and archive raw output, test support, per-class precision/recall/F1, mAP and error examples.
 - [ ] Export best.onnx with its metadata sidecar and compare ONNX predictions to the source checkpoint.
 - [ ] On the actual Pi 5, provision the project ONNX artifact and retain the ONNX/ExecuTorch smoke-test JSON.
-- [ ] Verify physical GPIO mapping, sensor voltage/polarity, LED-driver wiring, camera capture and repeated conveyor cycles.
+- [ ] Add the existing physical build/test evidence: verified GPIO mapping, sensor voltage/polarity, LED-driver wiring, camera capture and repeated-cycle counts. The team reports these tests are complete; do not rerun them solely to satisfy this checklist if the original records can be supplied.
 - [ ] Demonstrate local inference with WAN disconnected while the Pi and operator browser remain on the same LAN.
 - [ ] Obtain QA/engineering approval for the provisional severity policy or clearly state that it is an unapproved screening rule.
-- [ ] Review the demo MP4 against demo_video/README.md; confirm the live station, model and actual outputs are shown.
+- [ ] If the challenge requires a demo video, provide a separate final video link and review it for actual hardware, genuine detector outputs and credentials. No MP4 is retained in this repository.
 - [ ] Confirm team registration, college nomination, same-college membership, Faculty Mentor and eligibility using the original registration evidence.
 - [ ] Review third-party licences and accurately identify custom code, reused code, AI-assisted contributions and external dependencies according to challenge rules.
 
@@ -55,6 +55,6 @@ Per-class values are recorded in docs/results/PROJECT_VALIDATION_RESULTS.md and 
 - The Pi provisioner no longer downloads a third-party PCB detector; it requires an ONNX artefact with matching project provenance metadata.
 - The Llama foundation model and software frameworks are third-party components and are not claimed as trained or invented by the project team.
 - The supplied screenshot contains validation metrics, but their original checkpoint and dataset are not identified.
-- The current checkout has no project-trained model file, raw/processed dataset, independent test report, Pi smoke-test record, physical commissioning sheet or offline-test evidence.
+- The current checkout has no primary three-class detector file, raw/processed dataset, independent test report, Pi smoke-test record or offline-test evidence. The team reports the physical build/tests are complete, but the physical commissioning sheet and supporting evidence are not yet committed. The supplied trace-mask checkpoint is catalogued at docs/results/supplied_model_package_audit.json and does not fill the three-class detector requirement.
 
 Do not mark an item as passed merely because the source code or command exists. Update this checklist only when corresponding evidence is captured and retained.
