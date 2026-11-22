@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# One-command provisioning for the PCB inspection project on a 64-bit Pi 5.
-# Downloads local models, exports YOLO to ONNX, builds the ExecuTorch runner,
-# verifies both inference paths, and preserves any existing GPIO configuration.
+# Provision the Raspberry Pi 5 runtime using the project's audited detector.
+# No third-party PCB detector checkpoint is downloaded or substituted here.
 set -Eeuo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -17,9 +16,48 @@ if [[ -r /proc/device-tree/model ]] && ! tr -d '\0' </proc/device-tree/model | g
   exit 2
 fi
 
+MODEL="$ROOT/models/best.onnx"
+MODEL_META="$ROOT/models/best.onnx.json"
+if [[ ! -s "$MODEL" || ! -s "$MODEL_META" ]]; then
+  echo "The project-trained ONNX detector is missing." >&2
+  echo "Train, audit and export the detector on the development machine first." >&2
+  echo "Copy deployment/best.onnx and deployment/best.onnx.json into models/ on this Pi." >&2
+  exit 2
+fi
+
+python3 - "$MODEL" "$MODEL_META" <<'PY'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+model_path, metadata_path = map(Path, sys.argv[1:])
+meta = json.loads(metadata_path.read_text(encoding="utf-8"))
+digest = hashlib.sha256(model_path.read_bytes()).hexdigest()
+expected_classes = ["missing_hole", "open_circuit", "short_circuit"]
+checks = {
+    "ONNX SHA-256 matches sidecar": meta.get("sha256") == digest,
+    "project training provenance is declared": meta.get("provenance_status") == "VERIFIED_PROJECT_TRAINING",
+    "random initialization is declared": meta.get("initialization_method") == "random_initialization_from_yolo_yaml",
+    "pretrained detector weights were not used": meta.get("pretrained_weights_used") is False,
+    "class order matches deployment": meta.get("class_order") == expected_classes,
+    "training checkpoint hash is recorded": bool(meta.get("checkpoint_sha256")),
+    "dataset audit hash is recorded": bool(meta.get("dataset_audit_sha256")),
+    "training provenance hash is recorded": bool(meta.get("training_provenance_sha256")),
+}
+failed = [name for name, passed in checks.items() if not passed]
+if failed:
+    raise SystemExit("Refusing unverified detector: " + "; ".join(failed))
+print("Verified project-trained detector metadata:")
+print("  ONNX SHA-256: " + digest)
+print("  checkpoint SHA-256: " + meta["checkpoint_sha256"])
+print("  dataset audit SHA-256: " + meta["dataset_audit_sha256"])
+print("  training provenance SHA-256: " + meta["training_provenance_sha256"])
+PY
+
 AVAILABLE_KIB="$(df -Pk "$ROOT" | awk 'NR==2 {print $4}')"
 if [[ -z "$AVAILABLE_KIB" || "$AVAILABLE_KIB" -lt 12582912 ]]; then
-  echo "At least 12 GiB of free disk space is required for model assets and the ExecuTorch build." >&2
+  echo "At least 12 GiB of free disk space is required for the Llama model and ExecuTorch build." >&2
   df -h "$ROOT"
   exit 2
 fi
@@ -37,7 +75,7 @@ export EXECUTORCH_BUILD_JOBS
 export EXECUTORCH_SYSROOT="/"
 export PCB_FIREBASE_PUBLISH=false
 
-echo "[1/8] Installing Raspberry Pi OS packages"
+echo "[1/7] Installing Raspberry Pi OS packages"
 sudo apt-get update
 sudo apt-get install -y \
   build-essential cmake curl git tar xz-utils \
@@ -45,58 +83,53 @@ sudo apt-get install -y \
   python3-opencv python3-gpiozero \
   libopenblas-dev libomp-dev libgflags-dev libgoogle-glog-dev libfmt-dev libeigen3-dev
 
-echo "[2/8] Creating the project virtual environment"
+echo "[2/7] Creating the project virtual environment"
 if [[ ! -d .venv ]]; then
   python3 -m venv --system-site-packages .venv
 fi
 PYTHON="$ROOT/.venv/bin/python"
 "$PYTHON" -m pip install --upgrade pip setuptools wheel
 
-echo "[3/8] Installing detector, ONNX and station dependencies"
-"$PYTHON" -m pip install \
-  -r raspberry_pi/requirements.txt \
-  -r pcb_engine_kit/requirements-train.txt \
-  -r pcb_engine_kit/requirements-export.txt \
-  "huggingface_hub>=0.30,<2"
+echo "[3/7] Installing inference and model-download dependencies"
+"$PYTHON" -m pip install -r raspberry_pi/requirements.txt "huggingface_hub>=0.30,<2"
 "$PYTHON" -m pip check
 "$PYTHON" - <<'PY'
 import cv2
 import numpy as np
-import onnx
 import onnxruntime as ort
-import torch
-import ultralytics
 
 providers = ort.get_available_providers()
 if "CPUExecutionProvider" not in providers:
     raise SystemExit("ONNX Runtime CPU provider unavailable: " + str(providers))
-print("Verified detector/export Python packages:")
+print("Verified runtime packages:")
 print("  NumPy: " + np.__version__)
 print("  OpenCV: " + cv2.__version__)
-print("  ONNX: " + onnx.__version__)
 print("  ONNX Runtime: " + ort.__version__ + "; providers=" + str(providers))
-print("  PyTorch: " + torch.__version__)
-print("  Ultralytics: " + ultralytics.__version__)
 PY
 
-echo "[4/8] Downloading and verifying the attributed PCB YOLOv8s checkpoint"
-"$PYTHON" models/pretrained/download_sulojan_pcb_yolov8s.py
+echo "[4/7] Rechecking the project ONNX model on this Pi"
+"$PYTHON" - "$MODEL" "$MODEL_META" <<'PY'
+import hashlib, json, sys
+from pathlib import Path
+model, sidecar = map(Path, sys.argv[1:])
+metadata = json.loads(sidecar.read_text(encoding="utf-8"))
+actual = hashlib.sha256(model.read_bytes()).hexdigest()
+if metadata.get("sha256") != actual:
+    raise SystemExit("Model hash changed after initial verification")
+if metadata.get("class_order") != ["missing_hole", "open_circuit", "short_circuit"]:
+    raise SystemExit("Unexpected PCB class order")
+if metadata.get("pretrained_weights_used") is not False:
+    raise SystemExit("The ONNX sidecar does not declare random-init project training")
+print("Project ONNX artifact accepted: " + actual)
+PY
 
-echo "[5/8] Exporting the pretrained PCB detector to local ONNX"
-"$PYTHON" pcb_engine_kit/train_export.py export-upstream-onnx \
-  --weights models/pretrained/sulojan_pcb_yolov8s/best.pt \
-  --size 640 \
-  --out deployment_upstream
-install -m 0644 deployment_upstream/best.onnx models/best.onnx
-install -m 0644 deployment_upstream/best.onnx.json models/best.onnx.json
-
-echo "[6/8] Downloading the pinned Llama 3.2 1B ExecuTorch package"
+echo "[5/7] Downloading the pinned Llama 3.2 1B ExecuTorch package"
 "$PYTHON" llm_advisory/download_model.py
 
-echo "[7/8] Building the ExecuTorch Pi 5 C++ runner against this Pi's own sysroot"
+echo "[6/7] Building the ExecuTorch Pi 5 C++ runner against this Pi's own sysroot"
 bash llm_advisory/build_pi5_runner.sh
 
-echo "[8/8] Preserving GPIO configuration and verifying both local runtimes"
+echo "[7/7] Preserving GPIO configuration and verifying both local runtimes"
 ENV_FILE="$ROOT/raspberry_pi/.env"
 if [[ ! -f "$ENV_FILE" ]]; then
   cp raspberry_pi/.env.example "$ENV_FILE"
@@ -136,13 +169,14 @@ for key, value in required.items():
 path.write_text("\n".join(output) + "\n", encoding="utf-8")
 PY
 
-"$PYTHON" scripts/validate_pi5_runtime.py --out docs/results/pi5_runtime_smoke_test.json
+"$PYTHON" scripts/validate_pi5_runtime.py --model models/best.onnx --out docs/results/pi5_runtime_smoke_test.json
 
 echo
 echo "Provisioning and software smoke tests completed."
-echo "Local models: models/best.onnx and models/llama/"
+echo "Project detector: models/best.onnx"
+echo "Llama model/runtime: models/llama/"
 echo "Smoke-test record: docs/results/pi5_runtime_smoke_test.json"
 echo
 echo "IMPORTANT: review raspberry_pi/.env and set the real BCM pins/polarities."
-echo "The script deliberately does not guess IR or LED-driver wiring."
+echo "This script does not guess wiring or verify the physical station."
 echo "Start the station with: bash scripts/run_station_pi5.sh"
