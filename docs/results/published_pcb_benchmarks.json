@@ -249,7 +249,17 @@
       "nms_iou_threshold": null,
       "raw_evaluator_output": null
     },
-    "note": "These values are reported from the supplied validation-results screenshot. The dataset identity, split provenance, sample counts, checkpoint identity and raw evaluator output are not yet archived in this repository. Do not label these figures as independent test-set accuracy, Raspberry Pi 5 measurements or independently reproduced metrics."
+    "note": "Screenshot-reported validation metrics only. Dataset identity, split provenance, sample counts, checkpoint identity and raw evaluator output are not archived in this repository. Do not label these figures as independent test-set accuracy, Raspberry Pi 5 measurements or independently reproduced metrics.",
+    "validation_source_image": {
+      "filename": "image(20261122-041729).png",
+      "sha256": "e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c",
+      "dimensions_pixels": [
+        1093,
+        740
+      ],
+      "note": "Original screenshot was supplied in the conversation; the screenshot itself is not stored in this Git repository."
+    },
+    "documentation": "docs/results/PROJECT_VALIDATION_RESULTS.md"
   },
   "project_validation_metrics_reported": true,
   "project_test_accuracy_claimed": false
