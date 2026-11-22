@@ -14,7 +14,7 @@ The repository is a **software and deployment source checkout**, not a verified 
 | Edge inference | ONNX Runtime CPU path targeted at Raspberry Pi 5 | Deployment code present; no target smoke-test record |
 | Advisory | Text-only Llama 3.2 1B Instruct integration through ExecuTorch | Third-party foundation model; model files and target test absent |
 | Station controller | IR trigger, camera and LED-driver control source | Source present; physical wiring and full cycle not verified |
-| Demo | MP4 file in demo_video/ | File present; content review still required |
+| Demo video | No video retained in this repository (removed at team request) | Provide an approved external link separately if the challenge requires a video |
 
 The IR input is a presence trigger, not an image-position sensor. The source workflow does not claim precision positioning from the IR sensor. The browser is an operator interface; detector/advisory execution is designed for the Pi. Firebase event replication is optional and disabled by default in the example configuration.
 
@@ -24,7 +24,7 @@ The project training utility accepts a YOLO architecture YAML and explicitly tra
 
 The project-trained detector is **not currently included** in this repository. The Pi provisioner refuses to proceed without a project ONNX file and matching provenance sidecar. Ultralytics/PyTorch, OpenCV and ONNX Runtime are third-party software dependencies; the YOLO architecture and framework are not claimed as original inventions.
 
-The Llama 3.2 1B Instruct model is also third-party. It is used only to turn structured detector findings into an operator advisory. It is not trained by the project team, does not receive the PCB image, and does not alter detector output.
+The Llama 3.2 1B Instruct model is also third-party. It is used only to turn structured detector findings into an operator advisory. It is not trained by the project team, does not receive the PCB image, and does not alter detector output.\n\nThe uploaded [1mPCB_ENGINE_KIT(2).zip[0m package was inspected. It contains an auxiliary five-channel ResAttention U-Net checkpoint that produces a single-channel trace mask. Its SHA-256 matches the package manifest, but the archive contains no training dataset, training log, checkpoint provenance or metrics. It is **not** the three-class RGB fault detector and is not connected to the current Pi inference path. See `docs/results/supplied_model_package_audit.json`.
 
 ## Dataset preparation, training and evaluation
 
@@ -81,9 +81,9 @@ These values are transcribed from the screenshot only. The screenshot does not i
 
 ## Scope and release blockers
 
-A valid final release still needs the actual project dataset and completed import audit, a random-initialized project checkpoint and provenance file, matching ONNX export, held-out test metrics, prediction-parity check, Pi runtime smoke test, physical commissioning record, offline test evidence and human review of the demo video. The severity policy remains provisional and requires board/QA approval.
+A valid final technical release still needs the actual project dataset and completed import audit, the primary three-class detector checkpoint and provenance, matching ONNX export, held-out test metrics, prediction-parity check, Pi runtime smoke test and offline-operation evidence. The team reports that the physical build and tests are complete, but the commissioning details and supporting evidence have not yet been committed. No demo MP4 is retained in this repository; provide a separate approved submission link if the challenge requires one. The severity policy remains provisional and requires board/QA approval.
 
-The repository cannot independently prove that every custom source line was written by a named team member. Team members must review and confirm their contributions, identify any AI-assisted or reused code according to challenge rules, and preserve third-party notices and licences. The source does not claim sole authorship of external libraries, the YOLO architecture, ExecuTorch or Llama.
+The repository cannot independently prove that every custom source line was written by a named team member. A draft declaration is provided in `docs/TEAM_DECLARATION_TEMPLATE.md`; each member must personally review and confirm their contribution mapping, reused/adapted code, AI-assisted edits and third-party notices under the actual challenge rules. The source does not claim sole authorship of external libraries, the YOLO architecture, ExecuTorch or Llama.
 
 ## Team
 
