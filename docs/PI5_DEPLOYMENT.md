@@ -2,7 +2,7 @@
 
 This guide describes the Raspberry Pi-targeted software path: IR arming/capture, illumination command, OpenCV preprocessing, project-trained YOLO ONNX inference, text-only ExecuTorch advisory, local event logging and browser dashboard.
 
-**The Pi 5 is the documented target platform.** The repository does not contain evidence that the final physical wiring, complete station cycle or offline test has passed. Complete the commissioning record before claiming physical operation.
+**The Pi 5 is the documented target platform.** The team reports that the physical build and physical tests are complete. The corresponding wiring details, cycle results and logs/photos have not yet been committed, so the repository commissioning record remains pending evidence. The separate Pi runtime smoke test and offline-operation test also need their own records.
 
 ## 1. Produce the project detector on the development machine
 
