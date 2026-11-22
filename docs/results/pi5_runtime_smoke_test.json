@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "measurement_type": "raspberry_pi_5_runtime_smoke_test",
+  "status": "NOT_RUN",
+  "device_model": null,
+  "os_version": null,
+  "python_version": null,
+  "onnx_model_sha256": null,
+  "onnx_sidecar_sha256": null,
+  "onnxruntime_version": null,
+  "cpu_execution_provider_available": null,
+  "project_detector_session_created": null,
+  "text_advisory_runner_available": null,
+  "dashboard_health_check": null,
+  "captured_image_test": null,
+  "physical_gpio_test": null,
+  "offline_test": null,
+  "note": "No target-device smoke-test result is present. The provisioning script will generate a new record only when run on the actual Raspberry Pi 5."
+}
