@@ -87,6 +87,10 @@
     "held_out_test_metrics": "docs/results/project_test_metrics.json",
     "onnx_parity_report": "docs/results/project_onnx_parity.json",
     "pi_runtime_smoke_test": "docs/results/pi5_runtime_smoke_test.json",
+    "physical_station_commissioning": "docs/results/physical_station_commissioning.json",
+    "offline_operation_test": "docs/results/offline_operation_test.json",
+    "demo_video_review": "docs/results/demo_video_review.json",
+    "source_authorship_attestation": "docs/results/source_authorship_attestation.json",
     "release_ready": false
   },
   "advisory": {
