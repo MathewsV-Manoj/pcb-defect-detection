@@ -21,7 +21,7 @@
     "The original evaluator output if the screenshot-reported metrics are to be tied to this checkpoint"
   ],
   "audit_command": "python pcb_engine_kit/audit_release.py --data datasets/processed/pcb3/data.yaml --checkpoint runs/pcb/weights/best.pt --output-dir docs/results",
-  "note": "The supplied archive provides an auxiliary trace-extraction U-Net checkpoint only. Its checksum was verified against the archive's SHA256SUMS.json and its state_dict was safely inspected. The archive itself says the U-Net is a trace extractor, not a fault detector, and contains no U-Net training dataset, training log or validation metrics. It does not satisfy the primary three-class detector checkpoint gate. No training ownership, accuracy or deployment status is inferred.",
+  "note": "The supplied archive provides an auxiliary trace-extraction U-Net checkpoint only. Its checksum was verified against SHA256SUMS.json, its state_dict loaded strictly into the included architecture, and a dummy forward pass produced a finite 1-channel 320x320 output. The archive identifies it as a trace extractor, not a fault detector, and contains no U-Net training dataset, training log or validation metrics. It does not satisfy the primary three-class detector checkpoint gate. No training ownership, accuracy or deployment status is inferred.",
   "supplied_archive_inspection": {
     "archive": "PCB_ENGINE_KIT(2).zip",
     "archive_integrity": "PASS",
@@ -40,6 +40,23 @@
     "training_log_present": false,
     "checkpoint_provenance_present": false,
     "validation_metrics_present": false,
-    "primary_three_class_defect_detector": false
+    "primary_three_class_defect_detector": false,
+    "strict_architecture_state_dict_load": "PASS_NO_MISSING_OR_UNEXPECTED_KEYS",
+    "dummy_forward_test": {
+      "input_shape": [
+        1,
+        5,
+        320,
+        320
+      ],
+      "output_shape": [
+        1,
+        1,
+        320,
+        320
+      ],
+      "output_finite": true,
+      "scope": "Architecture smoke check only; no dataset or accuracy evaluation."
+    }
   }
 }
