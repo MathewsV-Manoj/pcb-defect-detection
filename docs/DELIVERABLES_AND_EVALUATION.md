@@ -12,7 +12,7 @@ This checklist is based on the project repository and the PS5 scope documented b
 |---|---|---|
 | Source code | Controller, dashboard, inference, training, audit, advisory and event schema source | Present |
 | Application | Pi-targeted HTTP service and browser dashboard | Source present; target hardware test absent |
-| Demonstration video | No video retained in this repository (removed at team request) | Provide an approved external link through the challenge portal if a video is required |
+| Demonstration video | Team reports submitted/uploaded separately; MP4 not stored in repository | Verify the official submission includes the intended final video and retain its external link/receipt |
 | Technical report | docs/PROJECT_REPORT.md | Present; must be updated with real measured evidence when available |
 
 ## Functional architecture
@@ -70,4 +70,4 @@ The public repository cannot establish whether the team registration, college no
 
 ## Current conclusion
 
-The repository contains the software source and evidence-generation tools. The uploaded package adds an auxiliary trace-mask checkpoint only; the primary three-class detector, actual dataset and independent test results are still absent from the checkout. The team reports physical build/tests complete, but the supporting commissioning evidence is not yet committed. No demo MP4 is stored in the repository. The challenge deliverables must be described accordingly until the remaining artefacts and team declarations are added.
+The repository contains the software source and evidence-generation tools. The uploaded package adds an auxiliary trace-mask checkpoint only; the primary three-class detector, actual dataset and independent test results are still absent from the checkout. The team reports physical build/tests complete, the demo video uploaded separately, and the individual-contribution/AI-assistance declaration available separately. Their external submission receipt/copy and the detailed physical commissioning evidence are not archived here. The public technical evidence therefore remains incomplete until the primary detector/data/test artefacts and the Pi/offline/physical records are connected to the submitted system.
