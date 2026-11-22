@@ -336,11 +336,11 @@ The items below are what remain to make the public technical evidence complete. 
 
 11. Keep the external demo-video upload URL or receipt with the team submission records and verify that the official submission form points to the intended final video.
 12. Keep the signed/approved individual-contribution and AI-assistance declaration with the team records. Ensure the disclosure covers the ChatGPT-assisted repository cleanup and all reused/adapted code.
-13. Retain the already-submitted individual-contribution/AI-assistance declaration and its portal receipt in the team's submission records. The team reports it has been submitted separately; the signed copy is not stored in this repository. The repository template is supplemental only.
+
 
 ### D. Quality approval
 
-14. Keep the defect severity policy explicitly provisional until an engineering/QA owner approves it against board-level requirements.
+13. Keep the defect severity policy explicitly provisional until an engineering/QA owner approves it against board-level requirements.
 
 ---
 
