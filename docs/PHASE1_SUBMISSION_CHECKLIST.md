@@ -1,58 +1,60 @@
 # Phase 1 submission checklist — Bharat AI-SoC Challenge 2026–27
 
-**Problem statement:** PS5 — Real-time industrial defect detection & quality-control assistant  
-**Phase 1 deadline:** 23 November 2026  
-**Repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection  
-**Official challenge page:** https://armbharatchallenge.com/
+**Problem statement:** PS5 — Real-time industrial defect detection and quality-control assistant  
+**Phase 1 deadline recorded by the team:** 23 November 2026  
+**Repository:** https://github.com/MathewsV-Manoj/pcb-defect-detection
 
-The official Phase 1 deliverables are source code, application, demonstration video and technical report. PS5 also specifies Llama and ExecuTorch as required technologies, with the Llama advisory/reasoning component deployed on an Arm-based device. Raspberry Pi 5 CPU-only is an eligible platform.
+This checklist records what is visible in the repository. A file existing is not proof that a feature has passed on the target hardware.
 
-## Submission links
+## Deliverables
 
-| Deliverable | Repository location | Status |
+| Deliverable | Location | Status |
 |---|---|---|
-| Source code | [GitHub repository](https://github.com/MathewsV-Manoj/pcb-defect-detection) | Published |
-| Application | Raspberry Pi 5 station controller and local dashboard in `raspberry_pi/` and `dashboard/` | Source published; target hardware validation not evidenced in this repository |
-| Demonstration video | [pcb-inspection-demo.mp4](https://github.com/MathewsV-Manoj/pcb-defect-detection/blob/main/demo_video/pcb-inspection-demo.mp4) | 23.68 MB file present; team confirms it is complete; content has not been independently reviewed in this audit |
-| Technical report | [PROJECT_REPORT.md](PROJECT_REPORT.md) | Published; includes the supplied validation metrics and limits |
+| Source code | Repository root, raspberry_pi/, dashboard/, pcb_engine_kit/, llm_advisory/ | Published |
+| Application | Pi-targeted station API and browser dashboard | Source published; target hardware operation unverified |
+| Demonstration video | demo_video/pcb-inspection-demo.mp4 | File present; content not independently reviewed |
+| Technical report | docs/PROJECT_REPORT.md | Published; no independently reproduced test/performance results |
 
-## Project validation metrics supplied by the team
+## Screenshot-reported validation metrics
 
-| Metric | Validation result |
+A screenshot supplied by the team reports:
+
+| Metric | Validation value |
 |---|---:|
 | Precision | 98.3% |
 | Recall | 98.4% |
 | mAP@0.50 | 98.9% |
 | mAP@0.50:0.95 | 62.5% |
 
-| Defect class | Precision | Recall | mAP@0.50 |
-|---|---:|---:|---:|
-| Missing Hole | 97.8% | 98.2% | 98.5% |
-| Open Circuit | 99.1% | 99.6% | 99.5% |
-| Short Circuit | 97.9% | 97.6% | 98.8% |
+Per-class values are recorded in docs/results/PROJECT_VALIDATION_RESULTS.md and docs/results/project_validation_metrics.json. The screenshot does not identify the checkpoint, dataset, sample counts or raw evaluator output. The values must remain screenshot-reported validation only; they are not reproduced, independent test accuracy or Raspberry Pi performance.
 
-These are screenshot-reported **validation** metrics only. They are not held-out test results, Pi 5 runtime measurements, or the upstream publisher's results. The supplied screenshot is archived at [results/project-validation-screenshot.png](results/project-validation-screenshot.png), with its source filename and original SHA-256 recorded in [results/PROJECT_VALIDATION_RESULTS.md](results/PROJECT_VALIDATION_RESULTS.md). The underlying checkpoint, dataset/split and raw evaluator output remain to be archived.
+## Final evidence checklist
 
-## Final checks before submitting
+- [ ] Recover the exact model checkpoint and training output that produced the validation screenshot, or keep those values explicitly unverified.
+- [ ] Provide the actual dataset and completed import_manifest.csv; the example CSV is only a template.
+- [ ] Record actual source URLs, licence/permission basis, team rights-review declaration and human annotation-review declaration for every row.
+- [ ] Use stable group IDs so every view/crop from one PCB/design/capture session remains in only one split.
+- [ ] Generate the canonical dataset with pcb_engine_kit/dataset.py and inspect its audit.json.
+- [ ] Train the project detector from an architecture YAML with pretrained=False. Do not start from another author's PCB detector weights.
+- [ ] Preserve best.pt, project_training_provenance.json, checkpoint SHA-256, dataset YAML and audit hashes.
+- [ ] Generate project_dataset_audit.json and project_checkpoint_audit.json. Both must pass before describing the detector as provenance-verified.
+- [ ] Evaluate a separate held-out test split and archive raw output, test support, per-class precision/recall/F1, mAP and error examples.
+- [ ] Export best.onnx with its metadata sidecar and compare ONNX predictions to the source checkpoint.
+- [ ] On the actual Pi 5, provision the project ONNX artifact and retain the ONNX/ExecuTorch smoke-test JSON.
+- [ ] Verify physical GPIO mapping, sensor voltage/polarity, LED-driver wiring, camera capture and repeated conveyor cycles.
+- [ ] Demonstrate local inference with WAN disconnected while the Pi and operator browser remain on the same LAN.
+- [ ] Obtain QA/engineering approval for the provisional severity policy or clearly state that it is an unapproved screening rule.
+- [ ] Review the demo MP4 against demo_video/README.md; confirm the live station, model and actual outputs are shown.
+- [ ] Confirm team registration, college nomination, same-college membership, Faculty Mentor and eligibility using the original registration evidence.
+- [ ] Review third-party licences and accurately identify custom code, reused code, AI-assisted contributions and external dependencies according to challenge rules.
 
-- [ ] Confirm that the Team Leader completed registration by 19 October 2026. The challenge registration is now closed; the public page does not allow a new registration at this stage.
-- [ ] Confirm student eligibility, same-college membership, college nomination and the required Faculty Mentor from the original registration record.
-- [ ] Confirm the exact YOLO checkpoint that produced the reported validation screenshot. Add its identity and SHA-256 to the release record; the current Git source does not contain `best.pt` or `best.onnx`.
-- [ ] Preserve the dataset source terms, actual import manifest, board/capture-group split audit and validation log. The example CSV is only a template.
-- [ ] Evaluate a separate held-out board-level test set if it already exists. If it does not, report test performance as not measured; do not reuse validation data as test data.
-- [ ] On the actual Raspberry Pi 5, run `bash scripts/provision_pi5.sh`, configure the real GPIO pins/polarities, and retain the ONNX + ExecuTorch smoke-test JSON.
-- [ ] Verify a complete physical inspection cycle, including IR trigger, LED-driver timing, camera capture, local YOLO inference and the Llama advisory through ExecuTorch on the Pi.
-- [ ] Demonstrate offline operation with WAN disconnected while the Pi and operator laptop remain on the same private LAN.
-- [ ] Review the MP4 against `demo_video/README.md` and confirm that the required live hardware/model sequence is visible.
-- [ ] Obtain QA/engineering approval for the provisional severity policy, or explicitly state that it is a prototype screening rule awaiting approval.
-- [ ] Check third-party model/dataset rights and the challenge's **Original work** requirement (original-work / sole-ownership rule) and Participant Materials rules. The current Pi provisioner downloads a separately authored six-class YOLOv8s checkpoint whose model card declares MIT; the model's attribution and licence do not by themselves verify the dataset's terms or settle the organisers' interpretation of the originality requirement. Ask the organisers for written clarification if this checkpoint is part of the final entry.
+## Current technical statements supported by the repository
 
-## Technical claims that are safe to make now
+- The repository contains the station-controller source, local browser dashboard, three-class detector interface, training/export and audit tools, Llama/ExecuTorch integration source, deployment scripts and technical report.
+- The project training utility rejects pretrained .pt initial checkpoints and specifies pretrained=False for model training.
+- The Pi provisioner no longer downloads a third-party PCB detector; it requires an ONNX artefact with matching project provenance metadata.
+- The Llama foundation model and software frameworks are third-party components and are not claimed as trained or invented by the project team.
+- The supplied screenshot contains validation metrics, but their original checkpoint and dataset are not identified.
+- The current checkout has no project-trained model file, raw/processed dataset, independent test report, Pi smoke-test record, physical commissioning sheet or offline-test evidence.
 
-- The repository contains the Raspberry Pi station source, browser dashboard, YOLO/ONNX inference path, Llama/ExecuTorch integration source, provisioner, technical report, benchmark scripts and a demonstration MP4.
-- The supplied screenshot reports the validation metrics tabulated above.
-- Published PCB-paper metrics are included only as external literature references.
-- The Pi deployment recipe is present, but this repository does not contain target-Pi smoke-test evidence, a completed commissioning sheet, offline test evidence or Pi runtime measurements.
-- No independent held-out test score is currently archived.
-
-Do not state that the final Pi hardware cycle, live ExecuTorch execution, offline operation, severity approval, or independent test evaluation has passed until its evidence has been captured and committed.
+Do not mark an item as passed merely because the source code or command exists. Update this checklist only when corresponding evidence is captured and retained.
