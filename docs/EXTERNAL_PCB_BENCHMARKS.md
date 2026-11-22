@@ -8,7 +8,7 @@ The closest public datasets in the reviewed papers are DeepPCB and PKU-Market-PC
 
 | Published model / study | Evaluation dataset | Precision | Recall | mAP@0.50 | mAP@0.50:0.95 | Notes |
 |---|---|---:|---:|---:|---:|---|
-| YOLO-MBBi (Du et al., 2023) | DeepPCB | 98.6% | 97.1% | 99.0% | Not reported in the cited comparison table | Six classes; paper reports averages across three random train/validation/test divisions |
+| YOLO-MBBi (Du et al., 2023) | DeepPCB | 98.7% | 97.5% | 99.0% | Not reported in the cited comparison table | Six classes; paper reports averages across three random train/validation/test divisions |
 | PCB-MMF (Jin et al., 2026) | DeepPCB | 96.23% | 97.02% | 98.68% | 82.16% | 2.36 M parameters; paper reports 5.5 GFLOPs and 73.79 FPS |
 | RT-DETR-L (Jin et al., 2026) | DeepPCB | 98.20% | 97.66% | 98.74% | 82.34% | 32.0 M parameters; paper reports 103.5 GFLOPs and 30.00 FPS |
 | PCB-YOLO (Wang et al., 2026) | PKU-Market-PCB | 96.1% | 97.4% | 98.4% | 71.6% | 2.4 M parameters; 6.9 GFLOPs; paper reports 224 FPS |
@@ -18,7 +18,7 @@ The closest public datasets in the reviewed papers are DeepPCB and PKU-Market-PC
 
 **YOLO-MBBi — DeepPCB.** Du et al. describe DeepPCB as 1,500 defect images with corresponding defect-free reference images. They report a 1,200/150/150 train/validation/test division and average the metrics from three random divisions. The DeepPCB test-set comparison table reports YOLO-MBBi precision 0.987, recall 0.975, mAP@0.50 0.990 and 69.5 FPS. Its class-specific mAP, precision and recall tables provide further per-defect breakdowns.
 
-**PCB-MMF and RT-DETR-L — DeepPCB.** Jin et al. describe 1,500 paired defect/reference images and six annotations: open, short, mouse bite, spur, copper and pin-hole. Their images are binarized and split 7:2:1 into training, validation and test sets. Table 5 reports the precision, recall, mAP@0.50, mAP@0.75 and mAP@0.50:0.95 values listed above. These models were evaluated by the paper's authors, not on this project's Raspberry Pi station.
+**PCB-MMF and RT-DETR-L — DeepPCB.** Jin et al. describe 1,500 paired defect/reference images and six annotations: open, short, mouse bite, spur, copper and pin-hole. The authors split the image pairs 7:2:1 into training, validation and test sets. Table 5 reports the precision, recall, mAP@0.50, mAP@0.75 and mAP@0.50:0.95 values listed above. These models were evaluated by the paper's authors, not on this project's Raspberry Pi station.
 
 **PCB-YOLO — PKU-Market-PCB.** Wang et al. describe 1,386 images and six classes: missing hole, mouse bite, open circuit, short circuit, spurious copper and spur. Their split is 1,109 training, 138 validation and 139 test images. They report 96.1% precision, 97.4% recall, 98.4% mAP@0.50, 71.6% mAP@0.50:0.95 and 224 FPS. The reported FPS is from the authors' experimental setup, not a Raspberry Pi 5 measurement.
 
@@ -43,7 +43,7 @@ Source model: https://huggingface.co/Sulojan/pcb-defect-yolov8s
 ## Why these figures are not the project's detection accuracy
 
 1. **Different model weights.** The studies evaluate their own trained architectures and checkpoints. This repository does not contain a project-trained three-class checkpoint.
-2. **Different datasets and image distributions.** Public, binarized, synthesized or laboratory PCB images do not reproduce this station's camera, lens, lighting, conveyor vibration, board materials or defect appearance.
+2. **Different datasets and image distributions.** Public, synthetic or laboratory PCB images do not reproduce this station's camera, lens, lighting, conveyor vibration, board materials or defect appearance.
 3. **Class-name similarity is not annotation equivalence.** DeepPCB's `pin-hole` class must not automatically be treated as a missing drill hole at a known expected location. Class definitions must be reconciled before training or scoring.
 4. **Different splits and possible image correlation.** The cited papers describe image-level random splits in some experiments. This repository requires the project to keep all views and crops from a physical board/capture group in one split. Published values may therefore have a different generalization difficulty.
 5. **Different score definitions and operating points.** Precision and recall depend on the evaluator's confidence threshold and matching rules. mAP integrates the precision-recall curve at a stated IoU threshold; mAP@0.50:0.95 is stricter than mAP@0.50.
