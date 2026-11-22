@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "measurement_type": "demo_video_content_review",
-  "status": "REMOVED_BY_TEAM_REQUEST_NO_EXTERNAL_LINK_RECORDED",
+  "status": "TEAM_REPORTED_UPLOADED_EXTERNALLY_NOT_STORED_IN_REPOSITORY",
   "video_path": null,
   "video_file_present_in_repository": false,
   "video_sha256": null,
@@ -18,6 +18,8 @@
     "video_matches_current_block_diagram": null,
     "no_credentials_or_secrets_exposed": null
   },
-  "note": "The repository MP4 was removed at the team's request and was not reviewed. This record does not imply that the team has no separate video. If the challenge requires a demo, provide the approved final video through the official submission channel and record its link/review separately.",
-  "external_submission_link_recorded": false
+  "note": "The team confirms that the demo video has been uploaded separately (for example, through the official submission channel). It is intentionally not stored in this GitHub repository. The current repository does not retain the external URL or independent review record. This record therefore records team-reported external upload, not a claim that the video was never submitted. Keep a copy of the submission receipt/link in the team's private submission records.",
+  "external_submission_link_recorded": false,
+  "team_reported_uploaded": true,
+  "team_reported_upload_context": "User confirms the project demo video has been uploaded separately; the MP4 was removed from this GitHub repository at team request."
 }
