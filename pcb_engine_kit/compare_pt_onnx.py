@@ -174,9 +174,22 @@ def main() -> int:
         "dataset_yaml_hash_matches_onnx_sidecar": metadata.get("dataset_yaml_sha256") == data_hash,
         "dataset_audit_hash_matches_onnx_sidecar": metadata.get("dataset_audit_sha256") == audit_hash,
         "training_provenance_hash_matches_onnx_sidecar": metadata.get("training_provenance_sha256") == provenance_hash,
-        "project_training_provenance_declared": provenance.get("provenance_status") == "VERIFIED_PROJECT_TRAINING",
-        "random_initialization_declared": provenance.get("initialization_method") == "random_initialization_from_yolo_yaml",
-        "pretrained_weights_not_used": provenance.get("pretrained_weights_used") is False,
+        "project_training_provenance_declared": (
+            provenance.get("provenance_status") == "VERIFIED_PROJECT_TRAINING"
+            and metadata.get("provenance_status") == "VERIFIED_PROJECT_TRAINING"
+        ),
+        "random_initialization_declared": (
+            provenance.get("initialization_method") == "random_initialization_from_yolo_yaml"
+            and metadata.get("initialization_method") == "random_initialization_from_yolo_yaml"
+        ),
+        "pretrained_weights_not_used": (
+            provenance.get("pretrained_weights_used") is False
+            and metadata.get("pretrained_weights_used") is False
+        ),
+        "training_sidecar_checkpoint_hash_matches": provenance.get("checkpoint_sha256") == checkpoint_hash,
+        "training_sidecar_dataset_yaml_hash_matches": provenance.get("dataset_yaml_sha256") == data_hash,
+        "training_sidecar_dataset_audit_hash_matches": provenance.get("dataset_audit_sha256") == audit_hash,
+        "dataset_audit_yaml_hash_matches": dataset_audit.get("data_yaml_sha256") == data_hash,
         "dataset_import_audit_release_ready": dataset_audit.get("release_ready") is True,
         "test_directory_matches_dataset_yaml": images_dir == expected_test_dir,
         "dataset_and_metadata_class_order_match": class_order == CLASS_ORDER and metadata.get("class_order") == CLASS_ORDER,
