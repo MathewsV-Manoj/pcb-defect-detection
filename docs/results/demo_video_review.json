@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "measurement_type": "demo_video_content_review",
+  "status": "NOT_CONFIRMED",
+  "video_path": "demo_video/pcb-inspection-demo.mp4",
+  "video_file_present_in_repository": true,
+  "video_sha256": null,
+  "reviewed_by": null,
+  "review_date": null,
+  "checklist": {
+    "actual_hardware_visible": null,
+    "ir_arm_and_release_shown": null,
+    "board_trigger_and_capture_shown": null,
+    "real_operator_dashboard_shown": null,
+    "actual_detector_outputs_shown": null,
+    "actual_advisory_execution_shown": null,
+    "no_simulated_results_presented_as_live": null,
+    "video_matches_current_block_diagram": null,
+    "no_credentials_or_secrets_exposed": null
+  },
+  "note": "The MP4 file is present, but its video/audio content has not been inspected in this audit."
+}
