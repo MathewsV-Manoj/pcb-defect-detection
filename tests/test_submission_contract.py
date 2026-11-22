@@ -178,6 +178,8 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("--mark-verified requires the full held-out test split", parity)
         self.assertIn("checkpoint_hash_matches_onnx_sidecar", parity)
         self.assertIn("dataset_audit_hash_matches_onnx_sidecar", parity)
+        self.assertIn("training_sidecar_checkpoint_hash_matches", parity)
+        self.assertIn("training_sidecar_dataset_audit_hash_matches", parity)
         self.assertIn("prediction_parity_verified", parity)
         self.assertEqual(report["status"], "NOT_PROVIDED")
 
