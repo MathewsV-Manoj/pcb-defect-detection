@@ -12,7 +12,7 @@ This checklist is based on the project repository and the PS5 scope documented b
 |---|---|---|
 | Source code | Controller, dashboard, inference, training, audit, advisory and event schema source | Present |
 | Application | Pi-targeted HTTP service and browser dashboard | Source present; target hardware test absent |
-| Demonstration video | [`demo_video/WhatsApp Video 2026-11-21 at 5.48.59 PM.mp4`](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4) | MP4 present in repository; verify the official submission includes the intended final video and retain its external link/receipt |
+| Demonstration video | [`demo_video/WhatsApp Video 2026-11-21 at 5.48.59 PM.mp4`](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4) | MP4 present; sampled review confirms the on-screen inspection result is explicitly simulated, not live detector evidence; team reports separate official upload |
 | Technical report | docs/PROJECT_REPORT.md | Present; must be updated with real measured evidence when available |
 
 ## Functional architecture
@@ -34,18 +34,9 @@ The Llama 3.2 1B Instruct foundation model is third-party software, not trained 
 
 ## Project detector evaluation
 
-The only numeric values retained in the repository are the team's screenshot-reported validation figures:
+No verified numerical accuracy result is included in this repository. The screenshot-derived values previously documented could not be tied to an identified checkpoint, dataset, split manifest or raw evaluator output, so they have been excluded from the project results.
 
-| Metric | Reported validation |
-|---|---:|
-| Precision | 98.3% |
-| Recall | 98.4% |
-| mAP@0.50 | 98.9% |
-| mAP@0.50:0.95 | 62.5% |
-
-The per-class values are in docs/results/PROJECT_VALIDATION_RESULTS.md. The checkpoint identity, dataset/split provenance, sample counts and raw evaluator output are unknown. These numbers have not been reproduced and are not independent test scores. The separately supplied `PCB_ENGINE_KIT(2).zip` contains a ResAttention U-Net trace-mask checkpoint (5-channel input, 1-channel output), not the three-class detector; the archive does not include the U-Net training dataset, log, provenance or metrics. The trace checkpoint therefore cannot identify or validate the screenshot scores. See docs/results/supplied_model_package_audit.json.
-
-For new results, use the audited training workflow and test split. Record per-class precision, recall and F1, mAP@0.50 and mAP@0.50:0.95, test support, confusion matrix and reviewed false positives/false negatives. All images from the same board/design/capture group must stay in one split.
+The repository contains the training and held-out test evaluation source, but the primary three-class detector checkpoint and audited dataset are not part of this checkout. The machine-readable held-out metrics record is `NOT_PROVIDED`. Do not report accuracy, precision, recall, F1 or mAP as achieved project results until the exact model and test evidence are available.
 
 ## Pi target commissioning and measurement
 
