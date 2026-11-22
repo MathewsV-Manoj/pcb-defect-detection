@@ -1,19 +1,24 @@
 {
-  "schema_version": 2,
-  "status": "SOURCE_WITH_PINNED_MODEL_DEPLOYMENT_RECIPE_AND_UNVERIFIED_TARGET_ARTIFACTS",
+  "schema_version": 3,
+  "release_status": "SOURCE_PRESENT_MODEL_AND_DATASET_NOT_PROVIDED",
+  "project_identity": {
+    "repository": "MathewsV-Manoj/pcb-defect-detection",
+    "primary_task": "Three-class visual PCB defect screening",
+    "class_order": ["missing_hole", "open_circuit", "short_circuit"],
+    "claim_policy": "Only values reproduced from the matching project checkpoint and audited project dataset may be reported as project results."
+  },
   "vision": {
-    "architecture": "YOLOv8-family ONNX (project three-class checkpoint or attributed six-class YOLOv8s baseline)",
-    "runtime": "ONNX Runtime CPU on Raspberry Pi 5",
-    "class_order": [
-      "missing_hole",
-      "open_circuit",
-      "short_circuit"
-    ],
+    "architecture": "YOLOv8 Nano architecture selected through an Ultralytics model YAML",
+    "training_policy": {
+      "initialization_method": "random_initialization_from_yolo_yaml",
+      "pretrained_weights_permitted": false,
+      "training_entrypoint": "pcb_engine_kit/train_export.py",
+      "training_provenance_sidecar": "project_training_provenance.json"
+    },
+    "runtime": "ONNX Runtime CPU; Raspberry Pi 5 is the documented target platform",
+    "class_order": ["missing_hole", "open_circuit", "short_circuit"],
     "input": {
-      "size": [
-        640,
-        640
-      ],
+      "size": [640, 640],
       "channels": 3,
       "color_order": "RGB",
       "layout": "NCHW",
@@ -21,190 +26,116 @@
       "normalization": "0_to_1",
       "resize": "letterbox"
     },
-    "best_pt": {
+    "checkpoint": {
       "path": "models/best.pt",
+      "present_in_repository": false,
       "sha256": null,
-      "present": false
+      "provenance_status": "NOT_PROVIDED"
     },
-    "best_onnx": {
+    "onnx": {
       "path": "models/best.onnx",
+      "present_in_repository": false,
       "sha256": null,
-      "present": false
+      "metadata_path": "models/best.onnx.json",
+      "provenance_status": "NOT_PROVIDED",
+      "prediction_parity_verified": false,
+      "validated_on_target_device": false
     },
-    "onnx_metadata_path": "models/best.onnx.json",
-    "metrics": {
+    "external_pcb_detector_weights_used_by_current_provisioner": false,
+    "validation_metrics": {
+      "status": "TEAM_SUPPLIED_SCREENSHOT_TRANSCRIPTION_ONLY",
       "split": "validation",
-      "source": "team-supplied training-results screenshot",
       "precision_percent": 98.3,
       "recall_percent": 98.4,
       "map50_percent": 98.9,
       "map50_95_percent": 62.5,
       "per_class": {
-        "missing_hole": {
-          "precision_percent": 97.8,
-          "recall_percent": 98.2,
-          "map50_percent": 98.5
-        },
-        "open_circuit": {
-          "precision_percent": 99.1,
-          "recall_percent": 99.6,
-          "map50_percent": 99.5
-        },
-        "short_circuit": {
-          "precision_percent": 97.9,
-          "recall_percent": 97.6,
-          "map50_percent": 98.8
-        }
+        "missing_hole": {"precision_percent": 97.8, "recall_percent": 98.2, "map50_percent": 98.5},
+        "open_circuit": {"precision_percent": 99.1, "recall_percent": 99.6, "map50_percent": 99.5},
+        "short_circuit": {"precision_percent": 97.9, "recall_percent": 97.6, "map50_percent": 98.8}
       },
+      "source_report": "docs/results/PROJECT_VALIDATION_RESULTS.md",
+      "machine_readable_record": "docs/results/project_validation_metrics.json",
+      "checkpoint_identity_known": false,
+      "dataset_identity_known": false,
+      "raw_evaluator_output_present": false,
       "independent_test_metrics_present": false,
-      "reproduced_from_raw_evaluator_output": false,
-      "dataset_checkpoint_provenance_complete": false,
-      "report": "docs/results/PROJECT_VALIDATION_RESULTS.md",
-      "machine_readable_record": "docs/results/published_pcb_benchmarks.json",
-      "validation_source_image_repository_path": "docs/results/project-validation-screenshot.png",
-      "validation_source_image_repository_file_sha256": "8fddc32aeb9565bc8e2598885a1c88268a29eb2f18c9ab07b2bfc529430219b9",
-      "validation_source_image_original_sha256": "e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c"
-    },
-    "validated_on_pi": false,
-    "runtime_benchmark_script": "raspberry_pi/benchmark_onnx.py",
-    "runtime_benchmark_results_present": false,
-    "pipeline_benchmark_script": "raspberry_pi/benchmark_pipeline.py",
-    "validation_metrics_source_image_sha256": "e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c"
+      "reproduced_by_repository_validation_script": false
+    }
+  },
+  "dataset": {
+    "raw_dataset_present_in_repository": false,
+    "processed_dataset_present_in_repository": false,
+    "completed_import_manifest_present": false,
+    "source_register": "datasets/SOURCE_MANIFEST.csv",
+    "import_manifest_template": "datasets/import_manifest.example.csv",
+    "generated_import_audit": "datasets/processed/pcb3/audit.json",
+    "portable_audit_report": "docs/results/project_dataset_audit.json",
+    "audit_status": "NOT_PROVIDED",
+    "release_ready": false,
+    "group_split_rule": "All views and derived crops from one physical board/design/capture group remain in one split."
+  },
+  "checkpoint_audit": {
+    "portable_audit_report": "docs/results/project_checkpoint_audit.json",
+    "audit_status": "NOT_PROVIDED",
+    "release_ready": false
+  },
+  "release_audit": {
+    "portable_audit_report": "docs/results/project_release_audit.json",
+    "release_ready": false
   },
   "advisory": {
     "required_for_challenge": true,
-    "model_family": "Llama 3.2 1B Instruct",
-    "runtime": "ExecuTorch C++ llama_main on Raspberry Pi 5 CPU",
-    "processor": "Raspberry Pi 5 ARM CPU",
+    "model_family": "Llama 3.2 1B Instruct SpinQuant INT4/EO8",
+    "model_role": "Third-party foundation model used only for text advisory from structured detector events",
+    "trained_by_project_team": false,
+    "runtime": "ExecuTorch C++ llama_main; Raspberry Pi 5 is the documented target",
     "prompt_builder_present": true,
     "runner_source_present": true,
-    "runner_api": "ExecuTorch C++ llama_main",
-    "model_package_present": false,
-    "tokenizer_present": false,
-    "validated_on_pi": false,
-    "coordinator_source": "raspberry_pi/run_inspection.py",
-    "runner_source": "llm_advisory/run_executorch.py",
-    "quantization": "SpinQuant INT4 / EO8",
-    "backend_default": "cli",
-    "model_source": {
-      "repository": "executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET",
-      "revision": "911221e0f49d3354cbd4697a9c09feee25cadec7",
-      "license": "llama3.2",
-      "model_file": "Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte",
-      "tokenizer_file": "tokenizer.model",
-      "download_script": "llm_advisory/download_model.py",
-      "hash_manifest_path": "models/llama/download_manifest.json",
-      "weights_committed_to_git": false
-    },
-    "runtime_build": {
-      "build_script": "llm_advisory/build_pi5_runner.sh",
-      "executorch_branch": "release/1.5",
-      "target": "Raspberry Pi 5 aarch64 CPU",
-      "runtime_directory": "models/llama/runtime",
-      "runner_binary_present_in_git": false,
-      "validated_on_pi": false
-    },
-    "deployment_recipe_present": true
+    "model_package_present_in_repository": false,
+    "tokenizer_present_in_repository": false,
+    "compiled_runner_present_in_repository": false,
+    "validated_on_target_device": false,
+    "external_performance_numbers_included": false,
+    "provenance_and_download_instructions": "llm_advisory/README.md"
   },
-  "dataset": {
-    "raw_dataset_archive_present": false,
-    "processed_dataset_present": false,
-    "training_yaml_present": false,
-    "provenance_manifest": "datasets/SOURCE_MANIFEST.csv",
-    "import_manifest_template": "datasets/import_manifest.example.csv"
-  },
-  "hardware": {
-    "platform": "Raspberry Pi 5 CPU",
-    "conveyor": true,
-    "ir_presence_sensor": true,
-    "external_led_illumination": true,
-    "camera": true,
-    "station_controller_source": "raspberry_pi/station_controller.py",
-    "inspection_orchestrator_source": "raspberry_pi/run_inspection.py",
+  "hardware_and_application": {
+    "documented_target": "Raspberry Pi 5",
+    "station_controller_source_present": true,
+    "dashboard_source_present": true,
+    "camera_capture_source_present": true,
+    "gpio_and_illumination_source_present": true,
+    "physical_station_evidence_present": false,
     "gpio_pin_mapping_verified": false,
-    "camera_capture_verified_on_pi": false,
-    "led_driver_timing_verified_on_pi": false,
-    "commissioning_checklist": "docs/PI5_COMMISSIONING.md",
-    "commissioning_record_completed": false,
-    "full_cycle_validation_on_pi": false
+    "camera_capture_verified_on_target": false,
+    "complete_cycle_verified": false,
+    "offline_test_verified": false,
+    "runtime_benchmarks_present": false,
+    "power_measurement_present": false,
+    "severity_policy": {
+      "path": "models/severity_policy.json",
+      "status": "PROVISIONAL_REQUIRES_BOARD_LEVEL_VALIDATION"
+    }
   },
   "demo_video": {
     "path": "demo_video/pcb-inspection-demo.mp4",
     "file_present": true,
-    "content_reviewed_for_submission": false,
-    "team_confirms_complete": true
+    "team_confirms_complete": true,
+    "content_reviewed_by_auditor": false
   },
-  "severity_policy_configured": true,
-  "note": "Inference is configured to run locally on the Raspberry Pi 5 CPU after model/runtime provisioning. Provisioning is automated by scripts/provision_pi5.sh. No cloud inference API is configured; Firebase record synchronization is optional and disabled by default. Target-device inference and offline operation are not yet marked validated until commissioning evidence is saved.",
-  "performance": {
-    "reference_benchmarks_document": "docs/REFERENCE_BENCHMARKS.md",
-    "project_detector_benchmark_script": "raspberry_pi/benchmark_onnx.py",
-    "project_pipeline_benchmark_script": "raspberry_pi/benchmark_pipeline.py",
-    "project_results_present": true,
-    "project_accuracy_metrics_present": false,
-    "power_measurement_present": false,
-    "external_references_document": "docs/REFERENCE_BENCHMARKS.md",
-    "external_pcb_benchmarks_document": "docs/EXTERNAL_PCB_BENCHMARKS.md",
-    "external_pcb_benchmarks_data": "docs/results/published_pcb_benchmarks.json",
-    "external_pcb_benchmarks_are_project_results": false,
-    "project_validation_metrics_present": true,
-    "project_test_accuracy_metrics_present": false,
-    "project_validation_metrics_document": "docs/results/published_pcb_benchmarks.json",
-    "validation_metrics_source": "Team-supplied training-results screenshot; raw evaluator output and provenance not yet archived"
+  "third_party_components": [
+    "Ultralytics YOLO architecture and training/runtime code",
+    "PyTorch",
+    "OpenCV",
+    "ONNX Runtime",
+    "ExecuTorch",
+    "Llama 3.2 1B Instruct foundation model"
+  ],
+  "originality_and_authorship": {
+    "third_party_pcb_detector_checkpoint_configured": false,
+    "external_pcb_benchmark_values_used_as_project_results": false,
+    "team_authorship_of_each_custom_source_file_independently_verified": false,
+    "team_must_confirm_individual_contributions_and_review_all_licenses": true
   },
-  "external_pretrained_baseline": {
-    "publisher": "Sulojan Rajkumar",
-    "model": "YOLOv8s PCB defect detector",
-    "repository": "https://huggingface.co/Sulojan/pcb-defect-yolov8s",
-    "source_repository": "https://github.com/Sulojan2027/PCB_Defect_Detect",
-    "file": "best.pt",
-    "sha256": "1acd655ce93a474f0ed00958ddd1079afb46c74868f916af6187bf63dad5bb3d",
-    "license_declared_by_model_card": "MIT",
-    "downloader": "models/pretrained/download_sulojan_pcb_yolov8s.py",
-    "upstream_metrics_document": "docs/PCB_UPSTREAM_BASELINE.md",
-    "downloaded_to_this_repo": false,
-    "converted_to_onnx": false,
-    "target_mapping": {
-      "missing_hole": "missing_hole",
-      "open_circuit": "open_circuit",
-      "short": "short_circuit"
-    },
-    "ignored_source_classes": [
-      "mouse_bite",
-      "spur",
-      "spurious_copper"
-    ],
-    "metrics_are_upstream_not_project_results": true
-  },
-  "local_execution": {
-    "execution_mode": "on_device",
-    "target_device": "Raspberry Pi 5",
-    "vision_preprocessing": "OpenCV on Raspberry Pi 5",
-    "vision_inference": "ONNX Runtime CPUExecutionProvider on Raspberry Pi 5 CPU",
-    "advisory_model": "Llama 3.2 1B Instruct SpinQuant INT4 / EO8",
-    "advisory_inference": "ExecuTorch C++ llama_main on Raspberry Pi 5 CPU",
-    "dashboard": "Static dashboard served by the Pi; browser is UI only and does not run inference",
-    "remote_inference_api_configured": false,
-    "runtime_internet_required_for_inference": false,
-    "local_model_and_runtime_assets_required": true,
-    "offline_validation_completed": false,
-    "offline_validation_evidence": null,
-    "firebase_record_sync": {
-      "default_enabled": false,
-      "environment_variable": "PCB_FIREBASE_PUBLISH",
-      "default_value": false,
-      "purpose": "Optional event-record replication only; not used for model inference"
-    },
-    "documentation": "docs/LOCAL_EXECUTION_AND_PERFORMANCE.md"
-  },
-  "severity_policy": {
-    "path": "models/severity_policy.json",
-    "status": "PROVISIONAL_REQUIRES_BOARD_LEVEL_VALIDATION",
-    "validation_complete": false,
-    "rules": {
-      "missing_hole": "MEDIUM",
-      "open_circuit": "HIGH",
-      "short_circuit": "HIGH"
-    }
-  }
+  "release_note": "The repository contains software source and a documented deployment path. The project-trained model checkpoint, completed dataset audit, target-device commissioning evidence and independent held-out test report are not present. Do not claim these activities have been completed."
 }
