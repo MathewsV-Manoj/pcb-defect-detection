@@ -110,7 +110,16 @@
       "compatible_with_primary_three_class_rgb_detector": false,
       "integrated_with_current_pi_inference_path": false,
       "deployment_approved": false,
-      "audit_record": "docs/results/supplied_model_package_audit.json"
+      "audit_record": "docs/results/supplied_model_package_audit.json",
+      "strict_architecture_state_dict_load": "PASS_NO_MISSING_OR_UNEXPECTED_KEYS",
+      "dummy_forward_output_shape": [
+        1,
+        1,
+        320,
+        320
+      ],
+      "dummy_forward_output_finite": true,
+      "verification_scope": "Architecture smoke check only; not a data/accuracy or deployment test"
     }
   },
   "dataset": {
