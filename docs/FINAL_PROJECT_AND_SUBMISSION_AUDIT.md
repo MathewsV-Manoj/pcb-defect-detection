@@ -181,34 +181,11 @@ No image counts, class distribution or dataset rights status are invented in thi
 
 ## 6. Accuracy and validation metrics
 
-A team-supplied screenshot is retained in the repository. It reports the following **validation** values:
+No numerical accuracy result is included in the submission-facing repository. A previously supplied screenshot did not identify the detector checkpoint, dataset version, board-group split manifest, evaluation settings or raw evaluator output. Its numerical values have therefore been removed from the project results and are not attributed to this implementation.
 
-| Metric | Screenshot-reported value |
-|---|---:|
-| Precision | 98.3% |
-| Recall | 98.4% |
-| mAP@0.50 | 98.9% |
-| mAP@0.50:0.95 | 62.5% |
+The current machine-readable held-out test record remains `NOT_PROVIDED`, with null metric fields. The evaluation script is present, but it has not generated a reproducible result from a checkpoint and dataset included in this checkout.
 
-Per-class screenshot transcription:
-
-| Class | Precision | Recall | mAP@0.50 |
-|---|---:|---:|---:|
-| Missing hole | 97.8% | 98.2% | 98.5% |
-| Open circuit | 99.1% | 99.6% | 99.5% |
-| Short circuit | 97.9% | 97.6% | 98.8% |
-
-These are retained as screenshot-reported historical validation figures only. The screenshot does not identify the checkpoint hash, dataset version, validation sample/instance counts, group split manifest, evaluator settings or raw evaluator output. They have not been independently reproduced from the current repository pipeline.
-
-They must not be described as:
-- a verified result from the supplied ResAttention U-Net;
-- independent held-out test accuracy;
-- Raspberry Pi accuracy or runtime performance; or
-- a reproduced result from the newly documented random-initialisation workflow.
-
-To promote these values to reproducible project results, recover the exact model, original dataset and validation output that generated the screenshot. If they cannot be recovered, retain the screenshot values as unverified historical results and report new scores from a fully audited run.
-
-No metrics from external PCB models, research publications, other Pi devices or Llama demonstrations are treated as project results.
+Do not report precision, recall, F1, mAP, false-positive/false-negative rates or detection accuracy as achieved project results unless the exact project checkpoint, training provenance, dataset audit, held-out split and raw evaluator output are connected and independently reproducible. No external PCB-model or hardware benchmark values are substituted.
 
 ---
 
@@ -262,15 +239,9 @@ These are data-entry and evidence-archiving tasks, not instructions to rerun alr
 
 ## 9. Demo video status
 
-The original MP4 has been restored at [demo_video/WhatsApp Video 2026-11-21 at 5.48.59 PM.mp4](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4). Its SHA-256 is `fc562f5889e80173a06e5220328c2bdb5140c02e762a50c3a6640fc9a1348003`, matching the file previously committed in the repository. The team also reports a separate official upload; its submission URL/receipt is not archived here. The video content has not yet been independently reviewed.
+The original MP4 is present at [demo_video/WhatsApp Video 2026-11-21 at 5.48.59 PM.mp4](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4). Its SHA-256 is `fc562f5889e80173a06e5220328c2bdb5140c02e762a50c3a6640fc9a1348003`. A sampled visual review of the clip (approximately 120.7 seconds) confirms that it shows a physical conveyor/PCB setup and an operator-facing dashboard. At approximately 1:56, the displayed result explicitly says **“SIMULATED INSPECTION COMPLETE”** and records a simulated defect finding. Accordingly, this video demonstrates the physical setup and a simulated UI flow; it does not demonstrate live YOLO inference, a verified detector prediction or actual ExecuTorch/Llama execution.
 
-The repository therefore records:
-
-```text
-REPOSITORY_COPY_PRESENT_TEAM_REPORTED_EXTERNAL_UPLOAD_RECEIPT_NOT_ARCHIVED_CONTENT_REVIEW_PENDING
-```
-
-The MP4 is now present in the repository, but the external official submission URL/receipt is still not archived here. This does **not** establish that the GitHub copy is the same file attached to the official portal; verify the portal attachment and retain its confirmation. The content review also remains pending.
+The repository records the video as **present; sampled review completed; simulation-only result shown**. The video also uses a dark dashboard appearance that does not match the current light-themed `dashboard/index.html` in this repository. Either restore the actual dashboard source used in the clip or describe the clip as a separate demonstration UI, not a capture of the current committed dashboard. The sampled review did not establish the IR arming sequence, a full sensor-to-camera trigger cycle, live detector output, Llama response, or absence of credentials throughout the entire clip. Those points remain unverified. The team reports a separate official upload; its portal URL/receipt is not archived in the repository.
 
 ---
 
@@ -319,7 +290,7 @@ Project-specific work is the integration of the hardware trigger/capture path, P
 - Do not present the provisional severity policy as an approved electrical/QA standard.
 - Do not claim a model was trained by the team without its actual training history and provenance.
 - Do not claim the U-Net trace extractor is the three-class classifier.
-- Do not label screenshot metrics as independently validated test accuracy.
+- Do not report screenshot-derived accuracy values; their checkpoint/dataset/evaluator provenance is unavailable.
 - Do not use external benchmark numbers as project performance.
 - Keep the Llama component described as a text advisory over structured detections; it is not the PCB vision model and does not replace QA judgement.
 
@@ -383,12 +354,12 @@ The items below are what remain to make the public technical evidence complete. 
 | Auxiliary trace-mask checkpoint | INSPECTED | Hash and architecture checks passed; no training/evaluation provenance |
 | Primary three-class detector | NOT PROVIDED IN CHECKOUT | Exact checkpoint/provenance still needed |
 | Dataset and labels | NOT PROVIDED IN CHECKOUT/ZIP | Actual source data and completed audit still needed |
-| Screenshot validation values | UNVERIFIED HISTORICAL TRANSCRIPTION | Not tied to an identified checkpoint/dataset |
+| Accuracy metrics | NOT REPORTED | No verified checkpoint/dataset-bound evaluation included; screenshot-derived values excluded |
 | ONNX parity | NOT PROVIDED | No matching primary detector export/parity report |
 | Pi runtime evidence | NOT PROVIDED | Target smoke-test record absent |
 | Physical build/tests | TEAM REPORTED COMPLETE | Archive existing test data; no need to repeat completed tests |
 | Offline test | NOT VERIFIED IN REPOSITORY | Preserve the actual test record or state not tested |
-| Demo video | REPOSITORY COPY PRESENT; TEAM REPORTS EXTERNAL UPLOAD | MP4 restored in `demo_video/`; verify official portal attachment/receipt; content review pending |
+| Demo video | REPOSITORY COPY PRESENT; SAMPLED REVIEW SHOWS SIMULATED RESULT | Physical setup and UI flow visible; no live detector or Llama execution proven; team reports separate portal upload |
 | Individual contribution / AI declaration | TEAM REPORTED AVAILABLE/SUBMITTED | Keep signed copy/receipt; AI assistance is disclosed in repository |
 | Severity policy | PROVISIONAL | Requires engineering/QA approval |
 
