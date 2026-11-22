@@ -14,40 +14,32 @@ CLASS_NAMES = ["missing_hole", "open_circuit", "short_circuit"]
 SIZE = 640
 
 
-SOURCE_CLASS_ORDER_UPSTREAM = [
-    "missing_hole", "mouse_bite", "open_circuit", "short", "spur", "spurious_copper"
-]
-DEFAULT_CLASS_MAP = {name: name for name in CLASS_NAMES}
-
-
 def load_model_contract(model_path: str | Path):
-    """Load output class metadata from the ONNX sidecar, or use the native 3-class contract."""
+    """Require the audited, project-trained three-class ONNX contract."""
     path = Path(model_path)
     sidecar = path.with_suffix(".onnx.json")
     if not sidecar.is_file():
-        return CLASS_NAMES, DEFAULT_CLASS_MAP, None
+        raise RuntimeError(f"Project ONNX provenance sidecar is required: {sidecar}")
     try:
         metadata = json.loads(sidecar.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
         raise RuntimeError(f"Invalid ONNX metadata sidecar {sidecar}: {exc}") from exc
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    if metadata.get("sha256") != digest:
+        raise RuntimeError("ONNX model SHA-256 does not match its metadata sidecar")
+    if metadata.get("provenance_status") != "VERIFIED_PROJECT_TRAINING":
+        raise RuntimeError("ONNX sidecar does not declare verified project training provenance")
+    if metadata.get("pretrained_weights_used") is not False:
+        raise RuntimeError("Pretrained PCB detector weights are not accepted by this project release")
+    if metadata.get("initialization_method") != "random_initialization_from_yolo_yaml":
+        raise RuntimeError("ONNX sidecar does not declare random initialization from a model YAML")
     class_order = metadata.get("class_order")
-    if not isinstance(class_order, list) or not class_order or not all(
-        isinstance(name, str) for name in class_order
-    ):
-        raise RuntimeError(f"ONNX sidecar must declare a non-empty class_order: {sidecar}")
-    target_map = metadata.get("target_class_map")
-    if target_map is None:
-        if class_order != CLASS_NAMES:
-            raise RuntimeError("Non-native ONNX class order requires target_class_map in its sidecar")
-        target_map = DEFAULT_CLASS_MAP
-    if not isinstance(target_map, dict):
-        raise RuntimeError("target_class_map must be a JSON object")
-    for source_name, target_name in target_map.items():
-        if source_name not in class_order or target_name not in CLASS_NAMES:
-            raise RuntimeError(f"Invalid ONNX target class mapping: {source_name} -> {target_name}")
-    if not target_map:
-        raise RuntimeError("target_class_map must map at least one source class")
-    return class_order, target_map, metadata
+    if class_order != CLASS_NAMES:
+        raise RuntimeError(f"ONNX class order must be {CLASS_NAMES!r}; got {class_order!r}")
+    target_map = metadata.get("target_class_map", {name: name for name in CLASS_NAMES})
+    if target_map != {name: name for name in CLASS_NAMES}:
+        raise RuntimeError("Only the project's native three-class identity mapping is accepted")
+    return CLASS_NAMES, target_map, metadata
 
 
 def letterbox(image, size=SIZE):
