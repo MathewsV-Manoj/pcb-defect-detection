@@ -11,7 +11,7 @@
     "pi_runtime_smoke_test": "NOT_RUN",
     "physical_station_commissioning": "TEAM_REPORTED_COMPLETE_EVIDENCE_PENDING",
     "offline_operation": "NOT_VERIFIED",
-    "demo_video_content_review": "FILE_PRESENT_CONTENT_REVIEW_PENDING_EXTERNAL_RECEIPT_NOT_ARCHIVED",
+    "demo_video_content_review": "SAMPLED_REVIEW_SIMULATION_ONLY",
     "source_authorship_review": "TEAM_REPORTED_DECLARATION_AVAILABLE_REPOSITORY_REVIEW_PENDING"
   },
   "evidence_checks": {
@@ -32,10 +32,10 @@
     "Raspberry Pi runtime smoke-test evidence is not present in the repository.",
     "The team reports that the physical build and tests are complete, but the pin map, cycle counts and supporting commissioning evidence have not been committed; commissioning therefore remains unverified in this repository.",
     "Offline operation evidence is not present.",
-    "The original demo MP4 is present in the repository, but the official portal attachment/receipt remains unverified and the video content review has not been completed.",
+    "The demo MP4 is present and has received a sampled review; the result overlay is explicitly simulated, so the clip does not prove live YOLO or Llama execution. The team reports a separate official upload, but its portal receipt/link is not archived here.",
     "The team reports that the individual-contribution and AI-assistance declaration is available/submitted separately. The signed declaration/receipt and per-person mapping are not archived in this repository for independent review."
   ],
   "release_ready": false,
-  "rule": "The GitHub source/evidence checkout is considered reproducible only when primary-detector artefacts, dataset provenance, held-out evaluation, ONNX parity and Pi/offline evidence are retained. A separately submitted video or authorship declaration may satisfy the challenge portal requirements, but this repository cannot independently verify external submissions without their receipt or link.",
+  "rule": "A complete reproducible technical release requires an audited dataset and matching project checkpoint, held-out test metrics, ONNX parity, Pi runtime smoke test, physical/offline evidence, demo content scope and team authorship attestation. This manifest does not imply that team-reported physical tests or externally submitted documents were not completed; it records whether their supporting evidence is present in this repository.",
   "supplied_model_package_audit": "docs/results/supplied_model_package_audit.json"
 }
