@@ -134,7 +134,7 @@ No Pi smoke-test record, target-device latency result, end-to-end capture-cycle 
 | Raspberry Pi runtime smoke test | Not available |
 | Physical GPIO/camera/illumination commissioning | Team reports build/tests complete; detailed evidence not committed, so repository status remains unverified |
 | Offline test | Not verified |
-| Demo video | Team reports uploaded separately; MP4 removed from repository at team request; external receipt/link not archived |
+| Demo video | [Original MP4 in repository](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4); team reports a separate official upload; external receipt/link not archived |
 | Severity rules | Configured but provisional |
 
 The project should not state that a particular accuracy, latency, frame rate, power draw, reliability level, physical cycle or offline result has been achieved unless the corresponding source data and measurement record are retained.
@@ -151,6 +151,6 @@ The project should not state that a particular accuracy, latency, frame rate, po
 8. Run `pcb_engine_kit/compare_pt_onnx.py` over the complete held-out test directory and retain `project_onnx_parity.json`; the script checks model/dataset hashes and can mark the ONNX sidecar only after a full-split pass.
 9. Provision the target Pi with the project detector and separately licensed Llama model.
 10. Complete the Pi smoke test, physical commissioning, repeated-cycle tests and offline test.
-11. Provide a separately approved demo-video link through the official submission channel if the challenge requires one; no MP4 is retained in this repository. Obtain QA/engineering approval for the provisional severity policy.
+11. Verify that the separately submitted official video is the intended final version and retain its receipt/link if required by the challenge. The original MP4 is also retained in this repository at [demo_video/](../demo_video/). Obtain QA/engineering approval for the provisional severity policy.
 
 The team also reports that the individual-contribution and AI-assistance declaration is available/submitted separately. The repository's originality audit discloses ChatGPT-assisted cleanup work; the signed external declaration is not stored in this checkout. See `docs/FINAL_PROJECT_AND_SUBMISSION_AUDIT.md` for the full reconciliation. This report distinguishes source-code availability from evidence of successful execution. Update it only when new artefacts and reproducible test records are available.
