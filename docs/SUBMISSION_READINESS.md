@@ -21,7 +21,7 @@ This document distinguishes source code from tested deliverables. It is not a cl
 | Advisory | Llama 3.2 1B Instruct + ExecuTorch integration source | Third-party model; weights/runtime not stored or target-tested |
 | Dashboard | Browser operator interface | Source present; no target-device integration evidence |
 | Pi controller | IR/camera/LED source | Team reports physical build/tests complete; commissioning evidence not yet committed |
-| Demo video | Original MP4 present at [`demo_video/`](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4) | Team reports a separate official upload; verify portal attachment and retain receipt/link |
+| Demo video | Original MP4 present at [`demo_video/`](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4) | Sampled review shows a simulated inspection-result overlay; this is not live detector evidence; team reports separate official upload |
 | Team/registration eligibility | Names are listed in README | Registration, nomination and mentor evidence not established by repo |
 
 ## Model and dataset ownership controls
@@ -30,11 +30,11 @@ The previous default PCB model download path has been removed. The current provi
 
 This code-level rule does not prove who executed the training run. The team must confirm it actually ran the documented workflow and disclose any code written with assistance, adapted from examples or supplied by third parties. Ultralytics, PyTorch, OpenCV, ONNX Runtime, ExecuTorch and Llama remain third-party components. They are not represented as team inventions.
 
-## Project metrics
+## Accuracy reporting
 
-A team-supplied screenshot reports validation precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%, with per-class values transcribed in docs/results/PROJECT_VALIDATION_RESULTS.md. The newly supplied `PCB_ENGINE_KIT(2).zip` was also inspected: it contains a five-input, one-output ResAttention U-Net trace-mask checkpoint, not the three-class fault detector. Its archive checksum matches, but the archive contains no training dataset, provenance, training log or evaluation metrics for that checkpoint. It must not be used to identify or validate the screenshot metrics. See docs/results/supplied_model_package_audit.json.
+No verified accuracy result is included in this repository. Screenshot-derived figures were excluded because the checkpoint, dataset, split and raw evaluator output could not be identified. The current held-out test record remains `NOT_PROVIDED`; do not attribute accuracy values to this project without a reproducible test result bound to the exact checkpoint and audited dataset.
 
-The screenshot does not identify the checkpoint, dataset version, validation sample count or raw evaluator output. The values have not been independently reproduced and must not be called held-out test accuracy or Pi performance. No numerical results from other PCB models, papers, hardware benchmarks or Llama deployments are retained as project results.
+The separately supplied `PCB_ENGINE_KIT(2).zip` was inspected. Its auxiliary ResAttention U-Net is a five-input, one-output trace-mask model, not the three-class RGB fault detector. It is not used as the PCB fault detector and no accuracy is attributed to it. See `docs/results/supplied_model_package_audit.json`.
 
 ## Blocking evidence
 
@@ -52,7 +52,7 @@ The screenshot does not identify the checkpoint, dataset version, validation sam
 | Physical station | Team reports physical build/tests complete; add the actual BCM pin map, sensor polarity, camera/LED details, repeated-cycle counts and existing test records to docs/results/physical_station_commissioning.json |
 | Offline run | Complete a real inspection with WAN disconnected and local LAN maintained |
 | Severity approval | Obtain QA/engineering approval or retain explicit provisional wording |
-| Demo video | Repository MP4 present; content review pending; separately verify official portal attachment and retain receipt/link |
+| Demo video | Repository MP4 present; sampled review identifies simulated UI output rather than live inference; team reports separate official upload |
 | Eligibility | Confirm registration, team membership, college nomination and mentor from the original registration record |
 
 ## Audit commands
@@ -76,6 +76,6 @@ Current reports deliberately say NOT_PROVIDED. Do not edit them to pass; regener
 
 ## Submission wording that is supportable now
 
-The current repository contains the application and dashboard source, dataset/training/audit utilities, ONNX inference path, Llama/ExecuTorch integration source, Raspberry Pi deployment scripts and technical report. The uploaded package's auxiliary trace-mask checkpoint is recorded separately and is not treated as the primary defect detector. The repository retains screenshot-reported validation values with an explicit provenance limitation; the original demo MP4 is present in the repository, and the team reports a separate official upload; the individual-contribution/AI-assistance declaration is also reported submitted/available separately. Their external receipt/copy is not archived here.
+The current repository contains the application and dashboard source, dataset/training/audit utilities, ONNX inference path, Llama/ExecuTorch integration source, Raspberry Pi deployment scripts and technical report. The uploaded package's auxiliary trace-mask checkpoint is recorded separately and is not treated as the primary defect detector. The repository does not include accuracy figures because no checkpoint/dataset-bound evaluation result is available; the original demo MP4 is present in the repository, and the team reports a separate official upload; the individual-contribution/AI-assistance declaration is also reported submitted/available separately. Their external receipt/copy is not archived here.
 
 The current repository does **not** prove a primary three-class project-trained detector, completed dataset audit, independent test accuracy, target-Pi runtime or offline operation. The team reports that physical build/tests are complete, but the corresponding evidence is not yet in the repository. Do not claim independently verified results until the matching records are added.
