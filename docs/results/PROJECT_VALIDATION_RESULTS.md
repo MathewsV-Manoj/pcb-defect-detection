@@ -29,7 +29,7 @@
 
 The screenshot does not identify the model checkpoint path or SHA-256, training-provenance sidecar, dataset name/version, import-manifest hash, group-level split manifest, validation image/object counts, image size, confidence threshold, NMS IoU threshold, evaluator version or raw evaluation output.
 
-The repository currently has no project-trained checkpoint, processed dataset or completed provenance audit. As a result:
+The repository currently has no primary three-class fault-detector checkpoint, processed dataset or completed provenance audit. The later-supplied `PCB_ENGINE_KIT(2).zip` contains a separate ResAttention U-Net checkpoint for five-channel trace-mask extraction, not the three-class RGB defect detector. That archive contains no training dataset, training log, checkpoint provenance or validation metrics for the U-Net. Its SHA-256 integrity check is recorded in `supplied_model_package_audit.json`. As a result:
 
 - these values remain **team-supplied screenshot-reported validation metrics**;
 - they are not independently reproduced by the current repository scripts;
