@@ -205,7 +205,9 @@ The team supplied a training-results screenshot showing the following validation
 | Open Circuit | 99.1% | 99.6% | 99.5% |
 | Short Circuit | 97.9% | 97.6% | 98.8% |
 
-These are reported validation scores, not independent held-out test results or Raspberry Pi 5 performance. The dataset/version, validation sample count, checkpoint hash and raw evaluator output still need to be archived. The machine-readable record is in [docs/results/published_pcb_benchmarks.json](docs/results/published_pcb_benchmarks.json); the detailed report is in [docs/PROJECT_REPORT.md](docs/PROJECT_REPORT.md).
+These are reported validation scores, not independent held-out test results or Raspberry Pi 5 performance. The dataset/version, validation sample count, checkpoint hash and raw evaluator output still need to be archived. The canonical results/provenance note is [docs/results/PROJECT_VALIDATION_RESULTS.md](docs/results/PROJECT_VALIDATION_RESULTS.md); the machine-readable record is [docs/results/published_pcb_benchmarks.json](docs/results/published_pcb_benchmarks.json), and the detailed technical report is [docs/PROJECT_REPORT.md](docs/PROJECT_REPORT.md).
+
+For the Phase 1 submission links, deliverable status and final evidence checks, see [docs/PHASE1_SUBMISSION_CHECKLIST.md](docs/PHASE1_SUBMISSION_CHECKLIST.md).
 
 ## Repository map
 
