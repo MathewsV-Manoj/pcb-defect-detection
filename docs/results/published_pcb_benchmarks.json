@@ -177,7 +177,40 @@
       "map50_95_percent": 50.3,
       "inference_ms_author_reported": 18.4,
       "evaluation_notes": "This is the third-party checkpoint fetched by the repository's provisioner. Its original six-class metrics are not measurements after this project's class mapping, ONNX export or Pi deployment.",
-      "source_code_url": "https://github.com/Sulojan2027/PCB_Defect_Detect"
+      "source_code_url": "https://github.com/Sulojan2027/PCB_Defect_Detect",
+      "per_class": {
+        "missing_hole": {
+          "project_class_mapping": "missing_hole",
+          "map50_percent": 99.5,
+          "map50_95_percent": 65.7
+        },
+        "mouse_bite": {
+          "project_class_mapping": "IGNORED",
+          "map50_percent": 92.2,
+          "map50_95_percent": 51.2
+        },
+        "open_circuit": {
+          "project_class_mapping": "open_circuit",
+          "map50_percent": 99.2,
+          "map50_95_percent": 53.8
+        },
+        "short": {
+          "project_class_mapping": "short_circuit",
+          "map50_percent": 97.5,
+          "map50_95_percent": 50.2
+        },
+        "spur": {
+          "project_class_mapping": "IGNORED",
+          "map50_percent": 90.4,
+          "map50_95_percent": 44.8
+        },
+        "spurious_copper": {
+          "project_class_mapping": "IGNORED",
+          "map50_percent": 86.1,
+          "map50_95_percent": 36.2
+        }
+      },
+      "per_class_note": "Per-class AP values are the publisher's six-class model-card results. The deployed application retains only missing_hole, open_circuit and short (mapped to short_circuit); model-card AP is not a project-held-out result."
     }
   ],
   "project_results": {
