@@ -58,6 +58,10 @@ set +a
 python raspberry_pi/station_controller.py --host 0.0.0.0 --port 8080
 ```
 
+## Network security boundary
+
+The station HTTP service currently binds to `0.0.0.0` by default and does not implement user authentication or TLS. The Origin check on the inspection endpoint is a browser cross-origin safeguard, not authentication. Run the service only on a trusted, isolated local network; restrict access with the Pi firewall; do not expose the port to the public internet or configure router port forwarding. The dashboard exposes captured images, inspection history and an endpoint that starts an inspection.
+
 ## Source map
 
 | File | Responsibility |
