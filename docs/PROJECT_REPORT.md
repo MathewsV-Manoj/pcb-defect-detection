@@ -27,7 +27,7 @@ The current station-controller source describes this sequence:
 
 The IR sensor indicates presence at its trigger point. It does not determine exact pixel coordinates or image alignment. The mechanical arrangement of conveyor, camera and sensor determines where a board appears in the frame. The source controller does not claim to control conveyor speed or direction.
 
-**Verification boundary:** these steps describe the software sequence. The repository does not contain a completed Pi commissioning record, verified GPIO pin mapping, physical-cycle log or offline-test event. The report does not claim that the complete physical workflow has passed on the team's hardware.
+**Verification boundary:** the team reports that the physical station build and physical tests are complete. The repository currently lacks the completed commissioning sheet, verified GPIO pin mapping, physical-cycle counts and supporting logs/photos, so this report records the completion as team-reported rather than independently evidenced. No repeat of the physical test is implied; the existing test records should be added to the evidence folder.
 
 ## 3. Software architecture
 
@@ -43,7 +43,7 @@ The detector source implements a fixed three-class interface and a 640 × 640 RG
 
 The training utility now starts from an Ultralytics YOLO architecture YAML and passes pretrained=False. It rejects .pt initial weights. The script writes a project_training_provenance.json record beside the produced best.pt checkpoint, including the checkpoint hash, dataset hashes, class order and training settings. The exporter verifies that record and writes a matching ONNX metadata sidecar.
 
-The source code and training path are present, but no project-trained best.pt or best.onnx is included in this repository snapshot. No claim is made that the current checkout contains a reproducible trained detector.
+The source code and training path are present, but no primary three-class project-trained best.pt or best.onnx is included in this repository snapshot. The uploaded `PCB_ENGINE_KIT(2).zip` contains a separate ResAttentionUNet checkpoint for single-channel trace-mask extraction (five input channels, one output channel); its checksum matches the archive manifest. The archive itself documents this U-Net as a trace extractor, not a fault detector, and contains no training dataset, training log, provenance sidecar or metrics. It cannot fill the primary three-class detector record. See `docs/results/supplied_model_package_audit.json`.
 
 ### 3.3 Detection interpretation
 
@@ -87,7 +87,7 @@ A checkpoint is not accepted for validation or export unless:
 
 The independent release audit generates project_dataset_audit.json, project_checkpoint_audit.json and project_release_audit.json. Missing files are recorded as NOT_PROVIDED or INCOMPLETE, not as a pass.
 
-At the time of this report, no trained checkpoint or its provenance sidecar is in the repository. Consequently, no independently reproducible project test metrics can be reported.
+At the time of this report, no three-class fault-detector checkpoint or its provenance sidecar is in the repository. The separately supplied trace-mask checkpoint is not a substitute. Consequently, no independently reproducible primary-detector test metrics can be reported.
 
 ## 6. Screenshot-reported validation values
 
@@ -132,9 +132,9 @@ No Pi smoke-test record, target-device latency result, end-to-end capture-cycle 
 | Screenshot validation values | Supplied screenshot transcription only |
 | Independent held-out test results | Not available |
 | Raspberry Pi runtime smoke test | Not available |
-| Physical GPIO/camera/illumination commissioning | Not verified |
+| Physical GPIO/camera/illumination commissioning | Team reports build/tests complete; detailed evidence not committed, so repository status remains unverified |
 | Offline test | Not verified |
-| Demo MP4 | File present; content not independently reviewed |
+| Demo video | Removed from this repository at team request; no external submission link recorded |
 | Severity rules | Configured but provisional |
 
 The project should not state that a particular accuracy, latency, frame rate, power draw, reliability level, physical cycle or offline result has been achieved unless the corresponding source data and measurement record are retained.
@@ -151,6 +151,6 @@ The project should not state that a particular accuracy, latency, frame rate, po
 8. Run `pcb_engine_kit/compare_pt_onnx.py` over the complete held-out test directory and retain `project_onnx_parity.json`; the script checks model/dataset hashes and can mark the ONNX sidecar only after a full-split pass.
 9. Provision the target Pi with the project detector and separately licensed Llama model.
 10. Complete the Pi smoke test, physical commissioning, repeated-cycle tests and offline test.
-11. Review the demo video and obtain approval for the provisional severity policy.
+11. Provide a separately approved demo-video link through the official submission channel if the challenge requires one; no MP4 is retained in this repository. Obtain QA/engineering approval for the provisional severity policy.
 
 This report distinguishes source-code availability from evidence of successful execution. Update it only when new artefacts and reproducible test records are available.
