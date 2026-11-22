@@ -292,7 +292,7 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c", data["project_results"]["validation_source_image"]["sha256"])
         checklist = (ROOT / "docs" / "PHASE1_SUBMISSION_CHECKLIST.md").read_text(encoding="utf-8")
         self.assertIn("23 November 2026", checklist)
-        self.assertIn("Original work", checklist)
+        self.assertIn("original-work", checklist.lower())
 
     def test_external_benchmarks_are_explicitly_separate_from_project_measurements(self):
         reference = (ROOT / "docs" / "REFERENCE_BENCHMARKS.md").read_text(encoding="utf-8")
