@@ -214,18 +214,24 @@ def checkpoint_audit(checkpoint_value: str | None, data_report: dict[str, Any]) 
 
 
 
-def read_evidence_status(path: Path, fields: tuple[str, ...], default: str) -> str:
+def read_evidence_record(path: Path) -> dict[str, Any]:
     if not path.is_file():
-        return default
+        return {}
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
+        return {"_read_error": "INVALID"}
+    return value if isinstance(value, dict) else {"_read_error": "INVALID"}
+
+
+def record_status(record: dict[str, Any], fields: tuple[str, ...], default: str) -> str:
+    if record.get("_read_error"):
         return "INVALID"
     for field in fields:
-        status = value.get(field)
+        status = record.get(field)
         if isinstance(status, str) and status.strip():
             return status.strip().upper()
-    return "UNSPECIFIED"
+    return default
 
 
 def main() -> int:
@@ -238,27 +244,90 @@ def main() -> int:
     output_dir = Path(args.output_dir).expanduser().resolve()
     data_report = dataset_audit(args.data)
     checkpoint_report = checkpoint_audit(args.checkpoint, data_report)
+    test_record = read_evidence_record(output_dir / "project_test_metrics.json")
+    parity_record = read_evidence_record(output_dir / "project_onnx_parity.json")
+    pi_record = read_evidence_record(output_dir / "pi5_runtime_smoke_test.json")
+    physical_record = read_evidence_record(output_dir / "physical_station_commissioning.json")
+    offline_record = read_evidence_record(output_dir / "offline_operation_test.json")
+    demo_record = read_evidence_record(output_dir / "demo_video_review.json")
+    authorship_record = read_evidence_record(output_dir / "source_authorship_attestation.json")
+
     evidence_status = {
-        "held_out_test_metrics": read_evidence_status(
-            output_dir / "project_test_metrics.json", ("result_status", "status"), "NOT_PROVIDED"
+        "held_out_test_metrics": record_status(test_record, ("result_status", "status"), "NOT_PROVIDED"),
+        "onnx_prediction_parity": record_status(parity_record, ("status",), "NOT_PROVIDED"),
+        "pi_runtime_smoke_test": record_status(pi_record, ("overall_status", "status"), "NOT_RUN"),
+        "physical_station_commissioning": record_status(physical_record, ("status",), "NOT_VERIFIED"),
+        "offline_operation": record_status(offline_record, ("status",), "NOT_VERIFIED"),
+        "demo_video_content_review": record_status(demo_record, ("status",), "NOT_CONFIRMED"),
+        "source_authorship_review": record_status(authorship_record, ("status",), "TEAM_ATTESTATION_REQUIRED"),
+    }
+
+    test_model = test_record.get("model", {}) if isinstance(test_record.get("model"), dict) else {}
+    test_dataset = test_record.get("dataset", {}) if isinstance(test_record.get("dataset"), dict) else {}
+    parity_model = parity_record.get("model", {}) if isinstance(parity_record.get("model"), dict) else {}
+    pi_vision = pi_record.get("vision", {}) if isinstance(pi_record.get("vision"), dict) else {}
+    pi_advisory = pi_record.get("advisory", {}) if isinstance(pi_record.get("advisory"), dict) else {}
+    physical_cycles = physical_record.get("repeated_cycle_test", {}) if isinstance(physical_record.get("repeated_cycle_test"), dict) else {}
+    demo_checklist = demo_record.get("checklist", {}) if isinstance(demo_record.get("checklist"), dict) else {}
+
+    evidence_checks = {
+        "held_out_test_metrics_bound_to_project_artifacts": (
+            evidence_status["held_out_test_metrics"] == "COMPLETE"
+            and bool(test_model.get("checkpoint_sha256"))
+            and bool(test_model.get("training_provenance_sha256"))
+            and bool(test_dataset.get("yaml_sha256"))
+            and bool(test_dataset.get("audit_sha256"))
+            and all(isinstance(value, (int, float)) for value in (test_record.get("overall") or {}).values())
         ),
-        "onnx_prediction_parity": read_evidence_status(
-            output_dir / "project_onnx_parity.json", ("status",), "NOT_PROVIDED"
+        "onnx_parity_uses_identified_artifacts_and_images": (
+            evidence_status["onnx_prediction_parity"] == "PASS"
+            and int(parity_record.get("image_count") or 0) > 0
+            and bool(parity_model.get("checkpoint_sha256"))
+            and bool(parity_model.get("onnx_sha256"))
+            and bool(parity_model.get("dataset_audit_sha256"))
         ),
-        "pi_runtime_smoke_test": read_evidence_status(
-            output_dir / "pi5_runtime_smoke_test.json", ("overall_status", "status"), "NOT_RUN"
+        "pi_smoke_test_passed_vision_and_advisory": (
+            evidence_status["pi_runtime_smoke_test"] in {"PASS", "PASSED"}
+            and pi_vision.get("status") == "PASSED"
+            and pi_advisory.get("status") == "PASSED"
         ),
-        "physical_station_commissioning": read_evidence_status(
-            output_dir / "physical_station_commissioning.json", ("status",), "NOT_VERIFIED"
+        "physical_station_evidence_complete": (
+            evidence_status["physical_station_commissioning"] in {"PASS", "PASSED"}
+            and bool(physical_record.get("device_model"))
+            and bool(physical_record.get("gpio_pin_map"))
+            and bool(physical_record.get("evidence_files"))
+            and bool(physical_record.get("operator_and_date"))
+            and int(physical_cycles.get("attempted_cycles") or 0) >= 20
+            and physical_cycles.get("successful_cycles") is not None
         ),
-        "offline_operation": read_evidence_status(
-            output_dir / "offline_operation_test.json", ("status",), "NOT_VERIFIED"
+        "offline_operation_evidence_complete": (
+            evidence_status["offline_operation"] in {"PASS", "PASSED"}
+            and all(offline_record.get(key) is True for key in (
+                "wan_disconnected", "pi_and_operator_laptop_same_private_lan",
+                "camera_capture_completed", "project_detector_completed",
+                "text_advisory_completed", "local_event_and_image_saved",
+                "firebase_sync_disabled",
+            ))
+            and bool(offline_record.get("evidence_files"))
+            and bool(offline_record.get("test_date_and_operator"))
         ),
-        "demo_video_content_review": read_evidence_status(
-            output_dir / "demo_video_review.json", ("status",), "NOT_CONFIRMED"
+        "demo_video_review_complete": (
+            evidence_status["demo_video_content_review"] in {"REVIEWED", "PASS"}
+            and bool(demo_record.get("video_sha256"))
+            and bool(demo_record.get("reviewed_by"))
+            and bool(demo_record.get("review_date"))
+            and bool(demo_checklist)
+            and all(value is True for value in demo_checklist.values())
         ),
-        "source_authorship_review": read_evidence_status(
-            output_dir / "source_authorship_attestation.json", ("status",), "TEAM_ATTESTATION_REQUIRED"
+        "team_authorship_and_reuse_review_complete": (
+            evidence_status["source_authorship_review"] == "REVIEWED"
+            and authorship_record.get("team_reviewed_all_project_source") is True
+            and authorship_record.get("reused_or_adapted_code_disclosed") is True
+            and authorship_record.get("ai_assisted_code_disclosed_according_to_challenge_rules") is True
+            and authorship_record.get("third_party_licenses_and_notices_reviewed") is True
+            and authorship_record.get("each_team_member_confirmed_contribution") is True
+            and bool(authorship_record.get("file_to_contributor_mapping"))
+            and bool(authorship_record.get("team_approved_by"))
         ),
     }
     required_statuses = {
@@ -275,8 +344,12 @@ def main() -> int:
         for name, expected in required_statuses.items()
         if evidence_status[name] not in expected
     ]
+    evidence_blockers.extend(
+        f"{name}: supporting evidence fields are missing or incomplete"
+        for name, passed in evidence_checks.items() if not passed
+    )
     combined = {
-        "schema_version": 2,
+        "schema_version": 3,
         "audit_type": "project_full_release_evidence_audit",
         "audited_at_utc": datetime.now(timezone.utc).isoformat(),
         "dataset_status": data_report["status"],
@@ -284,14 +357,17 @@ def main() -> int:
         "checkpoint_status": checkpoint_report["status"],
         "checkpoint_release_ready": checkpoint_report.get("release_ready") is True,
         "evidence_status": evidence_status,
+        "evidence_checks": evidence_checks,
         "evidence_blockers": evidence_blockers,
         "release_ready": (
             data_report.get("release_ready") is True
             and checkpoint_report.get("release_ready") is True
+            and all(evidence_checks.values())
             and not evidence_blockers
         ),
         "rule": "A complete release requires an audited dataset and matching project checkpoint, reproducible held-out test metrics, ONNX prediction parity, Pi smoke test, physical/offline evidence, video review and team authorship attestation.",
     }
+
     write_json(output_dir / "project_dataset_audit.json", data_report)
     write_json(output_dir / "project_checkpoint_audit.json", checkpoint_report)
     write_json(output_dir / "project_release_audit.json", combined)
