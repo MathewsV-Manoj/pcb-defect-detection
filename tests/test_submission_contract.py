@@ -105,6 +105,8 @@ class SubmissionContractTests(unittest.TestCase):
         audit_tool = (ROOT / "pcb_engine_kit" / "audit_release.py").read_text(encoding="utf-8")
         self.assertIn("checkpoint_sha256_matches", audit_tool)
         self.assertIn("original_source_image_and_label_hashes_match", audit_tool)
+        for marker in ("offline_operation_test.json", "demo_video_review.json", "source_authorship_attestation.json", "physical_station_commissioning.json", "team_authorship_and_reuse_review_complete"):
+            self.assertIn(marker, audit_tool)
         self.assertIn("project_training_provenance.json", audit_tool)
 
     def test_project_validation_values_are_screenshot_only(self):
