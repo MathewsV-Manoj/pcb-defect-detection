@@ -234,6 +234,19 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn('"audit_sha256": dataset_audit_sha', exporter)
         self.assertNotIn('"f1": overall_f1', exporter)
 
+    def test_pi_dependencies_cover_python_313_arm64_install_path(self):
+        train = (ROOT / "pcb_engine_kit" / "requirements-train.txt").read_text(encoding="utf-8")
+        export = (ROOT / "pcb_engine_kit" / "requirements-export.txt").read_text(encoding="utf-8")
+        runtime = (ROOT / "raspberry_pi" / "requirements.txt").read_text(encoding="utf-8")
+        provisioner = (ROOT / "scripts" / "provision_pi5.sh").read_text(encoding="utf-8")
+        self.assertIn('numpy==1.26.4; python_version < "3.13"', train)
+        self.assertIn('numpy==2.2.6; python_version >= "3.13"', train)
+        self.assertIn('numpy>=2.0,<3; python_version >= "3.13"', runtime)
+        self.assertIn("onnx==1.19.0", export)
+        self.assertIn('"$PYTHON" -m pip check', provisioner)
+        self.assertIn("import onnxruntime as ort", provisioner)
+        self.assertIn('"CPUExecutionProvider" not in providers', provisioner)
+
     def test_external_benchmarks_are_explicitly_separate_from_project_measurements(self):
         reference = (ROOT / "docs" / "REFERENCE_BENCHMARKS.md").read_text(encoding="utf-8")
         pipeline = (ROOT / "raspberry_pi" / "benchmark_pipeline.py").read_text(encoding="utf-8")
