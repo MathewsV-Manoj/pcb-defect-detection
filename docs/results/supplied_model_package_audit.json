@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "audit_type": "user_supplied_model_package_content_audit",
+  "inspected_on": "2026-11-22",
+  "source_archive": {
+    "uploaded_name": "PCB_ENGINE_KIT(2).zip",
+    "size_bytes": 30419664,
+    "zip_integrity": "PASS",
+    "checksum_manifest": "pcb_engine_kit/SHA256SUMS.json"
+  },
+  "auxiliary_checkpoint": {
+    "archive_member": "pcb_engine_kit/optional_unet/pcb_ultra_resatt_unet.pth",
+    "size_bytes": 32897063,
+    "sha256": "23107a1805c13e57f3bccace4aa20bd59e5b400468cb3c0b26f6dba0bce1426c",
+    "sha256_manifest_match": true,
+    "format": "PyTorch state_dict",
+    "safe_load_result": "Loaded with torch.load(weights_only=True)",
+    "architecture": "ResAttentionUNet",
+    "input_channels": 5,
+    "output_channels": 1,
+    "first_convolution_shape": [
+      32,
+      5,
+      3,
+      3
+    ],
+    "output_convolution_shape": [
+      1,
+      32,
+      1,
+      1
+    ],
+    "state_dict_key_count": 199,
+    "state_tensor_elements": 8207071,
+    "parameter_elements_excluding_batchnorm_buffers": 8200185,
+    "documented_task": "Single-channel PCB trace-mask extraction",
+    "documented_input_preprocessing": "320x320 image; enhanced three-channel image plus top-hat and Hessian/gradient feature channels",
+    "documented_inference": "Original image plus horizontal-flip and vertical-flip passes; sigmoid mask threshold 0.48; morphological closing and connected-component filtering",
+    "fault_detection_classes": [],
+    "is_primary_three_class_fault_detector": false,
+    "compatible_with_current_three_channel_rgb_yolo_pipeline": false,
+    "integrated_in_current_pi_runtime": false
+  },
+  "provenance": {
+    "training_dataset_in_archive": false,
+    "completed_dataset_manifest_in_archive": false,
+    "dedicated_unet_training_script_or_configuration_in_archive": false,
+    "training_log_in_archive": false,
+    "checkpoint_creation_metadata_in_archive": false,
+    "checkpoint_owner_or_training_author_confirmed": false,
+    "validation_or_test_metrics_in_archive": false,
+    "license_or_redistribution_permission_for_checkpoint_confirmed": false
+  },
+  "bundled_yolo_training_code": {
+    "file": "pcb_engine_kit/train_export.py",
+    "present": true,
+    "default_initial_weights": "yolov8n.pt",
+    "explicitly_enforces_pretrained_false": false,
+    "training_provenance_sidecar_generation": false,
+    "three_class_model_checkpoint_present": false,
+    "dataset_present": false,
+    "note": "This separate YOLO training utility is not the source of the supplied U-Net state_dict and does not meet the current repository's random-initialization provenance gate."
+  },
+  "conclusion": "The archive contains an inspectable auxiliary trace-extraction checkpoint. It is not the three-class missing_hole/open_circuit/short_circuit detector. Its file integrity was checked, but its training data, training provenance, ownership, licence and evaluation results are not established by this archive. It must not be used to fill the primary detector, accuracy or ONNX parity records."
+}
