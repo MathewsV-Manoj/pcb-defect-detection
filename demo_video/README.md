@@ -1,6 +1,6 @@
 # Demonstration video
 
-The repository contains `pcb-inspection-demo.mp4`. The project team has confirmed that the demonstration video is complete. The checklist below is retained as a final quality-control reference; this audit has not independently inspected the video frames/audio.
+The repository contains `pcb-inspection-demo.mp4`. This repository audit has not independently inspected the video frames or audio. Use the checklist below to verify that the submitted clip matches the actual working system and its current block diagram.
 
 ## Required content check
 
