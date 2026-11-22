@@ -1,66 +1,74 @@
 # Raspberry Pi 5 station deployment
 
-This guide describes the implemented Raspberry Pi station path: IR arming, conveyor-triggered capture, OpenCV preprocessing, YOLO ONNX inference, ExecuTorch advisory, local event logging and the operator page.
+This guide describes the Raspberry Pi-targeted software path: IR arming/capture, illumination command, OpenCV preprocessing, project-trained YOLO ONNX inference, text-only ExecuTorch advisory, local event logging and browser dashboard.
 
-## Quick setup: one command
+**The Pi 5 is the documented target platform.** The repository does not contain evidence that the final physical wiring, complete station cycle or offline test has passed. Complete the commissioning record before claiming physical operation.
 
-On 64-bit Raspberry Pi OS running on a Raspberry Pi 5, clone/copy this repository to the Pi, connect it to the internet for first-time provisioning, ensure at least 12 GiB free storage, then run:
+## 1. Produce the project detector on the development machine
+
+The Pi provisioner requires the project's own three-class ONNX export. It does not download or select a third-party PCB detector.
+
+Follow datasets/README.md and pcb_engine_kit/README.md to prepare the actual project dataset, review source permissions and labels, group splits by physical board/capture session, and run the dataset audit. Train from the Ultralytics architecture YAML with pretrained=False. Preserve the exact best.pt and project_training_provenance.json.
+
+Then evaluate and export using the same dataset and checkpoint:
+
+```bash
+python pcb_engine_kit/train_export.py validate \
+  --data datasets/processed/pcb3/data.yaml \
+  --checkpoint runs/pcb/weights/best.pt \
+  --size 640 --device 0 \
+  --report-out docs/results/project_test_metrics.json
+
+python pcb_engine_kit/train_export.py export-onnx \
+  --data datasets/processed/pcb3/data.yaml \
+  --checkpoint runs/pcb/weights/best.pt \
+  --size 640 --out deployment
+
+python pcb_engine_kit/audit_release.py \
+  --data datasets/processed/pcb3/data.yaml \
+  --checkpoint runs/pcb/weights/best.pt \
+  --output-dir docs/results
+```
+
+Copy deployment/best.onnx and deployment/best.onnx.json into models/ on the Pi. Do not edit the sidecar or substitute a different model after export. The sidecar contains the ONNX hash, source checkpoint hash, dataset audit hash and training-provenance hash. The provisioner refuses a model that does not carry the expected project-training metadata.
+
+## 2. Provision the Pi runtime
+
+Use 64-bit Raspberry Pi OS on a Raspberry Pi 5 with a suitable power supply/cooling and at least 12 GiB free storage for the documented model/build setup. First-time provisioning requires internet access for packages and the licensed Llama/ExecuTorch assets.
+
+From the repository root, after copying the two ONNX files:
 
 ```bash
 bash scripts/provision_pi5.sh
 ```
 
-This provisions the Python environment, downloads and exports the attributed PCB YOLOv8s model to ONNX, downloads the Llama 3.2 1B PTE/tokenizer, builds the ExecuTorch C++ runner against the Pi's own sysroot, and runs ONNX + Llama software smoke tests. It writes `docs/results/pi5_runtime_smoke_test.json`.
+The provisioner:
+- verifies the project ONNX SHA-256 and metadata;
+- installs inference/runtime packages;
+- downloads the separately licensed Llama 3.2 1B Instruct model and matching tokenizer;
+- builds the ExecuTorch C++ runner on the Pi;
+- preserves existing GPIO settings in raspberry_pi/.env;
+- executes a software smoke test using a synthetic detector input and illustrative advisory event.
 
-Next, edit `raspberry_pi/.env` and supply the real IR/LED BCM GPIO pins and polarities. Then start the station with:
+The smoke test does not prove PCB accuracy or physical station operation. The Llama model is third-party and is not a model trained by the project team. Review and comply with its upstream licence and use conditions.
+
+## 3. Configure physical hardware
+
+Open raspberry_pi/.env and enter the real BCM GPIO numbers and active polarities from the actual wiring. The provisioner deliberately does not guess these settings.
+
+Confirm before powering the station:
+- IR sensor output is compatible with the Pi's 3.3 V GPIO;
+- the LED strip uses a suitable external supply and driver;
+- the Pi GPIO is connected only to the driver's logic input;
+- camera, conveyor, IR trigger and illumination are mechanically aligned.
+
+The IR sensor indicates presence at its trigger point; it does not compute image coordinates. The controller does not command conveyor speed or direction.
+
+## 4. Start and check the service
 
 ```bash
 bash scripts/run_station_pi5.sh
 ```
-
-The installer deliberately does not guess physical GPIO wiring. The first setup needs internet and substantial free storage; subsequent inference is designed to run locally without internet.
-
-## 1. Install the station software
-
-Use 64-bit Raspberry Pi OS. From the repository root:
-
-```bash
-sudo apt update
-sudo apt install -y python3-venv python3-pip python3-opencv python3-gpiozero
-# Install only when using a CSI camera:
-sudo apt install -y python3-picamera2
-
-python3 -m venv --system-site-packages .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r raspberry_pi/requirements.txt
-```
-
-## 2. Configure the physical station
-
-Copy the example environment file and edit it:
-
-```bash
-cp raspberry_pi/.env.example raspberry_pi/.env
-nano raspberry_pi/.env
-```
-
-Set the BCM GPIO numbers to match the actual wiring. Check the IR sensor output polarity and pull-up setting. Set the LED driver polarity and camera mode. Do not copy example pin values without checking the physical connections.
-
-The IR output must be compatible with the Pi's 3.3 V GPIO. The LED strip must use an external driver and power supply; the Pi pin is only the driver's logic input.
-
-The controller does not read the `.env` file itself. Export its values before launching the service:
-
-```bash
-set -a
-source raspberry_pi/.env
-set +a
-python raspberry_pi/station_controller.py --host 0.0.0.0 --port 8080
-```
-
-Open `http://<RASPBERRY_PI_IP>:8080/` from a laptop on the same private network. Run `hostname -I` on the Pi to find its address.
-
-## 3. Check the service and capture path
 
 From another terminal on the Pi:
 
@@ -69,15 +77,11 @@ curl -fsS http://127.0.0.1:8080/api/health
 curl -fsS http://127.0.0.1:8080/api/status
 ```
 
-At the beginning of a session, hold a hand in front of the IR sensor for about three seconds and release it. The station should remain armed. The next IR activation should start one capture cycle. The station should switch on the LED driver, wait for the configured settling time, capture a frame and switch the LED off.
+Open http://PI_ADDRESS:8080/ from an operator laptop on the same trusted private LAN.
 
-The sensor confirms presence at its trigger point. It does not measure exact image alignment; that depends on the mechanical station setup.
+## 5. Verify detector and advisory behaviour
 
-## 4. Install and check the YOLO ONNX detector
-
-The station expects `models/best.onnx` and its companion metadata file `models/best.onnx.json`. The provisioner creates these from the credited Sulojan YOLOv8s baseline and records the six-to-three class mapping. To use a project-trained three-class checkpoint instead, follow `pcb_engine_kit/README.md` and validate it independently.
-
-The deployment class order must be:
+The decoder requires the native class order:
 
 ```text
 0 missing_hole
@@ -85,101 +89,22 @@ The deployment class order must be:
 2 short_circuit
 ```
 
-Run a still-image check:
+A sidecar is required and must declare:
+- the ONNX file SHA-256;
+- VERIFIED_PROJECT_TRAINING provenance;
+- random initialization from a YOLO architecture YAML;
+- pretrained_weights_used = false;
+- the exact three-class identity map;
+- the corresponding checkpoint, dataset audit and provenance hashes.
 
-```bash
-python raspberry_pi/inspect_image.py \
-  --source /path/to/pcb_image.jpg \
-  --weights models/best.onnx \
-  --output /tmp/pcb_event.json \
-  --annotated /tmp/pcb_annotated.jpg
-```
+An empty detection list means only that none of the configured target classes was detected in that frame. It is not a defect-free certification.
 
-Inspect the JSON and annotated image. A no-detection result only means no configured target class was detected in that frame.
+The Llama advisory receives structured detection text only. It does not change detector findings or make a final quality-release decision.
 
-## 5. Install the required Llama/ExecuTorch advisory
+## 6. Complete and retain commissioning evidence
 
-The challenge-required advisory is configured for **Llama 3.2 1B Instruct
-SpinQuant INT4/EO8**, running locally through ExecuTorch's C++ `llama_main`
-runner on the Raspberry Pi 5 CPU. The model PTE and matching `tokenizer.model`
-are downloaded as local deployment assets and are not committed to Git.
+Follow docs/PI5_COMMISSIONING.md. Record actual pins/polarities, camera model and mode, software versions, model hashes, physical trigger/capture sequence, repeated cycles, test failures, offline run and measurements.
 
-The provisioner performs these download/build steps automatically. The manual fallback on a machine with internet access is:
-
-```bash
-python -m pip install "huggingface_hub>=0.30,<2"
-hf auth login
-python llm_advisory/download_model.py
-```
-
-Build the runner on the Pi itself, or cross-build from Linux x86_64 only with the Pi's actual sysroot:
-
-```bash
-bash llm_advisory/build_pi5_runner.sh
-```
-
-Copy the complete `models/llama/` directory (PTE, tokenizer and
-`runtime/llama_main` plus shared libraries) to the Pi. Configure these paths
-in `raspberry_pi/.env`:
-
-```text
-PCB_LLAMA_MODEL_PATH=models/llama/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte
-PCB_LLAMA_TOKENIZER_PATH=models/llama/tokenizer.model
-PCB_LLAMA_RUNNER_PATH=models/llama/runtime/llama_main
-PCB_LLAMA_BACKEND=cli
-PCB_LLAMA_REQUIRED=true
-```
-
-Load the environment and run the actual project smoke test on the Pi:
-
-```bash
-set -a
-source raspberry_pi/.env
-set +a
-export LD_LIBRARY_PATH="$PWD/models/llama/runtime:${LD_LIBRARY_PATH:-}"
-python llm_advisory/run_executorch.py \
-  --event schemas/example-event.json \
-  --model "$PCB_LLAMA_MODEL_PATH" \
-  --tokenizer "$PCB_LLAMA_TOKENIZER_PATH" \
-  --runner "$PCB_LLAMA_RUNNER_PATH"
-```
-
-The default production coordinator requires advisory execution. Do not treat
-a Python binding import check as validation of the configured C++ path. Save
-the successful smoke-test output and a completed inspection event with
-`advisory_runtime.status = "COMPLETED"`. Follow
-[`llm_advisory/README.md`](../llm_advisory/README.md) for full provenance,
-runtime details and safety-scope restrictions.
-## 6. Run the station workflow
-
-1. Start the station service with the configured environment.
-2. At session start, hold a hand in front of the IR sensor for about three seconds and release it.
-3. Place a PCB on the conveyor.
-4. Confirm the IR trigger starts capture and the LED driver switches off after capture.
-5. Check the current frame in the laptop browser.
-6. Press **Run inspection on Raspberry Pi**.
-7. Confirm the annotated image, structured event and ExecuTorch advisory appear.
-8. Move the next PCB to the trigger position; the station should capture it without another hand-hold.
-
-Firebase event synchronization can be enabled through the station configuration. Local capture, detector inference and advisory generation run on the Pi.
-
-For the challenge's local-execution demonstration, leave `PCB_FIREBASE_PUBLISH=false` (the example default). Model downloads and software installation happen during provisioning; after the model, tokenizer and ExecuTorch runner are on the Pi, inference is local. To test offline operation, disconnect only the WAN/internet uplink and keep the Pi and laptop browser connected to the same private LAN. A full loss of LAN connectivity would also disconnect the remote browser from the Pi-hosted dashboard. Follow [docs/LOCAL_EXECUTION_AND_PERFORMANCE.md](LOCAL_EXECUTION_AND_PERFORMANCE.md) and save the completed evidence.
-
-## 7. Record target-device results
-
-Run the detector benchmark on held-out representative PCB images:
-
-```bash
-python raspberry_pi/benchmark_onnx.py \
-  --model models/best.onnx \
-  --images /path/to/held_out_images \
-  --warmup 5 \
-  --threads 2 \
-  --out docs/results/pi_onnx_benchmark.json
-```
-
-The benchmark reports preprocessing, ONNX inference and post-processing time, p50/p95 latency, sequential FPS, peak process memory and thermal readings. It does not measure Llama latency, power, capture-to-result time or detection accuracy. Measure those separately and record the method.
-
-Complete `docs/PI5_COMMISSIONING.md` with actual pin mapping, runtime versions and test outcomes. Do not mark a physical test as passed until it has been run on the actual station.
+Do not claim target inference, live ExecuTorch, offline operation or physical cycle completion until the corresponding test record is saved. Do not invent performance values or copy numbers from other models/devices.
 
 The HTTP service is intended for a trusted local network. Do not port-forward it or expose it directly to the public internet.
