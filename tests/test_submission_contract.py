@@ -249,6 +249,19 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("import onnxruntime as ort", provisioner)
         self.assertIn('"CPUExecutionProvider" not in providers', provisioner)
 
+    def test_published_pcb_benchmarks_are_cited_and_not_project_accuracy(self):
+        document = (ROOT / "docs" / "EXTERNAL_PCB_BENCHMARKS.md").read_text(encoding="utf-8")
+        data = json.loads((ROOT / "docs" / "results" / "published_pcb_benchmarks.json").read_text(encoding="utf-8"))
+        manifest = json.loads((ROOT / "models" / "release_manifest.json").read_text(encoding="utf-8"))
+        self.assertIn("not measurements from this project", document.lower())
+        self.assertIn("DeepPCB", document)
+        self.assertIn("PKU-Market-PCB", document)
+        self.assertFalse(data["project_accuracy_claimed"])
+        self.assertEqual(data["project_results"]["status"], "NOT_MEASURED")
+        self.assertIsNone(data["project_results"]["map50_percent"])
+        self.assertEqual(manifest["performance"]["external_pcb_benchmarks_document"], "docs/EXTERNAL_PCB_BENCHMARKS.md")
+        self.assertFalse(manifest["performance"]["external_pcb_benchmarks_are_project_results"])
+
     def test_external_benchmarks_are_explicitly_separate_from_project_measurements(self):
         reference = (ROOT / "docs" / "REFERENCE_BENCHMARKS.md").read_text(encoding="utf-8")
         pipeline = (ROOT / "raspberry_pi" / "benchmark_pipeline.py").read_text(encoding="utf-8")
