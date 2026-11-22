@@ -247,7 +247,7 @@ The repository records the video as **present; sampled review completed; simulat
 
 ## 10. Individual contribution and AI-assistance declaration
 
-The repository contains `docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md`, which explicitly records that ChatGPT materially assisted with the repository cleanup and lists the affected source, tests and documentation areas. The repository also contains `docs/TEAM_DECLARATION_TEMPLATE.md` as a review aid.
+The repository contains `docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md`, which explicitly records that ChatGPT materially assisted with the repository cleanup and lists the affected source, tests and documentation areas.
 
 The team has confirmed that its individual-contribution and AI-assistance declaration is already available/submitted separately. The repository records this as team-reported because the actual signed declaration or portal receipt has not been archived in the GitHub tree.
 
