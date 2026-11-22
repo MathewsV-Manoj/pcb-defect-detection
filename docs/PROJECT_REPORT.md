@@ -53,7 +53,7 @@ The configured YOLO ONNX input contract is one 640 × 640 RGB image, float32 nor
 
 Source annotation names are checked before conversion. DeepPCB open/short annotations can be mapped only after checking their original class IDs. Its `pin-hole` annotation is not treated as a missing drill hole. A different dataset's class name is not sufficient evidence that its label has the same physical meaning.
 
-The current repository has the dataset importer and training/export scripts, but its source checkout does not include the final processed dataset or trained model binaries. Therefore, the final training run, held-out metrics and ONNX parity have not been established by the repository itself.
+The project team has supplied a screenshot reporting validation metrics, recorded in §4.3 and `docs/results/published_pcb_benchmarks.json`. The processed dataset, checkpoint, split manifest and raw evaluator output are not yet committed. The screenshot can therefore be cited as a reported validation result, but it does not establish independently reproducible metrics, held-out test performance, ONNX parity or Raspberry Pi performance.
 
 ## 4.1 Public pretrained baseline
 
@@ -103,6 +103,27 @@ the FPS figures in those papers are not Raspberry Pi 5 measurements. Full
 provenance, dataset details and source links are recorded in
 [EXTERNAL_PCB_BENCHMARKS.md](EXTERNAL_PCB_BENCHMARKS.md), with the values also
 stored in [published_pcb_benchmarks.json](results/published_pcb_benchmarks.json).
+
+## 4.3 Project validation results reported by the team
+
+The team supplied a screenshot of the training-results page showing the following validation metrics:
+
+| Metric | Validation result |
+|---|---:|
+| Precision | 98.3% |
+| Recall | 98.4% |
+| mAP@0.50 | 98.9% |
+| mAP@0.50:0.95 | 62.5% |
+
+| Defect class | Precision | Recall | mAP@0.50 |
+|---|---:|---:|---:|
+| Missing Hole | 97.8% | 98.2% | 98.5% |
+| Open Circuit | 99.1% | 99.6% | 99.5% |
+| Short Circuit | 97.9% | 97.6% | 98.8% |
+
+These values are recorded as **reported validation metrics**, not independent test-set results. The screenshot does not identify the dataset/version, validation sample count, checkpoint hash, image size, evaluation thresholds or raw evaluator output. Those details should be archived with the run before the metrics are treated as fully reproducible. No Raspberry Pi 5 latency, FPS or deployment accuracy is implied by this training-results screenshot.
+
+The difference between mAP@0.50 (98.9%) and mAP@0.50:0.95 (62.5%) should remain visible in the report. The latter averages performance across stricter intersection-over-union thresholds and is a more demanding indicator of bounding-box localisation quality.
 
 ## 5. Inspection event and operator advisory
 
