@@ -1,8 +1,8 @@
 # Team contribution and originality declaration — draft
 
-**Status: DRAFT FOR INDIVIDUAL TEAM REVIEW — NOT A SIGNED DECLARATION**
+**Status: OPTIONAL REPOSITORY TEMPLATE — NOT THE SEPARATELY SUBMITTED DECLARATION**\n\nThe team reports that the individual-contribution and AI-assistance declaration has already been made available/submitted separately. This file is retained as a repository-side working template only. It must not be mistaken for or substituted for the signed declaration submitted through the challenge process.
 
-This document is a working template. It must not be submitted as a completed declaration until every listed member has personally reviewed the source, checked their own contribution record, and approved the final wording. Do not sign for another team member.
+Use this template only if a repository-side copy is useful. The team should retain the actual signed declaration and submission receipt with its official challenge records. Each member must personally approve their own contribution mapping; do not sign for another member.
 
 ## Project team
 
