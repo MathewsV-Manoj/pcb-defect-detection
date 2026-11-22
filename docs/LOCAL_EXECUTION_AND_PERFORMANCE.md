@@ -2,11 +2,11 @@
 
 ## Intended execution architecture
 
-The application source is configured for a Raspberry Pi 5 target. This describes the intended runtime path; it is not evidence that the complete physical station has been commissioned.
+The application source is configured for a Raspberry Pi 5 target. The team reports that the physical build/tests are complete, but their commissioning records have not yet been committed. This document describes the intended runtime path and does not independently verify those tests.
 
 | Component | Intended location | Software path | Current evidence |
 |---|---|---|---|
-| IR trigger, illumination and camera controller | Raspberry Pi 5 | GPIO/camera controller source | Source present; hardware not verified |
+| IR trigger, illumination and camera controller | Raspberry Pi 5 | GPIO/camera controller source | Team reports physical build/tests complete; commissioning evidence not yet in repository |
 | Image preprocessing | Raspberry Pi 5 CPU | OpenCV | Source present; target test absent |
 | PCB detector | Raspberry Pi 5 CPU | ONNX Runtime CPUExecutionProvider | Source present; project ONNX model absent |
 | Text advisory | Raspberry Pi 5 CPU | Llama 3.2 1B Instruct through ExecuTorch C++ runner | Integration source present; model assets and target test absent |
