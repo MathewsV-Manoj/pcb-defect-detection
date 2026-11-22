@@ -1,5 +1,5 @@
-split,group,image,label,format
-train,BOARD_A,images/board_a_01.jpg,labels/board_a_01.txt,yolo
-train,BOARD_A,images/board_a_02.jpg,labels/board_a_02.txt,yolo
-val,BOARD_B,images/board_b_01.jpg,labels/board_b_01.txt,yolo
-test,BOARD_C,images/board_c_01.jpg,labels/board_c_01.txt,yolo
+split,group,image,label,format,source_name,source_url,license_or_permission,rights_review_status,annotation_review_status
+train,BOARD_A,images/board_a_01.jpg,labels/board_a_01.txt,yolo,PROJECT_CAPTURE,local project capture,Project team capture permission must be confirmed,PENDING,PENDING
+train,BOARD_A,images/board_a_02.jpg,labels/board_a_02.txt,yolo,PROJECT_CAPTURE,local project capture,Project team capture permission must be confirmed,PENDING,PENDING
+val,BOARD_B,images/board_b_01.jpg,labels/board_b_01.txt,yolo,PROJECT_CAPTURE,local project capture,Project team capture permission must be confirmed,PENDING,PENDING
+test,BOARD_C,images/board_c_01.jpg,labels/board_c_01.txt,yolo,PROJECT_CAPTURE,local project capture,Project team capture permission must be confirmed,PENDING,PENDING
