@@ -1,176 +1,156 @@
 # PCB inspection station
-## Technical project report
+## Project technical report
 
-## 1. Project overview
+## 1. Project purpose and scope
 
-This project develops a conveyor-fed optical inspection station for printed circuit boards. A Raspberry Pi 5 controls image capture and runs the inspection software locally. The system is designed to identify three visible defect classes: open circuit, short circuit and missing hole.
+The project is a visual PCB inspection prototype intended to screen three visible defect categories:
 
-The physical station uses a conveyor, an IR presence sensor, a camera and an LED strip driven through an external LED driver. The operator uses a laptop browser on the same local network to review the captured frame and request inspection. The detector and advisory are configured to run on the Raspberry Pi CPU; the browser presents results and does not perform inference.
+1. Missing hole — a hole absent or visibly defective at an expected board location.
+2. Open circuit — a visible break or discontinuity in a conductive track.
+3. Short circuit — an unintended visible bridge between separate conductive paths.
 
-## 2. Physical station sequence
+The repository contains the software source for an operator dashboard, image preprocessing, YOLO-style detector inference, structured inspection records, a text-only advisory component, and a Raspberry Pi-targeted station controller. The source checkout does not contain the project-trained detector or dataset. It therefore documents the implemented software path and intended deployment, not a fully validated physical product.
 
-At the beginning of a session, the operator holds a hand in front of the IR sensor for approximately three seconds and releases it. The controller remains armed until it is restarted.
+## 2. Intended station workflow
 
-A PCB then travels on the conveyor. When the board activates the IR sensor at the camera trigger point, the Raspberry Pi switches on the LED driver, waits for the configured settling interval and captures a frame. The frame is saved locally and made available to the operator page.
+The current station-controller source describes this sequence:
 
-The IR sensor is a binary presence detector. It does not calculate the exact PCB position in the camera image. That relationship depends on the mechanical placement of the conveyor, sensor and camera.
+1. The operator performs an initial IR-sensor arming gesture.
+2. A PCB reaches the sensor trigger point.
+3. The controller commands an external LED driver and captures an image after a configured settling delay.
+4. The Pi-hosted page displays the captured image to an operator.
+5. The operator requests an inspection.
+6. The Pi-side process preprocesses the frame and invokes the configured ONNX detector through ONNX Runtime.
+7. The detector returns boxes, class labels and confidence values; the application writes an annotated image and a structured event.
+8. A text-only Llama advisory component receives the structured event and returns an operator note.
+9. The dashboard presents the result and local history.
 
-### Local inference and offline operation
+The IR sensor indicates presence at its trigger point. It does not determine exact pixel coordinates or image alignment. The mechanical arrangement of conveyor, camera and sensor determines where a board appears in the frame. The source controller does not claim to control conveyor speed or direction.
 
-The production inference path is on-device. OpenCV preprocessing and YOLO inference execute on the Raspberry Pi 5 using ONNX Runtime's CPU execution provider. The text-only Llama 3.2 1B Instruct SpinQuant model is invoked through the ExecuTorch C++ `llama_main` runner on the Pi CPU. The dashboard is static HTML/JavaScript served by the Pi; the browser is a remote display/control client on the private LAN and does not run model inference. The Llama prompt contains the structured event, not the PCB image.
+**Verification boundary:** these steps describe the software sequence. The repository does not contain a completed Pi commissioning record, verified GPIO pin mapping, physical-cycle log or offline-test event. The report does not claim that the complete physical workflow has passed on the team's hardware.
 
-The default `PCB_FIREBASE_PUBLISH=false` setting keeps the event history local. Firebase, when deliberately enabled, is only an optional HTTPS record-replication destination. It is not on the inference path. The model and runtime assets must first be downloaded/built and copied to the Pi; after provisioning, the inference path is designed to run without internet access. Offline operation has not been recorded as a passed hardware test until the final Pi completes an inspection with WAN disconnected and the operator browser still connected on the local LAN. See [Local execution and performance record](LOCAL_EXECUTION_AND_PERFORMANCE.md).
+## 3. Software architecture
 
-## 3. Operator interface and software workflow
+### 3.1 Image acquisition and operator interface
 
-The operator opens the Pi-hosted page from a laptop on the same private network. The operator checks the latest captured image and presses **Run inspection on Raspberry Pi**.
+The Raspberry Pi-targeted controller contains the IR state machine, camera capture interface, LED-driver output and HTTP service. The dashboard is static HTML/JavaScript served by the controller. The browser sends requests to the Pi and displays results; it is not configured to run detector inference.
 
-The page sends a same-origin request to `POST /api/run-inspection`. The Pi then:
+The camera may be configured as a USB camera or through the Raspberry Pi camera stack. Actual camera model, focus, exposure, illumination and mechanical calibration must be recorded during commissioning.
 
-1. reads the captured frame;
-2. applies OpenCV letterboxing and BGR-to-RGB conversion;
-3. scales pixel values to float32 in the [0, 1] range and arranges the input as NCHW;
-4. runs the configured YOLO ONNX detector using ONNX Runtime with the CPU execution provider on the Pi CPU;
-5. applies confidence filtering and class-wise non-maximum suppression;
-6. maps the retained boxes back to original image coordinates;
-7. saves an annotated image and structured inspection-event JSON;
-8. sends the structured event, not the image, to the ExecuTorch text runner for the operator advisory;
-9. displays the detector result, annotated image and advisory on the browser page.
+### 3.2 Detector preprocessing and inference
 
-The Pi keeps local inspection records. Firebase synchronization is disabled by default. When explicitly enabled, the completed event is copied to Realtime Database paths `/inspections/{record_id}` and `/live`. Firebase carries records only; it does not execute the detector or the advisory model.
+The detector source implements a fixed three-class interface and a 640 × 640 RGB input contract. The preprocessing path uses letterboxing, BGR-to-RGB conversion, float32 normalization to [0, 1] and NCHW layout. ONNX Runtime is configured to use its CPU execution provider.
 
-## 4. Vision model and class mapping
+The training utility now starts from an Ultralytics YOLO architecture YAML and passes pretrained=False. It rejects .pt initial weights. The script writes a project_training_provenance.json record beside the produced best.pt checkpoint, including the checkpoint hash, dataset hashes, class order and training settings. The exporter verifies that record and writes a matching ONNX metadata sidecar.
 
-The deployment class order is fixed across the annotator, dataset importer, YOLO checkpoint, ONNX export, event schema and Raspberry Pi decoder.
+The source code and training path are present, but no project-trained best.pt or best.onnx is included in this repository snapshot. No claim is made that the current checkout contains a reproducible trained detector.
 
-| Class ID | Class name | Visual target |
-|---:|---|---|
-| 0 | `missing_hole` | An absent or visibly defective hole at an expected board location |
-| 1 | `open_circuit` | A visible break or discontinuity in a conductive track |
-| 2 | `short_circuit` | An unintended bridge between separate conductive paths |
+### 3.3 Detection interpretation
 
-The configured YOLO ONNX input contract is one 640 × 640 RGB image, float32 normalized to [0, 1], with shape `[1, 3, 640, 640]`. Letterboxing preserves the source aspect ratio. For a three-class project checkpoint, the Pi decoder expects raw YOLO output for four box coordinates and three class scores, without embedded NMS. The separately documented six-class YOLOv8s baseline is decoded using its sidecar class metadata and maps only the three target classes.
+The system reports configured target detections from a single image. An empty detection list means that none of the configured target classes was detected in that frame. It is not evidence that the PCB is defect-free.
 
-Source annotation names are checked before conversion. DeepPCB open/short annotations can be mapped only after checking their original class IDs. Its `pin-hole` annotation is not treated as a missing drill hole. A different dataset's class name is not sufficient evidence that its label has the same physical meaning.
+The code uses a provisional type-based screening policy. The current mapping assigns MEDIUM to missing_hole and HIGH to open_circuit and short_circuit. The policy has not been validated against a board drawing, electrical test criteria or a qualified QA standard. It must be presented as provisional prioritization, not a validated severity or safety assessment.
 
-The project team has supplied a screenshot reporting validation metrics, recorded in §4.3, [PROJECT_VALIDATION_RESULTS.md](results/PROJECT_VALIDATION_RESULTS.md) and [published_pcb_benchmarks.json](results/published_pcb_benchmarks.json). The processed dataset, checkpoint, split manifest and raw evaluator output are not yet committed. The screenshot can therefore be cited as a reported validation result, but it does not establish independently reproducible metrics, held-out test performance, ONNX parity or Raspberry Pi performance.
+### 3.4 Advisory component and third-party software
 
-## 4.1 Public pretrained baseline
+The advisory route uses the third-party Llama 3.2 1B Instruct SpinQuant model through ExecuTorch. The model receives structured text findings, not the PCB image. It does not change detections, operate the conveyor or make a final quality-release decision. The foundation model is not trained by the project team; its upstream license and use conditions must be reviewed before deployment.
 
-An additional pretrained PCB model is referenced as a transfer-learning and
-deployment baseline: Sulojan Rajkumar's YOLOv8s checkpoint published on
-Hugging Face. The model card declares an MIT license. Its source repository
-describes training on the Kaggle `akhatova/pcb-defects` dataset with six
-classes. The source checkpoint and its published SHA-256 are recorded in
-`models/pretrained/` and `models/release_manifest.json`.
+Other third-party dependencies include Ultralytics, PyTorch, OpenCV, ONNX Runtime and ExecuTorch. Their contribution is acknowledged; the project does not claim authorship of those libraries or of the YOLO architecture.
 
-The original author reports a held-out test split of 70 images and 286
-bounding boxes, with precision 0.972, recall 0.912, mAP@50 0.941,
-mAP@50–95 0.503 and 18.4 ms/image in the author's test environment. Per-class
-mAP@50 is 0.995 for `missing_hole`, 0.992 for `open_circuit` and 0.975 for
-`short`. These figures belong to the original publisher's test setup and
-are cited as external baseline results, not as measurements obtained by this
-project or its Raspberry Pi station.
+## 4. Dataset preparation and provenance
 
-The checkpoint has six classes. The Pi's ONNX sidecar maps `missing_hole`,
-`open_circuit` and `short` to the project's three event classes and ignores
-the other source classes. The original source class order and mapping are
-preserved in each inspection event. A separate training mode permits this
-checkpoint to initialize training on the project's own three-class dataset;
-metrics from any resulting checkpoint must be generated on the project's
-own held-out board groups.
+The repository contains an importer and an import-manifest template, not the actual training images or processed dataset. The source register lists potential origins but does not prove that any listed external dataset was used.
 
-See [PCB upstream baseline](PCB_UPSTREAM_BASELINE.md) for model provenance,
-license declaration, checkpoint checksum, dataset and source links, detailed
-metrics and exact download/export commands.
+Every image row in the completed import manifest must identify its source, source URL, licence or permission basis, rights-review declaration, annotation-review declaration, and board/capture group. The importer checks file readability, label format, class IDs, normalized coordinates, bounding-box bounds, duplicate image content and group/split consistency.
 
-## 4.2 Published research comparison
+The importer produces data.yaml and audit.json with source and label hashes, split counts, class coverage, group mapping and review declarations. The separate release auditor checks the generated records and checkpoint sidecar. Rights and annotation review statuses are entered by the team; the scripts cannot independently establish legal rights or semantic annotation correctness.
 
-Several independent PCB-defect studies provide reference points on public
-datasets. On DeepPCB, YOLO-MBBi reports 98.7% precision, 97.5% recall and
-99.0% mAP@0.50; PCB-MMF reports 96.23% precision, 97.02% recall, 98.68%
-mAP@0.50 and 82.16% mAP@0.50:0.95; RT-DETR-L reports 98.20% precision,
-97.66% recall, 98.74% mAP@0.50 and 82.34% mAP@0.50:0.95. On
-PKU-Market-PCB, PCB-YOLO reports 96.1% precision, 97.4% recall, 98.4%
-mAP@0.50 and 71.6% mAP@0.50:0.95. PCB-YOLO's separate DeepPCB experiment
-reports 99.0% mAP@0.50 and 80.4% mAP@0.50:0.95.
+At the time of this repository audit:
+- raw project dataset: not present;
+- processed dataset: not present;
+- completed import manifest: not present;
+- generated dataset audit: not present;
+- dataset release status: NOT_PROVIDED.
 
-These are results from the cited papers' own trained models, datasets and
-evaluation environments. They demonstrate the performance reported in the
-literature, not accuracy achieved by this project. Dataset class definitions,
-splits, imaging conditions, evaluator settings and target hardware differ;
-the FPS figures in those papers are not Raspberry Pi 5 measurements. Full
-provenance, dataset details and source links are recorded in
-[EXTERNAL_PCB_BENCHMARKS.md](EXTERNAL_PCB_BENCHMARKS.md), with the values also
-stored in [published_pcb_benchmarks.json](results/published_pcb_benchmarks.json).
+See datasets/README.md and docs/results/project_dataset_audit.json.
 
-## 4.3 Project validation results reported by the team
+## 5. Model training, checkpoint provenance and evaluation
 
-The team supplied a screenshot of the training-results page showing the following validation metrics:
+The project training workflow is configured for random initialization from a YOLO architecture YAML. It does not accept an external .pt detector checkpoint. The resulting checkpoint is tied to the exact dataset YAML and audit hashes through project_training_provenance.json.
 
-| Metric | Validation result |
+A checkpoint is not accepted for validation or export unless:
+- the training-provenance sidecar exists;
+- the checkpoint SHA-256 matches the sidecar;
+- the sidecar declares random initialization and no pretrained weights;
+- the model class order matches the project contract;
+- the current dataset YAML and audit hashes match the training record.
+
+The independent release audit generates project_dataset_audit.json, project_checkpoint_audit.json and project_release_audit.json. Missing files are recorded as NOT_PROVIDED or INCOMPLETE, not as a pass.
+
+At the time of this report, no trained checkpoint or its provenance sidecar is in the repository. Consequently, no independently reproducible project test metrics can be reported.
+
+## 6. Screenshot-reported validation values
+
+The team supplied a training-results screenshot showing the following values:
+
+| Metric | Screenshot-reported validation value |
 |---|---:|
 | Precision | 98.3% |
 | Recall | 98.4% |
 | mAP@0.50 | 98.9% |
 | mAP@0.50:0.95 | 62.5% |
 
-| Defect class | Precision | Recall | mAP@0.50 |
+| Class | Precision | Recall | mAP@0.50 |
 |---|---:|---:|---:|
-| Missing Hole | 97.8% | 98.2% | 98.5% |
-| Open Circuit | 99.1% | 99.6% | 99.5% |
-| Short Circuit | 97.9% | 97.6% | 98.8% |
+| Missing hole | 97.8% | 98.2% | 98.5% |
+| Open circuit | 99.1% | 99.6% | 99.5% |
+| Short circuit | 97.9% | 97.6% | 98.8% |
 
-These values are recorded as **reported validation metrics**, not independent test-set results. The screenshot does not identify the dataset/version, validation sample count, checkpoint hash, image size, evaluation thresholds or raw evaluator output. The original screenshot filename and SHA-256 are listed in [PROJECT_VALIDATION_RESULTS.md](results/PROJECT_VALIDATION_RESULTS.md). Those details should be archived with the run before the metrics are treated as fully reproducible. No Raspberry Pi 5 latency, FPS or deployment accuracy is implied by this training-results screenshot.
+These figures are transcribed from the supplied screenshot. The screenshot does not identify the checkpoint path or hash, dataset/version, validation sample counts, split manifest, image size, confidence threshold, NMS IoU threshold, evaluator version or raw evaluator output.
 
-The difference between mAP@0.50 (98.9%) and mAP@0.50:0.95 (62.5%) should remain visible in the report. The latter averages performance across stricter intersection-over-union thresholds and is a more demanding indicator of bounding-box localisation quality.
+Therefore, these figures must remain labelled **team-supplied, screenshot-reported validation metrics**. They are not independently reproduced, not held-out test results and not Raspberry Pi measurements. Until the underlying run is identified, do not attribute the screenshot scores to the newly enforced random-initialization workflow.
 
-## 5. Inspection event and operator advisory
+The source image and machine-readable record are stored in docs/results/PROJECT_VALIDATION_RESULTS.md and docs/results/project_validation_metrics.json. No numerical metrics from other PCB models, research papers, Pi benchmarks or Llama deployments are included in this report.
 
-Each inspection event includes a record ID, board ID, timestamp, source type, model filename and class order, thresholds, inference latency, detections and station information. Each detection stores a class ID/name, confidence, bounding box and image-relative location.
+## 7. Raspberry Pi deployment and local operation
 
-The vision model is responsible for visual defect localization. The Llama advisory receives the structured event as text only. It does not receive the PCB image and is instructed not to add, remove, relabel or suppress detector findings. It produces an explanation, recommended operator checks, a severity note and a log entry.
+The documented target runtime is a Raspberry Pi 5 CPU. OpenCV preprocessing and YOLO ONNX inference are configured to run locally through ONNX Runtime. The text-only advisory is configured to run locally through ExecuTorch. Firebase event synchronization is optional and disabled by default in the example configuration; it is not an inference service.
 
-The advisory is configured for Llama 3.2 1B Instruct SpinQuant INT4/EO8 using ExecuTorch's text-only C++ `llama_main` runner on the Raspberry Pi 5 CPU. The repository includes a pinned Hugging Face model downloader, local SHA-256 manifest generation, the pinned ExecuTorch Pi 5 runner build script (Pi-native build or x86_64 cross-build with the target Pi root filesystem) and an integration entry point called by the production inspection coordinator. The PTE weights and matching tokenizer are downloaded locally under the upstream Llama 3.2 license and are not committed to Git. The default station configuration requires the advisory (`PCB_LLAMA_REQUIRED=true`); it is not treated as an optional cloud feature.
+The Pi provisioner requires a project-trained ONNX file with a valid sidecar and refuses a model that does not declare matching hashes, the correct class order and random-initialization provenance. It downloads/builds the separately licensed Llama and ExecuTorch assets as part of setup. A successful provisioner run would still be a software smoke test, not proof of physical station operation.
 
-The Llama prompt contains only the structured event fields and detection summaries. It does not contain the image or image path. The generated response must be a four-field JSON object and is validated before it is displayed. The advisory cannot alter detector findings, issue an independent PASS/REJECT decision or control the conveyor or illumination. A human operator remains responsible for the quality disposition.
+No Pi smoke-test record, target-device latency result, end-to-end capture-cycle measurement, offline-operation record or external power-meter reading is currently present in the repository.
 
-The deployment recipe and integration source are committed, but the actual PTE/tokenizer download, compiled runner installation and live inference on the team's Raspberry Pi must still be evidenced in the commissioning record. Do not claim target-device Llama execution until the smoke test and complete station cycle are recorded.
+## 8. Current evidence and limitations
 
-The detector now applies a configurable provisional type-based screening policy from `models/severity_policy.json`: `missing_hole` is MEDIUM, while `open_circuit` and `short_circuit` are HIGH. The policy records a rationale for each class and explicitly states that board-specific validation/approval is still required. It is an initial review-priority rule, not a board-specific electrical risk assessment or safety certification. Unknown classes fall back to UNASSESSED. Confidence is a detector score and is never used to assign severity.
-
-A decision of `NO_TARGET_DEFECT_DETECTED` means the detector did not find one of the three configured classes in the captured frame. It is not a declaration that the entire PCB is defect-free.
-
-## 6. Local records and Firebase synchronization
-
-The Pi stores the captured image, annotated image and event JSON in its configured output directory. The dashboard reads recent history from the Pi service.
-
-The Firebase client copies completed inspection records to Realtime Database when configured. It is a data-synchronization path; it is not required for local image capture or local model inference. Firebase credentials must not be committed to the public repository.
-
-## 7. Testing and evaluation
-
-The repository includes automated software checks for the class-order contract, event schema, station state transitions, advisory prompt boundary, advisory response format, dashboard script syntax, dataset importer and safe dataset archive extraction. A Pi-side detector benchmark and a still-image vision-plus-Llama pipeline benchmark are also committed.
-
-These checks do not exercise the physical GPIO wiring, camera, LED driver, final YOLO weights, downloaded Llama package, compiled ExecuTorch runtime or sustained Raspberry Pi operation. The following evidence is still required before a complete technical claim can be made:
-
-| Area | Evidence required |
+| Item | Current evidence |
 |---|---|
-| Detection quality | Per-class precision, recall and F1; confusion matrix; mAP@50 and mAP@50–95; false positives and missed defects on a held-out board-level test split |
-| Model provenance | Exact checkpoint path and hash, dataset version, split manifest, class map, image size and thresholds |
-| Export correctness | ONNX model hash, input/output contract and prediction comparison against the source checkpoint |
-| Station operation | Verified GPIO pin mapping, camera capture, illumination timing, repeated trigger tests and complete operator workflow |
-| Edge performance | Pi-side inference latency percentiles, throughput, RAM and temperature, measured on the stated Pi configuration |
-| Advisory operation | Downloaded Llama model/tokenizer identity and hashes, ExecuTorch version/build, valid output and measured on-device response time |
-| Application reliability | Repeated capture-to-result tests, local record integrity and Firebase synchronization result when enabled |
+| Application and dashboard source | Present |
+| Dataset importer and audit utility | Present; actual dataset/manifest absent |
+| Random-initialized training/export code | Present; checkpoint absent |
+| Project checkpoint audit | NOT_PROVIDED |
+| Dataset provenance audit | NOT_PROVIDED |
+| Screenshot validation values | Supplied screenshot transcription only |
+| Independent held-out test results | Not available |
+| Raspberry Pi runtime smoke test | Not available |
+| Physical GPIO/camera/illumination commissioning | Not verified |
+| Offline test | Not verified |
+| Demo MP4 | File present; content not independently reviewed |
+| Severity rules | Configured but provisional |
 
-Do not report workstation measurements as Raspberry Pi measurements. Do not claim a performance threshold unless it has been measured using the stated hardware and method.
+The project should not state that a particular accuracy, latency, frame rate, power draw, reliability level, physical cycle or offline result has been achieved unless the corresponding source data and measurement record are retained.
 
-## 8. Current release status
+## 9. Required completion sequence
 
-The repository includes the source implementation, dashboard, event schema, dataset preparation and training source, deployment instructions, tests and a demonstration MP4 file.
+1. Assemble the actual dataset and complete the source/rights/annotation import fields.
+2. Assign board/capture groups and rebuild the dataset with the importer.
+3. Review the generated dataset audit; correct any missing class coverage or provenance gaps.
+4. Train from the architecture YAML with pretrained=False.
+5. Preserve best.pt and project_training_provenance.json.
+6. Evaluate the separate board-grouped test split and save project_test_metrics.json.
+7. Export ONNX and verify metadata against the exact checkpoint and dataset audit hashes.
+8. Compare PyTorch and ONNX predictions on the same labelled images.
+9. Provision the target Pi with the project detector and separately licensed Llama model.
+10. Complete the Pi smoke test, physical commissioning, repeated-cycle tests and offline test.
+11. Review the demo video and obtain approval for the provisional severity policy.
 
-The final YOLO binaries and the generated deployment bundle are installed locally by `scripts/provision_pi5.sh` rather than committed to the source checkout. The processed project dataset/audit, held-out evaluation output and completed Pi commissioning record are still not present in this source checkout. The pinned Llama downloader and ExecuTorch Pi 5 build route are present, but the licensed PTE/tokenizer and compiled runner are local deployment assets, not tracked Git files. Their installation and target smoke test must be recorded on the actual Pi. The project team confirms that the demonstration MP4 is complete. The MP4 is present in the repository; the evaluator should be given the repository link or a shareable public/unlisted URL if required.
-
-The source-only repository is not yet a complete runnable release. These missing artifacts and validations are listed in [Submission readiness](SUBMISSION_READINESS.md).
-
-Source repository: https://github.com/MathewsV-Manoj/pcb-defect-detection
+This report distinguishes source-code availability from evidence of successful execution. Update it only when new artefacts and reproducible test records are available.
