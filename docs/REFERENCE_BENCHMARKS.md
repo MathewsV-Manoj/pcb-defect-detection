@@ -69,6 +69,10 @@ That report records the model author's split, per-class metrics, training
 configuration and checkpoint SHA-256. Those values are not measurements from
 this project's Pi station.
 
+## Published PCB detection literature
+
+Independent published results from YOLO-MBBi, PCB-MMF, RT-DETR-L and PCB-YOLO are summarized in [EXTERNAL_PCB_BENCHMARKS.md](EXTERNAL_PCB_BENCHMARKS.md). They are research benchmarks on their authors' PCB datasets and are not measurements from this project or its Pi 5 deployment. A machine-readable copy is stored in [published_pcb_benchmarks.json](results/published_pcb_benchmarks.json).
+
 ## Project measurements: currently unpopulated
 
 Run these commands on the actual Pi after copying the final model assets and
