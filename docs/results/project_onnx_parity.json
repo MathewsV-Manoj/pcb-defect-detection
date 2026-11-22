@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "measurement_type": "project_checkpoint_vs_onnx_prediction_parity",
+  "status": "NOT_PROVIDED",
+  "image_count": null,
+  "model": {
+    "checkpoint_sha256": null,
+    "onnx_sha256": null,
+    "dataset_yaml_sha256": null,
+    "dataset_audit_sha256": null,
+    "training_provenance_sha256": null
+  },
+  "limitations": [
+    "No project checkpoint, ONNX export or processed test dataset is present in this repository snapshot.",
+    "No parity measurement has been performed; no prediction values are claimed.",
+    "Run pcb_engine_kit/compare_pt_onnx.py on the full test split after producing and auditing the project model."
+  ]
+}
