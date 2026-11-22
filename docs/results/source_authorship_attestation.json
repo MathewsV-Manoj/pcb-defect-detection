@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "measurement_type": "team_source_authorship_and_reuse_attestation",
-  "status": "TEAM_REPORTED_DECLARATION_AVAILABLE_REPOSITORY_REVIEW_PENDING",
+  "status": "TEAM_REPORTED_DECLARATION_SUBMITTED_EXTERNALLY_SIGNED_COPY_NOT_ARCHIVED",
   "team_reviewed_all_project_source": false,
   "file_to_contributor_mapping": null,
   "reused_or_adapted_code_disclosed": "TEAM_REPORTED_DECLARATION_AVAILABLE_NOT_INDEPENDENTLY_REVIEWED",
@@ -10,7 +10,7 @@
   "each_team_member_confirmed_contribution": "TEAM_REPORTED_DECLARATION_AVAILABLE_NOT_INDEPENDENTLY_REVIEWED",
   "attestation_date": null,
   "team_approved_by": [],
-  "note": "The user confirms that the individual-contribution and AI-assistance declaration is already available/submitted separately. The repository also documents ChatGPT-assisted cleanup edits in docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md. Because the actual signed declaration or submission receipt has not been added to this repository, the statement is recorded as team-reported rather than independently reviewed. The file-to-contributor mapping and third-party licence review fields remain unverified from repository evidence.",
+  "note": "The user confirms that the individual-contribution and AI-assistance declaration has already been submitted separately. This repository does not contain the signed declaration or official receipt, so its exact per-member mapping and third-party licence review cannot be independently inspected here. The repository separately discloses ChatGPT-assisted cleanup edits in docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md. docs/TEAM_DECLARATION_TEMPLATE.md is a supplemental template only, not the submitted signed declaration.",
   "ai_assistance_disclosed_in_repository": true,
   "team_members": [
     {
@@ -30,5 +30,5 @@
     }
   ],
   "team_reported_declaration_available": true,
-  "team_reported_declaration_context": "User confirms the individual contribution and AI-assistance declaration is already available/submitted separately."
+  "team_reported_declaration_context": "User confirms the individual contribution and AI-assistance declaration has already been submitted separately."
 }
