@@ -19,12 +19,12 @@
         "copper",
         "pin_hole"
       ],
-      "precision_percent": 98.6,
-      "recall_percent": 97.1,
+      "precision_percent": 98.7,
+      "recall_percent": 97.5,
       "map50_percent": 99,
       "map50_95_percent": null,
-      "fps_author_reported": 48.9,
-      "evaluation_notes": "The authors report 1200/150/150 training/validation/test images and average results over three random dataset divisions. Six defect categories."
+      "fps_author_reported": 69.5,
+      "evaluation_notes": "The DeepPCB test-set table reports 98.7% precision, 97.5% recall, 99.0% mAP@0.50 and 69.5 FPS. The authors describe three random data divisions and report averaged metrics."
     },
     {
       "model": "PCB-MMF",
