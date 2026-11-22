@@ -28,7 +28,7 @@ The uploaded `PCB_ENGINE_KIT(2).zip` was inspected. It contains an auxiliary fiv
 
 - **Repository hygiene and software contract checks:** completed; latest recorded GitHub Actions run passed.
 - **Physical build and tests:** team reports complete; repository evidence fields need to be populated from the original test records.
-- **Demo video:** original MP4 present in `demo_video/`; team reports a separate official upload, whose link/receipt is not archived here; content review remains pending.
+- **Demo video:** original MP4 present in `demo_video/`; sampled review shows an explicitly simulated result overlay and does not prove live detector/Llama execution; team reports a separate official upload.
 - **Contribution and AI-assistance declaration:** team reports available/submitted separately; actual signed copy/receipt is not archived here.
 - **Primary three-class detector, source dataset and reproducible evaluation:** not established by the currently inspected repository and supplied ZIP.
 - **Full evidence-based technical release:** not yet verifiable from this repository.
@@ -336,7 +336,7 @@ The items below are what remain to make the public technical evidence complete. 
 
 11. Keep the external demo-video upload URL or receipt with the team submission records and verify that the official submission form points to the intended final video.
 12. Keep the signed/approved individual-contribution and AI-assistance declaration with the team records. Ensure the disclosure covers the ChatGPT-assisted repository cleanup and all reused/adapted code.
-13. Complete the actual per-member contribution mapping and third-party licence review in the team's declaration records. The repository's draft template is not a substitute for the signed submission declaration.
+13. Retain the already-submitted individual-contribution/AI-assistance declaration and its portal receipt in the team's submission records. The team reports it has been submitted separately; the signed copy is not stored in this repository. The repository template is supplemental only.
 
 ### D. Quality approval
 
