@@ -109,17 +109,27 @@ PY
 
 echo "[4/7] Rechecking the project ONNX model on this Pi"
 "$PYTHON" - "$MODEL" "$MODEL_META" <<'PY'
-import hashlib, json, sys
+import hashlib, json, re, sys
 from pathlib import Path
 model, sidecar = map(Path, sys.argv[1:])
 metadata = json.loads(sidecar.read_text(encoding="utf-8"))
 actual = hashlib.sha256(model.read_bytes()).hexdigest()
+expected_classes = ["missing_hole", "open_circuit", "short_circuit"]
+hash_fields = ("checkpoint_sha256", "dataset_audit_sha256", "training_provenance_sha256")
 if metadata.get("sha256") != actual:
     raise SystemExit("Model hash changed after initial verification")
-if metadata.get("class_order") != ["missing_hole", "open_circuit", "short_circuit"]:
-    raise SystemExit("Unexpected PCB class order")
+if metadata.get("provenance_status") != "VERIFIED_PROJECT_TRAINING":
+    raise SystemExit("The ONNX sidecar does not declare project training provenance")
+if metadata.get("initialization_method") != "random_initialization_from_yolo_yaml":
+    raise SystemExit("The ONNX sidecar does not declare random initialization")
 if metadata.get("pretrained_weights_used") is not False:
-    raise SystemExit("The ONNX sidecar does not declare random-init project training")
+    raise SystemExit("The ONNX sidecar does not declare pretrained_weights_used=false")
+if metadata.get("class_order") != expected_classes:
+    raise SystemExit("Unexpected PCB class order")
+for name in hash_fields:
+    value = metadata.get(name)
+    if not isinstance(value, str) or re.fullmatch(r"[0-9a-f]{64}", value) is None:
+        raise SystemExit(f"ONNX sidecar has an invalid or missing {name}")
 print("Project ONNX artifact accepted: " + actual)
 PY
 
