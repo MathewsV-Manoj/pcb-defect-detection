@@ -59,7 +59,7 @@ Other third-party dependencies include Ultralytics, PyTorch, OpenCV, ONNX Runtim
 
 ## 4. Dataset preparation and provenance
 
-The repository contains an importer and an import-manifest template, not the actual training images or processed dataset. The source register lists potential origins but does not prove that any listed external dataset was used.
+The repository contains an importer and an import-manifest template, not the actual training images or processed dataset. The source register is intentionally header-only because no external dataset has been confirmed as used.
 
 Every image row in the completed import manifest must identify its source, source URL, licence or permission basis, rights-review declaration, annotation-review declaration, and board/capture group. The importer checks file readability, label format, class IDs, normalized coordinates, bounding-box bounds, duplicate image content and group/split consistency.
 
