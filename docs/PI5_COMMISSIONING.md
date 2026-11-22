@@ -1,68 +1,71 @@
 # Raspberry Pi 5 commissioning record
 
-Complete this sheet on the actual station after the final detector, Llama model and matching tokenizer have been installed. Do not mark a test as passed because source code contains the corresponding function.
+Complete this form on the actual Raspberry Pi 5 station after the project ONNX model, Llama package and matching ExecuTorch runner have been installed. A source file or successful export command is not proof that a physical test passed. Do not fill unknown values by guesswork.
 
 ## Hardware safety and wiring
 
-- [ ] Confirm the conveyor, camera and IR sensor are mechanically fixed.
-- [ ] Confirm that the camera sees the PCB at the IR trigger point.
-- [ ] Check the IR sensor output voltage against the Pi's 3.3 V GPIO limit.
-- [ ] Confirm the LED strip uses its external driver and suitable supply.
-- [ ] Confirm the Pi GPIO drives only the driver's logic input.
+- [ ] Confirm conveyor, camera and IR sensor are mechanically fixed.
+- [ ] Confirm camera field of view at the IR trigger point.
+- [ ] Verify that the IR sensor output voltage is safe for the Pi's 3.3 V GPIO.
+- [ ] Confirm LED strip uses an appropriate external driver and power supply.
+- [ ] Confirm the Pi GPIO is connected only to the LED driver's logic input.
 - [ ] Record and verify the real BCM pin assignments.
 
-| Signal | BCM pin | Polarity/configuration | Checked |
-|---|---:|---|---|
-| IR sensor output | ______ | `PCB_IR_ACTIVE_LOW` = ______ | [ ] |
-| LED driver input | ______ | `PCB_LED_DRIVER_ACTIVE_LOW` = ______ | [ ] |
-| Camera | ______ | USB index or CSI | [ ] |
+| Signal | BCM pin | Polarity/configuration | Physically checked |
+|---|---|---|---|
+| IR sensor output | ______ | PCB_IR_ACTIVE_LOW = ______ | [ ] |
+| LED driver input | ______ | PCB_LED_DRIVER_ACTIVE_LOW = ______ | [ ] |
+| Camera | ______ | USB index or CSI model/mode | [ ] |
 
-## Software and model files
+## Project model and audit files
 
-Run the one-command provisioner on the 64-bit Raspberry Pi 5:
+Before provisioning, train and export the project model on the development machine. It must have been initialized from an Ultralytics architecture YAML with pretrained=False. The Pi provisioner does not download a third-party PCB detector.
 
-    bash scripts/provision_pi5.sh
+Copy both files into models/ on the Pi:
+- models/best.onnx
+- models/best.onnx.json
 
-It installs dependencies, downloads and exports the attributed PCB YOLOv8s
-checkpoint to ONNX, downloads the Llama 3.2 1B PTE/tokenizer pair, builds
-`llama_main` against the Pi's own root filesystem, and writes
-`docs/results/pi5_runtime_smoke_test.json`. The model files and compiled
-runner remain local deployment assets and are not committed to Git.
+The sidecar must match the ONNX file SHA-256 and declare VERIFIED_PROJECT_TRAINING, random initialization, pretrained_weights_used=false and the project three-class order. Keep the source best.pt, project_training_provenance.json, dataset data.yaml, audit.json and portable audit JSON files outside the model folder for reproducibility.
 
-The provisioner requires internet for initial setup and at least 12 GiB of
-free storage. It does not guess physical pin assignments; set the real BCM
-pins/polarities in `raspberry_pi/.env` before starting the controller.
-
-From the repository root on the Pi:
+On the development machine, run:
 
 ```bash
-source .venv/bin/activate
-set -a
-source raspberry_pi/.env
-set +a
-python -m pip show onnxruntime opencv-python gpiozero
-ls -lh models/best.onnx models/best.onnx.json
-ls -lh "$PCB_LLAMA_MODEL_PATH" "$PCB_LLAMA_TOKENIZER_PATH"
-ls -lh "$PCB_LLAMA_RUNNER_PATH" models/llama/runtime/libllama_runner.so
+python pcb_engine_kit/audit_release.py \
+  --data datasets/processed/pcb3/data.yaml \
+  --checkpoint runs/pcb/weights/best.pt \
+  --output-dir docs/results
 ```
 
-Record the exact versions and model identities:
+Only proceed with a release after reviewing the dataset and checkpoint audit results. Do not alter a report manually to create a pass.
 
-| Item | Value |
+On the actual Pi, run:
+
+```bash
+bash scripts/provision_pi5.sh
+```
+
+The provisioner installs the Pi runtime, retrieves the separately licensed Llama foundation model/tokenizer, builds ExecuTorch and runs a software smoke test. It does not verify wiring or the mechanical station.
+
+## Software and model identity
+
+| Item | Actual value |
 |---|---|
 | Raspberry Pi model and RAM | ____________________ |
 | Raspberry Pi OS / kernel | ____________________ |
 | Python version | ____________________ |
 | OpenCV version | ____________________ |
 | ONNX Runtime version | ____________________ |
-| YOLO checkpoint SHA-256 | ____________________ |
+| Project checkpoint SHA-256 | ____________________ |
+| Dataset import-manifest SHA-256 | ____________________ |
+| Dataset audit SHA-256 | ____________________ |
 | ONNX model SHA-256 | ____________________ |
+| ONNX sidecar provenance status | ____________________ |
 | Llama model identity / SHA-256 | ____________________ |
-| Tokenizer identity / SHA-256 | ____________________ |
+| Tokenizer SHA-256 | ____________________ |
 | ExecuTorch revision/build | ____________________ |
 | Camera model and mode | ____________________ |
 
-Confirm the detector class order:
+Expected detector class order:
 
 ```text
 0 missing_hole
@@ -73,9 +76,6 @@ Confirm the detector class order:
 ## Start and check the station
 
 ```bash
-set -a
-source raspberry_pi/.env
-set +a
 bash scripts/run_station_pi5.sh
 ```
 
@@ -86,91 +86,83 @@ curl -fsS http://127.0.0.1:8080/api/health
 curl -fsS http://127.0.0.1:8080/api/status
 ```
 
-Open `http://<RASPBERRY_PI_IP>:8080/` from a laptop on the same network.
+Open the dashboard from a laptop on the same trusted LAN. Record date, operator and exact software/model hashes used.
 
-## Physical sequence tests
+## Physical sequence checks
 
-| Test | Expected result | Pass |
+| Test | Expected observation | Pass/fail / notes |
 |---|---|---|
-| Start controller | State is `WAITING_FOR_ARM`; LED is off | [ ] |
-| Short IR activation | Station does not arm | [ ] |
-| Hold IR for about three seconds and release | Station changes to armed/waiting-for-board state | [ ] |
-| First PCB reaches trigger point | One capture cycle starts | [ ] |
-| Capture illumination | LED driver switches on during capture and off afterward | [ ] |
-| Browser preview | Current captured frame is displayed | [ ] |
-| Operator starts inspection | Request is accepted once | [ ] |
-| Detector result | Annotated image and event JSON are saved | [ ] |
-| ExecuTorch advisory | Valid four-field advisory is returned | [ ] |
-| Next PCB | New frame is captured without repeating the initial hand-hold | [ ] |
+| Start controller | WAITING_FOR_ARM; illumination off | |
+| Short IR activation | Does not arm | |
+| Hold IR for the configured arming interval and release | Armed state remains | |
+| PCB reaches trigger point | One capture cycle starts | |
+| Illumination | Driver activates during capture and turns off afterward | |
+| Browser preview | Current captured frame is displayed | |
+| Operator starts inspection | One inference request is accepted | |
+| Detector output | Annotated image and event JSON are saved | |
+| Advisory | ExecuTorch returns the expected structured fields | |
+| Next PCB | New capture occurs without another arming gesture | |
 
-Repeat the capture-and-inspection cycle at least 20 times. Record all attempts, successful cycles, missed triggers, duplicate captures, unreadable frames, detector failures and advisory failures.
+Repeat at least 20 cycles. Record actual attempts, successful cycles, missed triggers, duplicate captures, unreadable frames, detector errors, advisory errors and any manual intervention. Do not calculate success rate from incomplete logs.
 
-## Detection check
+## Held-out detector check
 
-Use a held-out image with known annotations:
+Use a labelled image from a board group excluded from training and validation:
 
 ```bash
 python raspberry_pi/inspect_image.py \
-  --source /path/to/pcb_test_image.jpg \
+  --source /path/to/held_out_pcb_image.jpg \
   --weights models/best.onnx \
   --output /tmp/pcb_event.json \
   --annotated /tmp/pcb_annotated.jpg
 ```
 
-Check class IDs, class names, confidence, bounding boxes and annotated output. A no-detection result must be described as “no configured target detected in this frame”, not proof that the PCB is defect-free.
+Review class ID, label, confidence and box coordinates against the annotation. Save the input, output JSON and annotated image. This individual smoke check is not a replacement for the held-out metrics report.
 
-Keep test predictions, false positives and missed defects with the report.
-
-## Raspberry Pi measurements
+## Pi measurements
 
 ```bash
 python raspberry_pi/benchmark_onnx.py \
   --model models/best.onnx \
   --images /path/to/held_out_images \
-  --warmup 5 \
-  --threads 2 \
+  --warmup 5 --threads 2 \
   --out docs/results/pi_onnx_benchmark.json
 ```
 
-| Measurement | Result | Method/evidence |
+| Measurement | Actual result | Evidence/method |
 |---|---|---|
-| Detector p50 / p95 latency | ____________________ | Benchmark JSON |
-| Sequential FPS | ____________________ | Benchmark JSON |
-| Peak RAM | ____________________ | Benchmark JSON |
-| CPU temperature | ____________________ | Thermal reading |
-| Full capture-to-result time | ____________________ | Timed physical cycles |
-| Llama time to first token | ____________________ | ExecuTorch PyTorchObserver or Python binding telemetry; otherwise null |
-| Llama tokens per second | ____________________ | Parsed from generated-token count and measured inference interval; otherwise null |
-| Successful cycles / attempted cycles | ____________________ | Station log |
-| Power | ____________________ | External power meter, if measured |
+| Detector p50 / p95 latency | | Benchmark JSON |
+| Sequential FPS | | Benchmark JSON |
+| Peak RAM | | Benchmark JSON |
+| CPU temperature | | Thermal reading |
+| Full capture-to-result time | | Physical-cycle timing |
+| Llama time to first token | | Runtime telemetry; blank if unavailable |
+| Llama generated tokens per second | | Runtime telemetry; blank if unavailable |
+| Successful cycles / attempted cycles | | Full station log |
+| Power | | External power meter only |
 
-## Vision-plus-Llama software pipeline benchmark
+Do not substitute figures from published papers or other hardware. Power must be measured with an external meter; temperature and CPU utilization are not power measurements.
 
-After the model and runner smoke tests pass, run the production coordinator
-against a folder of held-out PCB images:
+## Offline operation
 
-    python raspberry_pi/benchmark_pipeline.py \
-      --images /path/to/held_out_images \
-      --model models/best.onnx \
-      --warmup 1 \
-      --out docs/results/pi_pipeline_benchmark.json
-
-This benchmark invokes the real detector and ExecuTorch advisory once per
-image. It measures image-to-advisory process wall time, detector latency and
-the Llama fields exposed by the selected runner. It does not include physical
-IR triggering, camera capture, conveyor timing, LED settling or browser
-delivery. Record those in the physical-cycle table above. Power must be
-measured with an external meter.
+- [ ] Configure Firebase event synchronization off.
+- [ ] Keep the Pi and operator laptop connected to the same private LAN.
+- [ ] Disconnect the WAN/internet uplink only.
+- [ ] Run a real capture, detector inference and Llama advisory.
+- [ ] Confirm local event JSON and annotated image are saved.
+- [ ] Save the event, terminal log, model hashes and date.
+- [ ] Record PASS only if the full workflow completed without internet.
 
 ## Evidence to retain
 
-- Final `best.pt`, `best.onnx` and ONNX metadata JSON.
-- Actual dataset import manifest, board-level split and generated audit.
-- Final validation/test results and prediction examples.
-- Llama model/tokenizer identities and hashes; ExecuTorch build details.
-- Raspberry Pi benchmark JSON and held-out image list.
-- Representative event JSON files and annotated images.
-- Actual demonstration video.
-- This commissioning sheet with real pin mapping and test outcomes.
+- Exact best.pt, its provenance sidecar and SHA-256.
+- Exact ONNX model and metadata sidecar.
+- Completed import manifest, source/label hashes and generated dataset audit.
+- Held-out test output and example predictions.
+- Pi runtime smoke-test JSON.
+- Llama model/tokenizer identities and build information.
+- Actual BCM pin mapping and this completed commissioning sheet.
+- Repeated-cycle log and offline test evidence.
+- Demonstration video showing the actual hardware and model outputs.
 
-Record failed tests as failed. Do not report unmeasured values or mark skipped stages as passed.
+Record failures as failures. Leave skipped or unmeasured fields blank. Do not claim that the station passed a test that was not conducted.
