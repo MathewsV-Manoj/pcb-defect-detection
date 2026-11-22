@@ -184,9 +184,28 @@ PKU-Market-PCB, including mAP@0.50 values around 98–99% for their own trained
 models. See [the literature comparison](docs/EXTERNAL_PCB_BENCHMARKS.md) for
 the datasets, scores, evaluation context and source papers. These figures are
 external research references; they are not measurements of this station or
-of the checkpoint currently installed by the Pi provisioner. The project's
-own held-out accuracy remains unmeasured until its labelled board test set
-and final checkpoint are evaluated.
+of the checkpoint currently installed by the Pi provisioner. The project
+has now supplied screenshot-reported validation metrics, listed below. A
+separate held-out test evaluation is still required before claiming test-set accuracy.
+
+## Project validation results
+
+The team supplied a training-results screenshot showing the following validation metrics:
+
+| Metric | Result |
+|---|---:|
+| Precision | 98.3% |
+| Recall | 98.4% |
+| mAP@50 | 98.9% |
+| mAP@50–95 | 62.5% |
+
+| Defect class | Precision | Recall | mAP@50 |
+|---|---:|---:|---:|
+| Missing Hole | 97.8% | 98.2% | 98.5% |
+| Open Circuit | 99.1% | 99.6% | 99.5% |
+| Short Circuit | 97.9% | 97.6% | 98.8% |
+
+These are reported validation scores, not independent held-out test results or Raspberry Pi 5 performance. The dataset/version, validation sample count, checkpoint hash and raw evaluator output still need to be archived. The machine-readable record is in [docs/results/published_pcb_benchmarks.json](docs/results/published_pcb_benchmarks.json); the detailed report is in [docs/PROJECT_REPORT.md](docs/PROJECT_REPORT.md).
 
 ## Repository map
 
@@ -248,16 +267,19 @@ and complete station cycle are recorded.
 
 The checkout still does not include a project-trained YOLO best.pt/best.onnx,
 the processed project dataset and its audit, or labelled held-out predictions.
-The final three-class accuracy results, ONNX parity report, real Pi runtime
-measurements and physical commissioning record remain to be produced from the
-team's own data and hardware. A provisional type-based severity policy is
+The screenshot-reported validation scores are documented above, but the raw
+run output and dataset/checkpoint provenance are not yet archived. A separate
+held-out test report, ONNX parity report, real Pi runtime measurements and
+physical commissioning record remain to be produced from the team's own data
+and hardware. A provisional type-based severity policy is
 configured (missing hole = MEDIUM; open/short circuit = HIGH), but it has not
 been approved against a board drawing or QA standard. Detector confidence is
 not treated as severity. The MP4 file is present and team-confirmed complete,
 but its actual scenes still need human review.
 
-No project accuracy, latency, FPS, power or end-to-end reliability number is
-claimed without a measurement record. Published Raspberry Pi 5 reference
+No project held-out test accuracy, latency, FPS, power or end-to-end reliability
+number is claimed without a reproducible measurement record. The screenshot-
+reported validation values above are explicitly validation-only. Published Raspberry Pi 5 reference
 results are kept separately in [docs/REFERENCE_BENCHMARKS.md](docs/REFERENCE_BENCHMARKS.md);
 they are not reported as this project's performance. Use
 [docs/SUBMISSION_READINESS.md](docs/SUBMISSION_READINESS.md) for remaining
