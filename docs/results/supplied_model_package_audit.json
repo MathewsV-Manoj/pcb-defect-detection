@@ -6,7 +6,8 @@
     "uploaded_name": "PCB_ENGINE_KIT(2).zip",
     "size_bytes": 30419664,
     "zip_integrity": "PASS",
-    "checksum_manifest": "pcb_engine_kit/SHA256SUMS.json"
+    "checksum_manifest": "pcb_engine_kit/SHA256SUMS.json",
+    "sha256": "23f22faf49664fe245633d152557bf42a63f25f8ee09acbd0f926ebb3b5bb704"
   },
   "auxiliary_checkpoint": {
     "archive_member": "pcb_engine_kit/optional_unet/pcb_ultra_resatt_unet.pth",
