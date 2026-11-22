@@ -67,20 +67,13 @@ bash scripts/run_station_pi5.sh
 
 The provisioner no longer downloads a third-party PCB detector. It verifies the project detector metadata before installing the runtime and provisioning the separately licensed Llama/ExecuTorch advisory. It does not verify GPIO wiring or prove that the physical station works. Follow docs/PI5_COMMISSIONING.md.
 
-## Project validation screenshot — not an independent test
+## Accuracy and performance claims
 
-A team-supplied screenshot reports the following validation metrics:
+No verified accuracy figures are included in this repository. The previously supplied screenshot did not identify its checkpoint, dataset, split manifest or raw evaluator output, so its numerical values have been excluded from the submission-facing project record.
 
-| Metric | Screenshot-reported value |
-|---|---:|
-| Precision | 98.3% |
-| Recall | 98.4% |
-| mAP@0.50 | 98.9% |
-| mAP@0.50:0.95 | 62.5% |
+The repository includes scripts for a future audited held-out test, checkpoint-to-ONNX parity check and Raspberry Pi runtime benchmark. Those scripts are implementation work; their presence is not evidence that those measurements have been completed. The current held-out test record remains `NOT_PROVIDED`.
 
-These values are transcribed from the screenshot only. The screenshot does not identify the checkpoint, dataset version, sample counts, evaluator settings or raw output. They have not been reproduced from the current training pipeline and must not be described as held-out test accuracy, Pi performance or independently verified results. Per-class values and source-image hashes are in docs/results/PROJECT_VALIDATION_RESULTS.md and docs/results/project_validation_metrics.json.
-
-**No numerical performance results from other PCB models, research papers, hardware benchmarks or Llama deployments are included as project results.** There is no independent test-set score or project Pi runtime measurement in the current checkout.
+No accuracy, FPS, latency, power or reliability value from an external model, paper or other device is presented as a result of this project.
 
 ## Scope and release blockers
 
