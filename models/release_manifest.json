@@ -107,13 +107,17 @@
     "reference_benchmarks_document": "docs/REFERENCE_BENCHMARKS.md",
     "project_detector_benchmark_script": "raspberry_pi/benchmark_onnx.py",
     "project_pipeline_benchmark_script": "raspberry_pi/benchmark_pipeline.py",
-    "project_results_present": false,
+    "project_results_present": true,
     "project_accuracy_metrics_present": false,
     "power_measurement_present": false,
     "external_references_document": "docs/REFERENCE_BENCHMARKS.md",
     "external_pcb_benchmarks_document": "docs/EXTERNAL_PCB_BENCHMARKS.md",
     "external_pcb_benchmarks_data": "docs/results/published_pcb_benchmarks.json",
-    "external_pcb_benchmarks_are_project_results": false
+    "external_pcb_benchmarks_are_project_results": false,
+    "project_validation_metrics_present": true,
+    "project_test_accuracy_metrics_present": false,
+    "project_validation_metrics_document": "docs/results/published_pcb_benchmarks.json",
+    "validation_metrics_source": "Team-supplied training-results screenshot; raw evaluator output and provenance not yet archived"
   },
   "external_pretrained_baseline": {
     "publisher": "Sulojan Rajkumar",
