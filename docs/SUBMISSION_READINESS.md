@@ -20,8 +20,8 @@ This document distinguishes source code from tested deliverables. It is not a cl
 | Detector validation | Held-out test report writer | Source present; no reproduced result |
 | Advisory | Llama 3.2 1B Instruct + ExecuTorch integration source | Third-party model; weights/runtime not stored or target-tested |
 | Dashboard | Browser operator interface | Source present; no target-device integration evidence |
-| Pi controller | IR/camera/LED source | Source present; physical commissioning absent |
-| Demo video | MP4 present; team says clip is complete | Human content review outstanding |
+| Pi controller | IR/camera/LED source | Team reports physical build/tests complete; commissioning evidence not yet committed |
+| Demo video | Repository MP4 removed at team request | No external submission link recorded; provide one separately only if required by the challenge |
 | Team/registration eligibility | Names are listed in README | Registration, nomination and mentor evidence not established by repo |
 
 ## Model and dataset ownership controls
@@ -32,7 +32,7 @@ This code-level rule does not prove who executed the training run. The team must
 
 ## Project metrics
 
-A team-supplied screenshot reports validation precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%, with per-class values transcribed in docs/results/PROJECT_VALIDATION_RESULTS.md.
+A team-supplied screenshot reports validation precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%, with per-class values transcribed in docs/results/PROJECT_VALIDATION_RESULTS.md. The newly supplied `PCB_ENGINE_KIT(2).zip` was also inspected: it contains a five-input, one-output ResAttention U-Net trace-mask checkpoint, not the three-class fault detector. Its archive checksum matches, but the archive contains no training dataset, provenance, training log or evaluation metrics for that checkpoint. It must not be used to identify or validate the screenshot metrics. See docs/results/supplied_model_package_audit.json.
 
 The screenshot does not identify the checkpoint, dataset version, validation sample count or raw evaluator output. The values have not been independently reproduced and must not be called held-out test accuracy or Pi performance. No numerical results from other PCB models, papers, hardware benchmarks or Llama deployments are retained as project results.
 
@@ -49,10 +49,10 @@ The screenshot does not identify the checkpoint, dataset version, validation sam
 | Held-out test | Evaluate the reserved test groups and archive per-class and overall outputs |
 | ONNX validation | Run `pcb_engine_kit/compare_pt_onnx.py` over the full held-out test split and retain `project_onnx_parity.json` |
 | Pi deployment | Copy project ONNX and sidecar, provision target, retain runtime smoke test |
-| Physical station | Record actual BCM pins, sensor polarity, camera, LED driver and repeated cycles |
+| Physical station | Team reports physical build/tests complete; add the actual BCM pin map, sensor polarity, camera/LED details, repeated-cycle counts and existing test records to docs/results/physical_station_commissioning.json |
 | Offline run | Complete a real inspection with WAN disconnected and local LAN maintained |
 | Severity approval | Obtain QA/engineering approval or retain explicit provisional wording |
-| Demo video | Review the MP4 against the expected sequence and remove credentials |
+| Demo video | No MP4 retained in this repository; provide and review a separate final video link only if the challenge requires a demo |
 | Eligibility | Confirm registration, team membership, college nomination and mentor from the original registration record |
 
 ## Audit commands
@@ -76,6 +76,6 @@ Current reports deliberately say NOT_PROVIDED. Do not edit them to pass; regener
 
 ## Submission wording that is supportable now
 
-The current repository contains the application and dashboard source, dataset/training/audit utilities, ONNX inference path, Llama/ExecuTorch integration source, Raspberry Pi deployment scripts, technical report and demonstration MP4. It also records screenshot-reported validation values with an explicit provenance limitation.
+The current repository contains the application and dashboard source, dataset/training/audit utilities, ONNX inference path, Llama/ExecuTorch integration source, Raspberry Pi deployment scripts and technical report. The uploaded package's auxiliary trace-mask checkpoint is recorded separately and is not treated as the primary defect detector. The repository retains screenshot-reported validation values with an explicit provenance limitation; no demo MP4 is retained.
 
-The current repository does **not** prove a project-trained model, completed dataset audit, independent test accuracy, target-Pi runtime, physical conveyor cycle, offline operation or QA-approved severity assessment. Do not claim those items passed until their evidence is captured.
+The current repository does **not** prove a primary three-class project-trained detector, completed dataset audit, independent test accuracy, target-Pi runtime or offline operation. The team reports that physical build/tests are complete, but the corresponding evidence is not yet in the repository. Do not claim independently verified results until the matching records are added.
