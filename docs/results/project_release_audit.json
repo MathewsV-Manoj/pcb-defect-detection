@@ -12,7 +12,7 @@
     "physical_station_commissioning": "TEAM_REPORTED_COMPLETE_EVIDENCE_PENDING",
     "offline_operation": "NOT_VERIFIED",
     "demo_video_content_review": "SAMPLED_REVIEW_SIMULATION_ONLY",
-    "source_authorship_review": "TEAM_REPORTED_DECLARATION_AVAILABLE_REPOSITORY_REVIEW_PENDING"
+    "source_authorship_review": "TEAM_REPORTED_DECLARATION_SUBMITTED_EXTERNALLY_SIGNED_COPY_NOT_ARCHIVED"
   },
   "evidence_checks": {
     "held_out_test_metrics_bound_to_project_artifacts": false,
@@ -33,7 +33,7 @@
     "The team reports that the physical build and tests are complete, but the pin map, cycle counts and supporting commissioning evidence have not been committed; commissioning therefore remains unverified in this repository.",
     "Offline operation evidence is not present.",
     "The demo MP4 is present and has received a sampled review; the result overlay is explicitly simulated, so the clip does not prove live YOLO or Llama execution. The team reports a separate official upload, but its portal receipt/link is not archived here.",
-    "The team reports that the individual-contribution and AI-assistance declaration is available/submitted separately. The signed declaration/receipt and per-person mapping are not archived in this repository for independent review."
+    "The team reports that the individual-contribution and AI-assistance declaration has already been submitted separately. The signed copy/receipt is not archived in this repository, so the declared per-person mapping cannot be independently inspected here."
   ],
   "release_ready": false,
   "rule": "A complete reproducible technical release requires an audited dataset and matching project checkpoint, held-out test metrics, ONNX parity, Pi runtime smoke test, physical/offline evidence, demo content scope and team authorship attestation. This manifest does not imply that team-reported physical tests or externally submitted documents were not completed; it records whether their supporting evidence is present in this repository.",
