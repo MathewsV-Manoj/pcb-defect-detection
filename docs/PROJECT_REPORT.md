@@ -89,28 +89,13 @@ The independent release audit generates project_dataset_audit.json, project_chec
 
 At the time of this report, no three-class fault-detector checkpoint or its provenance sidecar is in the repository. The separately supplied trace-mask checkpoint is not a substitute. Consequently, no independently reproducible primary-detector test metrics can be reported.
 
-## 6. Screenshot-reported validation values
+## 6. Model evaluation and accuracy reporting
 
-The team supplied a training-results screenshot showing the following values:
+No verified accuracy result is included in this submission repository. The available screenshot transcription could not be tied to an identified detector checkpoint, dataset version, group-level split manifest, evaluation configuration or raw evaluator output. Its numerical values are therefore excluded from the project results and must not be attributed to the model described in this report.
 
-| Metric | Screenshot-reported validation value |
-|---|---:|
-| Precision | 98.3% |
-| Recall | 98.4% |
-| mAP@0.50 | 98.9% |
-| mAP@0.50:0.95 | 62.5% |
+The repository contains source code for a held-out test evaluation workflow. The machine-readable record `docs/results/project_test_metrics.json` remains `NOT_PROVIDED` with null metric fields because no matching project checkpoint and audited dataset are included in this checkout.
 
-| Class | Precision | Recall | mAP@0.50 |
-|---|---:|---:|---:|
-| Missing hole | 97.8% | 98.2% | 98.5% |
-| Open circuit | 99.1% | 99.6% | 99.5% |
-| Short circuit | 97.9% | 97.6% | 98.8% |
-
-These figures are transcribed from the supplied screenshot. The screenshot does not identify the checkpoint path or hash, dataset/version, validation sample counts, split manifest, image size, confidence threshold, NMS IoU threshold, evaluator version or raw evaluator output.
-
-Therefore, these figures must remain labelled **team-supplied, screenshot-reported validation metrics**. They are not independently reproduced, not held-out test results and not Raspberry Pi measurements. Until the underlying run is identified, do not attribute the screenshot scores to the newly enforced random-initialization workflow.
-
-The source image and machine-readable record are stored in docs/results/PROJECT_VALIDATION_RESULTS.md and docs/results/project_validation_metrics.json. No numerical metrics from other PCB models, research papers, Pi benchmarks or Llama deployments are included in this report.
+Accordingly, this report makes no numerical claim for precision, recall, F1, mAP, false-positive rate, false-negative rate or overall PCB inspection accuracy. It also makes no claim that the detector has been validated on the Raspberry Pi.
 
 ## 7. Raspberry Pi deployment and local operation
 
