@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "measurement_type": "physical_station_commissioning",
+  "status": "NOT_VERIFIED",
+  "device_model": null,
+  "device_serial_or_asset_tag": null,
+  "os_version": null,
+  "camera_model": null,
+  "gpio_pin_map": null,
+  "sensor_voltage_and_polarity_verified": null,
+  "led_driver_and_external_supply_verified": null,
+  "camera_alignment_verified": null,
+  "arm_trigger_capture_sequence": null,
+  "repeated_cycle_test": {
+    "attempted_cycles": null,
+    "successful_cycles": null,
+    "missed_triggers": null,
+    "duplicate_triggers": null,
+    "capture_failures": null,
+    "inspection_failures": null
+  },
+  "evidence_files": [],
+  "operator_and_date": null,
+  "note": "This is an empty evidence record. Mark PASS only after the real hardware is inspected and repeated physical cycles are captured."
+}
