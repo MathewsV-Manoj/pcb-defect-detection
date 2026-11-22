@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "measurement_type": "team_source_authorship_and_reuse_attestation",
-  "status": "TEAM_ATTESTATION_REQUIRED",
+  "status": "DRAFT_FOR_TEAM_REVIEW",
   "team_reviewed_all_project_source": false,
   "file_to_contributor_mapping": null,
   "reused_or_adapted_code_disclosed": false,
@@ -10,5 +10,23 @@
   "each_team_member_confirmed_contribution": false,
   "attestation_date": null,
   "team_approved_by": [],
-  "note": "The repository can identify third-party dependencies but cannot prove who authored each custom source line. The team must review and complete this record truthfully."
+  "note": "A draft declaration template is available at docs/TEAM_DECLARATION_TEMPLATE.md. The repository explicitly discloses ChatGPT-assisted cleanup edits in docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md. The team must review the actual diff, identify each person's real contributions, disclose reused/adapted code and AI assistance according to the official challenge rules, review licences, and obtain each member's confirmation. This record must not be marked complete or submitted as signed until all members have personally approved it.",
+  "ai_assistance_disclosed_in_repository": true,
+  "team_members": [
+    {
+      "name": "Mathews V Manoj",
+      "contribution_mapping": "TO_BE_COMPLETED_BY_MEMBER",
+      "individual_confirmation": "PENDING"
+    },
+    {
+      "name": "Jordan Noby Eralil",
+      "contribution_mapping": "TO_BE_COMPLETED_BY_MEMBER",
+      "individual_confirmation": "PENDING"
+    },
+    {
+      "name": "Deon Lukose Shince",
+      "contribution_mapping": "TO_BE_COMPLETED_BY_MEMBER",
+      "individual_confirmation": "PENDING"
+    }
+  ]
 }
