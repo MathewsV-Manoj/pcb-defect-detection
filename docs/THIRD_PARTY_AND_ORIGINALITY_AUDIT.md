@@ -77,7 +77,15 @@ The previous external PCB-model benchmark documents and corresponding benchmark 
 
 The only accuracy figures retained are the team's supplied screenshot transcription. The exact checkpoint, dataset and evaluator record remain unavailable, so the values stay explicitly unverified.
 
-## Supplied PCB_ENGINE_KIT archive inspection\n\nThe team supplied `PCB_ENGINE_KIT(2).zip` for inspection. The archive is ZIP-integrity checked, and the SHA-256 of `optional_unet/pcb_ultra_resatt_unet.pth` matches the archive's `SHA256SUMS.json` entry. The checkpoint loads as a PyTorch state dictionary with `weights_only=True`. Its tensor shapes identify a five-channel input and a one-channel output, and the accompanying package documentation identifies its purpose as PCB trace-mask extraction.\n\nThis is an auxiliary trace extractor, not the project's three-class `missing_hole`, `open_circuit`, `short_circuit` detector. The archive contains no trace-model training dataset, dedicated U-Net training log, checkpoint-creation metadata, or validation metrics. The checkpoint's training ownership and redistribution licence are not established by the archive. Do not state that this model was trained by the project team unless separate original records establish that. The separate YOLO training script in the archive defaults to `yolov8n.pt` and does not enforce the repository's `pretrained=False` policy, so it is not accepted as provenance for the current project detector.\n\nThe machine-readable inspection is `docs/results/supplied_model_package_audit.json`. The binary checkpoint is not added to the repository and is not used by the current Raspberry Pi detector path.\n\n## Current status
+## Supplied PCB_ENGINE_KIT archive inspection
+
+The team supplied `PCB_ENGINE_KIT(2).zip` for inspection. The archive is ZIP-integrity checked, and the SHA-256 of `optional_unet/pcb_ultra_resatt_unet.pth` matches the archive's `SHA256SUMS.json` entry. The checkpoint loads as a PyTorch state dictionary with `weights_only=True`. Its tensor shapes identify a five-channel input and a one-channel output, and the accompanying package documentation identifies its purpose as PCB trace-mask extraction.
+
+This is an auxiliary trace extractor, not the project's three-class `missing_hole`, `open_circuit`, `short_circuit` detector. The archive contains no trace-model training dataset, dedicated U-Net training log, checkpoint-creation metadata, or validation metrics. The checkpoint's training ownership and redistribution licence are not established by the archive. Do not state that this model was trained by the project team unless separate original records establish that. The separate YOLO training script in the archive defaults to `yolov8n.pt` and does not enforce the repository's `pretrained=False` policy, so it is not accepted as provenance for the current project detector.
+
+The machine-readable inspection is `docs/results/supplied_model_package_audit.json`. The binary checkpoint is not added to the repository and is not used by the current Raspberry Pi detector path.
+
+## Current status
 
 - [x] Remove third-party PCB checkpoint from provisioning path.
 - [x] Reject external .pt initial weights in the new training CLI.
@@ -88,4 +96,6 @@ The only accuracy figures retained are the team's supplied screenshot transcript
 - [ ] Recover and audit the actual dataset and its permissions.
 - [ ] Train the project detector under the new provenance workflow.
 - [ ] Reproduce a held-out test report from the matching checkpoint.
-- [ ] Obtain team-level source-authorship and AI/reuse disclosures. A draft for individual review is in `docs/TEAM_DECLARATION_TEMPLATE.md`.\n- [x] Inspect the supplied PCB_ENGINE_KIT archive and record the auxiliary trace-checkpoint hash and architecture.\n- [ ] Confirm the trace-checkpoint's actual training owner, dataset, provenance and redistribution licence before any public redistribution.
+- [ ] Obtain team-level source-authorship and AI/reuse disclosures. A draft for individual review is in `docs/TEAM_DECLARATION_TEMPLATE.md`.
+- [x] Inspect the supplied PCB_ENGINE_KIT archive and record the auxiliary trace-checkpoint hash and architecture.
+- [ ] Confirm the trace-checkpoint's actual training owner, dataset, provenance and redistribution licence before any public redistribution.
