@@ -19,5 +19,15 @@
     "Generated data.yaml and audit.json from pcb_engine_kit/dataset.py"
   ],
   "audit_command": "python pcb_engine_kit/audit_release.py --data datasets/processed/pcb3/data.yaml --output-dir docs/results",
-  "note": "This is a NOT_PROVIDED status record, not a completed audit. No dataset counts or class distribution are invented."
+  "note": "This is a NOT_PROVIDED status record, not a completed audit. The subsequently supplied PCB_ENGINE_KIT archive was inspected and contains source utilities plus a manifest template but no actual image samples, defect labels or completed dataset manifest. No dataset counts or class distribution are invented.",
+  "additional_archive_inspection": {
+    "archive": "PCB_ENGINE_KIT(2).zip",
+    "raw_dataset_present": false,
+    "processed_dataset_present": false,
+    "image_samples_present": false,
+    "defect_label_files_present": false,
+    "completed_manifest_present": false,
+    "only_manifest_file_present": "pcb_engine_kit/manifest.example.csv",
+    "consequence": "The archive does not contain the data required to rebuild or audit a training dataset. Dataset sample counts, class distribution, rights status and split integrity remain NOT_PROVIDED."
+  }
 }
