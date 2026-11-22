@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import yaml
 
 CLASS_ORDER = ["missing_hole", "open_circuit", "short_circuit"]
 
@@ -27,6 +26,7 @@ def write_json(path: Path, value: dict[str, Any]) -> None:
 
 
 def dataset_audit(data_value: str | None) -> dict[str, Any]:
+    import yaml
     report: dict[str, Any] = {
         "schema_version": 1,
         "audit_type": "project_dataset_release_audit",
