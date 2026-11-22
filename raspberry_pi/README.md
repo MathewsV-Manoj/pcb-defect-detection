@@ -1,40 +1,55 @@
-# Raspberry Pi station software
+# Raspberry Pi-targeted station software
 
-The Raspberry Pi runs the IR state machine, LED driver output, camera capture, OpenCV/ONNX inspection process, ExecuTorch advisory coordinator and the operator web page. The operator opens the page from a laptop on the same trusted private network.
+This folder contains the station-controller, image inference, inspection coordinator, benchmark and optional Firebase record-synchronization source. The documented target is a Raspberry Pi 5. Source presence does not establish that the team's physical station has been commissioned or tested.
 
-## Station operation
+## Intended station sequence
 
-At the beginning of a session, the operator holds a hand in front of the IR sensor for about three seconds and then releases it. The station stays armed. When the next PCB reaches the sensor trigger point, the controller turns on the LED driver and captures one frame.
+The controller source describes an initial IR arming gesture, a later IR trigger, LED-driver activation, image capture and serving the captured frame to the operator dashboard. The operator reviews the frame and requests inspection. The Pi-side software runs the ONNX detector and sends structured findings to the text-only advisory runner.
 
-The Pi saves the frame and serves it to the browser. The operator checks the image and presses **Run inspection on Raspberry Pi**. The Pi runs the detector, writes an annotated image and event JSON, then sends structured findings to the text-only Llama advisory runner through ExecuTorch.
+The IR sensor reports presence at its trigger point; it does not measure exact board coordinates in the image. Mechanical alignment must be confirmed on the physical station. The controller does not claim to control conveyor speed/direction.
 
-The armed state remains set after an inspection, so the next board does not need another hand-hold. Restarting the controller clears the armed state.
+## Project model requirement
 
-The IR sensor reports presence at its trigger point. It does not measure the board's exact position in the camera image; that is set by the mechanical layout.
+The inference path accepts the project's native three-class ONNX model only:
+
+```text
+0 missing_hole
+1 open_circuit
+2 short_circuit
+```
+
+The ONNX sidecar is mandatory. It must match the model SHA-256, declare VERIFIED_PROJECT_TRAINING and random initialization from an architecture YAML, declare pretrained_weights_used=false, and contain the native class order. External six-class PCB detector mappings are not accepted.
+
+Train, audit and export from the development machine using pcb_engine_kit/README.md before copying the model to models/best.onnx and models/best.onnx.json on the Pi.
+
+## Advisory component
+
+The advisory uses the third-party Llama 3.2 1B Instruct foundation model through ExecuTorch. It receives structured text findings only. It is not trained by the project team and must not be described as an original project model. See llm_advisory/README.md for upstream attribution and setup.
 
 ## Configuration
 
-The controller reads these values from the process environment. See `.env.example` for the full list.
+The controller reads settings from the process environment. See .env.example for the full list.
 
-| Variable | Use |
+| Variable | Purpose |
 |---|---|
-| `PCB_IR_GPIO` | IR sensor BCM input |
-| `PCB_IR_ACTIVE_LOW` | IR sensor active polarity |
-| `PCB_IR_PULL_UP` | IR input pull-up setting |
-| `PCB_LED_DRIVER_GPIO` | External LED driver BCM output |
-| `PCB_LED_DRIVER_ACTIVE_LOW` | LED driver input polarity |
-| `PCB_CAMERA_MODE` | `usb` or `picamera2` |
-| `PCB_CAMERA_INDEX` | USB camera index |
-| `PCB_MODEL_PATH` | ONNX detector path |
-| `PCB_CONFIDENCE_THRESHOLD` | Detector confidence threshold |
-| `PCB_NMS_IOU_THRESHOLD` | NMS IoU threshold |
-| `PCB_ILLUMINATION_SETTLE_SECONDS` | Delay between LED activation and capture |
-| `PCB_OUTPUT_DIR` | Local capture and event directory |
-| `PCB_LLAMA_MODEL_PATH` | ExecuTorch `.pte` model |
-| `PCB_LLAMA_TOKENIZER_PATH` | Matching tokenizer |
-| `PCB_FIREBASE_PUBLISH` | Enable event synchronization |
+| PCB_IR_GPIO | IR sensor BCM input |
+| PCB_IR_ACTIVE_LOW | IR sensor active polarity |
+| PCB_IR_PULL_UP | Input pull-up setting |
+| PCB_LED_DRIVER_GPIO | External LED driver BCM output |
+| PCB_LED_DRIVER_ACTIVE_LOW | Driver input polarity |
+| PCB_CAMERA_MODE | usb or picamera2 |
+| PCB_CAMERA_INDEX | USB camera index |
+| PCB_MODEL_PATH | Project ONNX detector path |
+| PCB_CONFIDENCE_THRESHOLD | Detector confidence threshold |
+| PCB_NMS_IOU_THRESHOLD | NMS IoU threshold |
+| PCB_ILLUMINATION_SETTLE_SECONDS | Delay from illumination to capture |
+| PCB_OUTPUT_DIR | Local capture/event directory |
+| PCB_LLAMA_MODEL_PATH | ExecuTorch PTE model |
+| PCB_LLAMA_TOKENIZER_PATH | Matching tokenizer |
+| PCB_LLAMA_RUNNER_PATH | ExecuTorch C++ runner |
+| PCB_FIREBASE_PUBLISH | Optional event-record synchronization |
 
-The station controller does not read the `.env` file itself. Export it into the shell before starting the controller:
+The station controller does not load a .env file itself. Export it before launching:
 
 ```bash
 set -a
@@ -43,14 +58,15 @@ set +a
 python raspberry_pi/station_controller.py --host 0.0.0.0 --port 8080
 ```
 
-## Source files
+## Source map
 
 | File | Responsibility |
 |---|---|
-| `station_controller.py` | IR state, illumination, camera capture and Pi HTTP service |
-| `inspect_image.py` | OpenCV preparation, ONNX inference, NMS and event creation |
-| `run_inspection.py` | Vision inference, ExecuTorch advisory and configured Firebase synchronization |
-| `benchmark_onnx.py` | Measures Pi-side ONNX detector runtime |
-| `firebase_client.py` | Copies completed events to Firebase Realtime Database |
+| station_controller.py | IR state, illumination command, camera capture and HTTP service |
+| inspect_image.py | Project ONNX provenance checks, OpenCV preprocessing, inference and event creation |
+| run_inspection.py | Detector, text advisory and optional event synchronization |
+| benchmark_onnx.py | Detector runtime measurements |
+| benchmark_pipeline.py | Still-image vision-plus-advisory software measurements |
+| firebase_client.py | Optional event-record replication |
 
-The deployed vision path is ONNX Runtime on the Raspberry Pi CPU. Firebase synchronization copies event data; it does not run either model.
+The browser is a display/control client and does not run model inference. Firebase copies event data and does not run either model. Physical wiring, actual Pi execution, offline behaviour and performance remain unverified until their commissioning evidence is recorded.
