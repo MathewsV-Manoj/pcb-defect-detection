@@ -1,20 +1,45 @@
 {
   "schema_version": 1,
   "audit_type": "project_checkpoint_provenance_audit",
-  "status": "NOT_PROVIDED",
+  "status": "PRIMARY_FAULT_DETECTOR_NOT_PROVIDED_AUXILIARY_TRACE_CHECKPOINT_INSPECTED",
   "release_ready": false,
   "repository_state": {
     "best_pt_present": false,
     "best_onnx_present": false,
     "training_provenance_sidecar_present": false,
-    "checkpoint_sha256": null
+    "checkpoint_sha256": null,
+    "auxiliary_trace_checkpoint_present_in_repository": false,
+    "auxiliary_trace_checkpoint_supplied_in_archive": true,
+    "auxiliary_trace_checkpoint_sha256": "23107a1805c13e57f3bccace4aa20bd59e5b400468cb3c0b26f6dba0bce1426c",
+    "auxiliary_trace_checkpoint_archive_manifest_match": true
   },
   "required_next_inputs": [
-    "Project-trained best.pt created by the random-initialization training workflow",
-    "project_training_provenance.json beside the run's weights directory",
-    "Matching dataset data.yaml and audit.json",
-    "A matching project-trained best.onnx and best.onnx.json export"
+    "The exact three-class PCB fault-detection best.pt checkpoint (not the auxiliary trace-mask U-Net)",
+    "The checkpoint's original training-provenance record and SHA-256",
+    "The exact dataset, labels, group/split manifest, data.yaml and audit.json used for that checkpoint",
+    "The matching three-class best.onnx and best.onnx.json sidecar",
+    "The original evaluator output if the screenshot-reported metrics are to be tied to this checkpoint"
   ],
   "audit_command": "python pcb_engine_kit/audit_release.py --data datasets/processed/pcb3/data.yaml --checkpoint runs/pcb/weights/best.pt --output-dir docs/results",
-  "note": "This is a NOT_PROVIDED status record, not a completed checkpoint audit. No checkpoint identity or SHA-256 is invented."
+  "note": "The supplied archive provides an auxiliary trace-extraction U-Net checkpoint only. Its checksum was verified against the archive's SHA256SUMS.json and its state_dict was safely inspected. The archive itself says the U-Net is a trace extractor, not a fault detector, and contains no U-Net training dataset, training log or validation metrics. It does not satisfy the primary three-class detector checkpoint gate. No training ownership, accuracy or deployment status is inferred.",
+  "supplied_archive_inspection": {
+    "archive": "PCB_ENGINE_KIT(2).zip",
+    "archive_integrity": "PASS",
+    "checkpoint_member": "pcb_engine_kit/optional_unet/pcb_ultra_resatt_unet.pth",
+    "checkpoint_size_bytes": 32897063,
+    "checkpoint_sha256": "23107a1805c13e57f3bccace4aa20bd59e5b400468cb3c0b26f6dba0bce1426c",
+    "architecture": "ResAttentionUNet",
+    "input_channels": 5,
+    "output_channels": 1,
+    "state_dict_key_count": 199,
+    "state_tensor_elements": 8207071,
+    "parameter_elements_excluding_batchnorm_buffers": 8200185,
+    "documented_task": "PCB trace-mask extraction",
+    "safe_state_dict_load": "PASS_WITH_TORCH_WEIGHTS_ONLY",
+    "training_dataset_present": false,
+    "training_log_present": false,
+    "checkpoint_provenance_present": false,
+    "validation_metrics_present": false,
+    "primary_three_class_defect_detector": false
+  }
 }
