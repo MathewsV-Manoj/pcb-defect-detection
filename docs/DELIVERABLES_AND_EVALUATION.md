@@ -29,7 +29,7 @@ The PS5 hardware list includes a Raspberry Pi 5 CPU-only configuration. The conf
 
 ## Defect model evaluation
 
-The team has supplied a screenshot reporting these **validation** metrics: precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%. Per-class results are Missing Hole (97.8% precision, 98.2% recall, 98.5% mAP@0.50), Open Circuit (99.1%, 99.6%, 99.5%) and Short Circuit (97.9%, 97.6%, 98.8%). These are transcribed into `docs/results/published_pcb_benchmarks.json`; the raw training log, dataset identity, split manifest, checkpoint hash and validation sample counts have not yet been archived. Describe them as screenshot-reported validation results only, not independent test accuracy or Raspberry Pi performance.
+The team has supplied a screenshot reporting these **validation** metrics: precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%. Per-class results are Missing Hole (97.8% precision, 98.2% recall, 98.5% mAP@0.50), Open Circuit (99.1%, 99.6%, 99.5%) and Short Circuit (97.9%, 97.6%, 98.8%). These are transcribed into [PROJECT_VALIDATION_RESULTS.md](results/PROJECT_VALIDATION_RESULTS.md) and `docs/results/published_pcb_benchmarks.json`; the original screenshot filename/hash are recorded, but the raw training log, dataset identity, split manifest, checkpoint hash and validation sample counts have not yet been archived. Describe them as screenshot-reported validation results only, not independent test accuracy or Raspberry Pi performance.
 
 Use a separately held-out test set of PCB boards or board/capture groups. Images from the same physical PCB or capture session must not be split between training and test data.
 
@@ -98,9 +98,15 @@ For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and 
 
 ## Eligibility and submission-form checks
 
-The official challenge page states that teams may have 1–3 members; student teams must be from the same college, have a faculty mentor and be nominated by their college. The Team Leader submits the registration. The public repository cannot confirm nomination, team registration or the submitted form details. Verify those against the team's registration record before submitting.
+The official challenge page states that teams may have 1–3 members; student teams must be from the same college, have a faculty mentor and be nominated by their college. Registration closed on 19 October 2026, before the Phase 1 deadline. The public repository cannot confirm whether this team registered, was nominated or recorded its Faculty Mentor. Confirm those facts against the original registration record; do not assume a new registration can be completed now.
+
+### Original work, model provenance and data rights
+
+The challenge rules require original work and require entrants to have the rights and permissions needed for Participant Materials. The Pi provisioner currently references Sulojan Rajkumar's third-party YOLOv8s checkpoint (the model card declares MIT) and the dataset source manifest does not verify all upstream dataset terms. MIT attribution alone does not establish that every training-data right is clear or that the complete entry meets the organisers' originality/ownership interpretation. Preserve model attribution, verify all data/software licences and obtain written organiser clarification before relying on that checkpoint in the final entry. See the [official challenge terms](https://armbharatchallenge.com/).
 
 ## Current assessment
+
+See the consolidated [Phase 1 submission checklist](PHASE1_SUBMISSION_CHECKLIST.md) for direct links and the final outstanding evidence.
 
 The source-code and documentation deliverables, pinned Llama/ExecuTorch deployment path, benchmark tooling and a demonstration MP4 are committed. Screenshot-reported validation metrics are now documented, but their dataset/checkpoint provenance and raw evaluator output must still be archived. Remaining release evidence includes a separately held-out test evaluation; downloaded Llama assets and a successful on-device smoke test; physical commissioning; and a validated severity policy. Keep each item open until its evidence is recorded. Published reference values are not project measurements; see docs/REFERENCE_BENCHMARKS.md.
 
