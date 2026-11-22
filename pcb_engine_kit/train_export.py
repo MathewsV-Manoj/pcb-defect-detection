@@ -130,7 +130,7 @@ def export_onnx(model: YOLO, out: Path, size: int, checkpoint: Path,
     metadata = {
         "schema_version": 2,
         "format": "onnx",
-        "architecture": "YOLOv8 Nano",
+        "architecture_yaml": provenance["architecture_yaml"],
         "provenance_status": "VERIFIED_PROJECT_TRAINING",
         "initialization_method": provenance["initialization_method"],
         "pretrained_weights_used": False,
