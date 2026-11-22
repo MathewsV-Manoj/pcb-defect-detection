@@ -93,6 +93,6 @@ Official challenge page: https://armbharatchallenge.com/
 1. Bowei Du, Fang Wan, Guangbo Lei, Li Xu, Chengzhi Xu and Ying Xiong, “YOLO-MBBi: PCB Surface Defect Detection Method Based on Enhanced YOLOv5,” *Electronics*, 12(13), 2821 (26 June 2023). https://doi.org/10.3390/electronics12132821
 2. Lingxiao Jin, Yuqin Feng, Hao Yang and Shuxian Liu, “A multi-cognitive PCB defect detection model integrating Mamba,” *Scientific Reports*, 16, 19124 (25 April 2026). https://doi.org/10.1038/s41598-026-49734-2
 3. Yuting Wang, Bingyang Guo, Liming Sun and Ruiyun Yu, “Toward Real-Time Industrial Small Object Inspection: Decoupled Attention and Multi-Scale Aggregation for PCB Defect Detection,” *Electronics*, 15(6), 1191 (12 March 2026). https://doi.org/10.3390/electronics15061191
-4. Sulojan Rajkumar, YOLOv8s PCB defect detector model card and checkpoint: https://huggingface.co/Sulojan/pcb-defect-yolov8s
+4. Sulojan Rajkumar, YOLOv8s PCB defect detector model card and checkpoint: https://huggingface.co/Sulojan/pcb-defect-yolov8s. The author's training/evaluation source repository, including the reported precision, recall and inference-time results: https://github.com/Sulojan2027/PCB_Defect_Detect
 
 **Reporting rule:** use the above only as *published literature benchmarks*. Only results generated from this project's verified held-out boards may be labelled *project results* or *our detection accuracy*.
