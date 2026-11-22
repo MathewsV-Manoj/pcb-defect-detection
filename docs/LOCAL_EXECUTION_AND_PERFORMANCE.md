@@ -22,20 +22,13 @@ Internet access is required for first-time installation and download of dependen
 
 Offline operation is **not yet demonstrated** by evidence in this repository. To verify it, keep the Raspberry Pi and browser on the same private LAN, disconnect the WAN uplink, run a real inspection and retain the event JSON, terminal log and model hashes.
 
-## Project validation screenshot
+## Accuracy reporting
 
-The only project-specific numerical accuracy values currently recorded are transcriptions from the team-supplied training-results screenshot:
+No verified project accuracy metrics are included in this repository. The previously supplied screenshot could not be linked to an identified model checkpoint, dataset version, board-group split or raw evaluator output, so its values are not reproduced here.
 
-| Metric | Screenshot-reported validation value |
-|---|---:|
-| Precision | 98.3% |
-| Recall | 98.4% |
-| mAP@0.50 | 98.9% |
-| mAP@0.50:0.95 | 62.5% |
+The held-out test record remains `NOT_PROVIDED`. The code for producing an audited test report is present, but source-code presence is not a completed measurement. Do not claim precision, recall, F1, mAP, FPS, latency, power or reliability figures until the exact project model and measurement records are available.
 
-These values are not independently reproduced. The screenshot does not identify the dataset version, checkpoint hash, validation sample counts, split manifest, evaluator version or raw evaluator output. They are validation figures only, not test accuracy or Raspberry Pi performance. See PROJECT_VALIDATION_RESULTS.md and project_validation_metrics.json.
-
-No values from other PCB detectors, research papers, Raspberry Pi benchmark devices or Llama deployments are copied into the project performance record.
+No measurements from external PCB models, research papers, Raspberry Pi benchmark devices or Llama deployments are presented as project results.
 
 ## Measurements that still need to be produced
 
