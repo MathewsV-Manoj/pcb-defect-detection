@@ -32,11 +32,41 @@
       "present": false
     },
     "onnx_metadata_path": "models/best.onnx.json",
-    "metrics": null,
+    "metrics": {
+      "split": "validation",
+      "source": "team-supplied training-results screenshot",
+      "precision_percent": 98.3,
+      "recall_percent": 98.4,
+      "map50_percent": 98.9,
+      "map50_95_percent": 62.5,
+      "per_class": {
+        "missing_hole": {
+          "precision_percent": 97.8,
+          "recall_percent": 98.2,
+          "map50_percent": 98.5
+        },
+        "open_circuit": {
+          "precision_percent": 99.1,
+          "recall_percent": 99.6,
+          "map50_percent": 99.5
+        },
+        "short_circuit": {
+          "precision_percent": 97.9,
+          "recall_percent": 97.6,
+          "map50_percent": 98.8
+        }
+      },
+      "independent_test_metrics_present": false,
+      "reproduced_from_raw_evaluator_output": false,
+      "dataset_checkpoint_provenance_complete": false,
+      "report": "docs/results/PROJECT_VALIDATION_RESULTS.md",
+      "machine_readable_record": "docs/results/published_pcb_benchmarks.json"
+    },
     "validated_on_pi": false,
     "runtime_benchmark_script": "raspberry_pi/benchmark_onnx.py",
     "runtime_benchmark_results_present": false,
-    "pipeline_benchmark_script": "raspberry_pi/benchmark_pipeline.py"
+    "pipeline_benchmark_script": "raspberry_pi/benchmark_pipeline.py",
+    "validation_metrics_source_image_sha256": "e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c"
   },
   "advisory": {
     "required_for_challenge": true,
