@@ -119,7 +119,7 @@ No Pi smoke-test record, target-device latency result, end-to-end capture-cycle 
 | Raspberry Pi runtime smoke test | Not available |
 | Physical GPIO/camera/illumination commissioning | Team reports build/tests complete; detailed evidence not committed, so repository status remains unverified |
 | Offline test | Not verified |
-| Demo video | [Original MP4 in repository](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4); team reports a separate official upload; external receipt/link not archived |
+| Demo video | [Original MP4 in repository](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4); sampled review shows the on-screen result is explicitly simulated, not live detector evidence; team reports a separate official upload |
 | Severity rules | Configured but provisional |
 
 The project should not state that a particular accuracy, latency, frame rate, power draw, reliability level, physical cycle or offline result has been achieved unless the corresponding source data and measurement record are retained.
