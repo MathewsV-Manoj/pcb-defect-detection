@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "measurement_type": "physical_station_commissioning",
-  "status": "NOT_VERIFIED",
+  "status": "TEAM_REPORTED_COMPLETE_EVIDENCE_PENDING",
   "device_model": null,
   "device_serial_or_asset_tag": null,
   "os_version": null,
@@ -21,5 +21,7 @@
   },
   "evidence_files": [],
   "operator_and_date": null,
-  "note": "This is an empty evidence record. Mark PASS only after the real hardware is inspected and repeated physical cycles are captured."
+  "note": "The team reports that the physical station build and physical tests are complete. This is recorded as a team-reported status, not an independently verified PASS: the repository still lacks the actual device/OS/camera details, BCM pin map, electrical checks, repeated-cycle counts and supporting logs/photos. Populate those fields from the team's real test records; do not invent values. No repeat of the hardware test is implied by this status.",
+  "team_reported_complete": true,
+  "team_reported_completion_date": "2026-11-22"
 }
