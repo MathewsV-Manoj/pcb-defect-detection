@@ -1,15 +1,30 @@
 {
   "schema_version": 2,
-  "audit_type": "project_release_provenance_audit",
+  "audit_type": "project_full_release_evidence_audit",
   "dataset_status": "NOT_PROVIDED",
+  "dataset_release_ready": false,
   "checkpoint_status": "NOT_PROVIDED",
-  "held_out_test_metrics_status": "NOT_PROVIDED",
-  "onnx_prediction_parity_status": "NOT_PROVIDED",
-  "pi_runtime_smoke_test_status": "NOT_RUN",
-  "physical_station_commissioning_status": "NOT_VERIFIED",
-  "offline_operation_status": "NOT_VERIFIED",
-  "demo_video_content_review_status": "NOT_CONFIRMED",
-  "source_authorship_review_status": "TEAM_ATTESTATION_REQUIRED",
+  "checkpoint_release_ready": false,
+  "evidence_status": {
+    "held_out_test_metrics": "NOT_PROVIDED",
+    "onnx_prediction_parity": "NOT_PROVIDED",
+    "pi_runtime_smoke_test": "NOT_RUN",
+    "physical_station_commissioning": "NOT_VERIFIED",
+    "offline_operation": "NOT_VERIFIED",
+    "demo_video_content_review": "NOT_CONFIRMED",
+    "source_authorship_review": "TEAM_ATTESTATION_REQUIRED"
+  },
+  "evidence_blockers": [
+    "Dataset has not been supplied or audited.",
+    "Project checkpoint and its training provenance have not been supplied.",
+    "No held-out test metrics have been generated.",
+    "Checkpoint-to-ONNX prediction parity has not been tested.",
+    "Raspberry Pi runtime smoke test has not been run.",
+    "Physical station commissioning evidence is missing.",
+    "Offline operation evidence is missing.",
+    "Demo MP4 content has not been reviewed against the working system and block diagram.",
+    "Team source authorship and third-party reuse/AI assistance require attestation."
+  ],
   "release_ready": false,
-  "rule": "No model, metric, deployment or physical-operation claim may be presented as a verified project result unless the matching source artefacts and reproducible evidence are retained. A missing record is not a pass."
+  "rule": "A complete release requires an audited dataset and matching project checkpoint, reproducible held-out test metrics, ONNX prediction parity, Pi smoke test, physical/offline evidence, video review and team authorship attestation."
 }
