@@ -114,7 +114,7 @@ No Pi smoke-test record, target-device latency result, end-to-end capture-cycle 
 | Random-initialized training/export code | Present; checkpoint absent |
 | Project checkpoint audit | NOT_PROVIDED |
 | Dataset provenance audit | NOT_PROVIDED |
-| Screenshot validation values | Supplied screenshot transcription only |
+| Accuracy metrics | No verified checkpoint/dataset-bound test result included |
 | Independent held-out test results | Not available |
 | Raspberry Pi runtime smoke test | Not available |
 | Physical GPIO/camera/illumination commissioning | Team reports build/tests complete; detailed evidence not committed, so repository status remains unverified |
