@@ -251,11 +251,13 @@ def main() -> int:
 
         precision_values = floats(getattr(box, "p", []))
         recall_values = floats(getattr(box, "r", []))
+        f1_values = floats(getattr(box, "f1", []))
         map50_values = floats(getattr(box, "ap50", []))
         map_values = floats(getattr(box, "ap", []))
         class_indices = [int(item) for item in floats(getattr(box, "ap_class_index", []))]
         class_to_slot = {class_id: slot for slot, class_id in enumerate(class_indices)}
         target_counts = floats(getattr(metrics, "nt_per_class", []))
+        target_image_counts = floats(getattr(metrics, "nt_per_image", []))
         per_class = []
         for class_id, class_name in enumerate(CLASS_ORDER):
             slot = class_to_slot.get(class_id)
@@ -263,14 +265,14 @@ def main() -> int:
             recall = recall_values[slot] if slot is not None and slot < len(recall_values) else None
             class_map50 = map50_values[slot] if slot is not None and slot < len(map50_values) else None
             class_map = map_values[slot] if slot is not None and slot < len(map_values) else None
-            f1 = (
-                (2 * precision * recall / (precision + recall))
-                if precision is not None and recall is not None and precision + recall > 0
-                else None
-            )
+            f1 = f1_values[slot] if slot is not None and slot < len(f1_values) else None
             per_class.append({
                 "class_id": class_id,
                 "class_name": class_name,
+                "test_ground_truth_images": (
+                    int(target_image_counts[class_id])
+                    if class_id < len(target_image_counts) else None
+                ),
                 "test_ground_truth_instances": (
                     int(target_counts[class_id]) if class_id < len(target_counts) else None
                 ),
@@ -349,12 +351,16 @@ def main() -> int:
             },
             "test_set_coverage": {
                 "ground_truth_instances_per_class": {
-                    item["class_name"]: item["test_ground_truth_instances"] for item in per_class
+                    item["class_name"]: {
+                        "images": item["test_ground_truth_images"],
+                        "instances": item["test_ground_truth_instances"],
+                    } for item in per_class
                 },
                 "classes_without_test_annotations": classes_without_test_annotations,
                 "all_three_classes_have_test_annotations": (
                     len(classes_without_test_annotations) == 0
                     and all(item["test_ground_truth_instances"] is not None for item in per_class)
+                    and all(item["test_ground_truth_images"] is not None for item in per_class)
                 ),
                 "warning": (
                     "Per-class metrics and macro averages are incomplete when a class has no test annotations."
