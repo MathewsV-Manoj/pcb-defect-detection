@@ -303,7 +303,7 @@ def main() -> int:
         else:
             metadata.pop("prediction_parity_report_path", None)
             metadata.pop("prediction_parity_report_sha256", None)
-        sidecar_path.write_text(json.dumps(metadata, indent=2) + "\\n", encoding="utf-8")
+        sidecar_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
 
 
     print(json.dumps({
