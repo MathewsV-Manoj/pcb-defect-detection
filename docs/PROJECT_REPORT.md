@@ -148,7 +148,7 @@ The project should not state that a particular accuracy, latency, frame rate, po
 5. Preserve best.pt and project_training_provenance.json.
 6. Evaluate the separate board-grouped test split and save project_test_metrics.json.
 7. Export ONNX and verify metadata against the exact checkpoint and dataset audit hashes.
-8. Compare PyTorch and ONNX predictions on the same labelled images.
+8. Run `pcb_engine_kit/compare_pt_onnx.py` over the complete held-out test directory and retain `project_onnx_parity.json`; the script checks model/dataset hashes and can mark the ONNX sidecar only after a full-split pass.
 9. Provision the target Pi with the project detector and separately licensed Llama model.
 10. Complete the Pi smoke test, physical commissioning, repeated-cycle tests and offline test.
 11. Review the demo video and obtain approval for the provisional severity policy.
