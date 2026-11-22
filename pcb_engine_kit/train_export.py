@@ -159,6 +159,10 @@ def main() -> int:
     parser.add_argument("--out", default="deployment")
     parser.add_argument("--report-out", default="docs/results/project_test_metrics.json",
                         help="JSON report destination for held-out test validation")
+    parser.add_argument("--val-conf", type=float, default=0.001,
+                        help="Minimum confidence used while building the test precision-recall curve")
+    parser.add_argument("--val-iou", type=float, default=0.7,
+                        help="IoU threshold used by validation NMS")
     args = parser.parse_args()
 
     if args.size < 32 or args.size % 32:
@@ -167,6 +171,10 @@ def main() -> int:
     if args.mode in {"train", "validate"}:
         if not args.data:
             parser.error(f"--data is required for mode {args.mode}")
+    if not (0.0 <= args.val_conf < 1.0):
+        parser.error("--val-conf must be in [0, 1)")
+    if not (0.0 < args.val_iou <= 1.0):
+        parser.error("--val-iou must be in (0, 1]")
 
     if args.mode == "train":
         check_dataset_class_order(args.data)
@@ -227,7 +235,10 @@ def main() -> int:
             split="test",
             imgsz=args.size,
             device=args.device,
+            conf=args.val_conf,
+            iou=args.val_iou,
             plots=True,
+            verbose=True,
         )
         box = metrics.box
 
@@ -244,6 +255,7 @@ def main() -> int:
         map_values = floats(getattr(box, "ap", []))
         class_indices = [int(item) for item in floats(getattr(box, "ap_class_index", []))]
         class_to_slot = {class_id: slot for slot, class_id in enumerate(class_indices)}
+        target_counts = floats(getattr(metrics, "nt_per_class", []))
         per_class = []
         for class_id, class_name in enumerate(CLASS_ORDER):
             slot = class_to_slot.get(class_id)
@@ -259,6 +271,9 @@ def main() -> int:
             per_class.append({
                 "class_id": class_id,
                 "class_name": class_name,
+                "test_ground_truth_instances": (
+                    int(target_counts[class_id]) if class_id < len(target_counts) else None
+                ),
                 "precision": precision,
                 "recall": recall,
                 "f1": f1,
@@ -278,11 +293,37 @@ def main() -> int:
         dataset_sha = hashlib.sha256(dataset_path.read_bytes()).hexdigest()
         mean_precision = scalar(box.mp)
         mean_recall = scalar(box.mr)
-        overall_f1 = (
+        class_f1_values = [item["f1"] for item in per_class if item["f1"] is not None]
+        macro_f1 = (
+            sum(class_f1_values) / len(class_f1_values) if class_f1_values else None
+        )
+        harmonic_macro_pr = (
             2 * mean_precision * mean_recall / (mean_precision + mean_recall)
             if mean_precision is not None and mean_recall is not None
             and mean_precision + mean_recall > 0 else None
         )
+        classes_without_test_annotations = [
+            item["class_name"] for item in per_class
+            if item["test_ground_truth_instances"] == 0
+        ]
+        audit_path = dataset_path.parent / "audit.json"
+        dataset_audit = None
+        dataset_audit_sha = None
+        if audit_path.is_file():
+            audit_bytes = audit_path.read_bytes()
+            dataset_audit_sha = hashlib.sha256(audit_bytes).hexdigest()
+            audit_data = json.loads(audit_bytes.decode("utf-8"))
+            group_splits = audit_data.get("groups", {})
+            dataset_audit = {
+                "audit_file": str(audit_path),
+                "audit_sha256": dataset_audit_sha,
+                "image_counts": audit_data.get("image_counts"),
+                "box_counts": audit_data.get("box_counts"),
+                "group_counts": {
+                    split: sum(1 for value in group_splits.values() if value == split)
+                    for split in ("train", "val", "test")
+                } if isinstance(group_splits, dict) else None,
+            }
         report = {
             "schema_version": 1,
             "measurement_type": "project_held_out_test_accuracy",
@@ -298,11 +339,34 @@ def main() -> int:
                 "yaml_sha256": dataset_sha,
                 "split": "test",
                 "group_split_policy": "Keep each physical PCB/design/capture group within exactly one split.",
+                "audit": dataset_audit,
+            },
+            "evaluation_settings": {
+                "image_size": args.size,
+                "minimum_confidence_for_precision_recall_curve": args.val_conf,
+                "nms_iou": args.val_iou,
+                "precision_recall_operating_point": "Shared confidence selected at the maximum smoothed mean-F1 point of the test precision-recall curves by the pinned Ultralytics evaluator.",
+            },
+            "test_set_coverage": {
+                "ground_truth_instances_per_class": {
+                    item["class_name"]: item["test_ground_truth_instances"] for item in per_class
+                },
+                "classes_without_test_annotations": classes_without_test_annotations,
+                "all_three_classes_have_test_annotations": (
+                    len(classes_without_test_annotations) == 0
+                    and all(item["test_ground_truth_instances"] is not None for item in per_class)
+                ),
+                "warning": (
+                    "Per-class metrics and macro averages are incomplete when a class has no test annotations."
+                    if classes_without_test_annotations else None
+                ),
             },
             "overall": {
                 "precision": mean_precision,
                 "recall": mean_recall,
-                "f1": overall_f1,
+                "f1": macro_f1,
+                "f1_definition": "Unweighted arithmetic mean of the reported per-class F1 values at the evaluator shared operating point.",
+                "harmonic_mean_of_macro_precision_recall": harmonic_macro_pr,
                 "map50": scalar(box.map50),
                 "map50_95": scalar(box.map),
             },
@@ -316,7 +380,10 @@ def main() -> int:
             "ultralytics_run_directory": str(getattr(metrics, "save_dir", "")),
             "notes": [
                 "Metrics are generated by this command from the supplied checkpoint and dataset test split.",
-                "Do not report these values as project results until this report exists and the dataset split is audited.",
+                "Do not report these values as project results until the checkpoint, labels, group split and held-out test set have been independently audited.",
+                "Precision, recall and F1 use the evaluator operating point stated in evaluation_settings; mAP integrates precision over the confidence curve.",
+                "The dataset audit is included when pcb_engine_kit/dataset.py generated audit.json beside data.yaml.",
+                "A missing test class makes the test report incomplete for that class; inspect test_set_coverage before interpreting macro scores.",
                 "The upstream pretrained model-card metrics are not substituted into this report.",
             ],
         }
