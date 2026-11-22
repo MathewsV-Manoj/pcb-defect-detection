@@ -96,6 +96,6 @@ The machine-readable inspection is `docs/results/supplied_model_package_audit.js
 - [ ] Recover and audit the actual dataset and its permissions.
 - [ ] Train the project detector under the new provenance workflow.
 - [ ] Reproduce a held-out test report from the matching checkpoint.
-- [x] Team reports that the individual-contribution and AI/reuse declaration has been submitted separately. The signed copy/receipt is not archived in this repository; `docs/TEAM_DECLARATION_TEMPLATE.md` is supplemental only.
+- [x] Team reports that the individual-contribution and AI/reuse declaration has been submitted separately. The signed copy/receipt is not archived in this repository; no duplicate local draft is included.
 - [x] Inspect the supplied PCB_ENGINE_KIT archive and record the auxiliary trace-checkpoint hash and architecture.
 - [ ] Confirm the trace-checkpoint's actual training owner, dataset, provenance and redistribution licence before any public redistribution.
