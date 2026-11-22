@@ -177,6 +177,17 @@ transfer-learning initialization with the verified three-class dataset and
 train/validation/test split. Evaluate the new checkpoint independently before
 reporting its metrics.
 
+## Published research benchmarks
+
+Published PCB defect-detection studies report results on DeepPCB and
+PKU-Market-PCB, including mAP@0.50 values around 98–99% for their own trained
+models. See [the literature comparison](docs/EXTERNAL_PCB_BENCHMARKS.md) for
+the datasets, scores, evaluation context and source papers. These figures are
+external research references; they are not measurements of this station or
+of the checkpoint currently installed by the Pi provisioner. The project's
+own held-out accuracy remains unmeasured until its labelled board test set
+and final checkpoint are evaluated.
+
 ## Repository map
 
 | Folder | Contents |
