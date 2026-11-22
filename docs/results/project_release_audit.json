@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "audit_type": "project_release_provenance_audit",
+  "dataset_status": "NOT_PROVIDED",
+  "checkpoint_status": "NOT_PROVIDED",
+  "release_ready": false,
+  "rule": "No model or metric may be presented as a project result unless the checkpoint and dataset audits pass and the result is reproduced from the matching run."
+}
