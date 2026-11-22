@@ -109,19 +109,19 @@ class SubmissionContractTests(unittest.TestCase):
             self.assertIn(marker, audit_tool)
         self.assertIn("project_training_provenance.json", audit_tool)
 
-    def test_project_validation_values_are_screenshot_only(self):
+    def test_accuracy_metrics_are_not_claimed_without_verified_artifacts(self):
         metrics = json.loads((ROOT / "docs" / "results" / "project_validation_metrics.json").read_text(encoding="utf-8"))
-        self.assertEqual(metrics["status"], "UNVERIFIED_VALIDATION_RESULT")
-        self.assertEqual(metrics["overall_metrics_percent"]["precision"], 98.3)
-        self.assertEqual(metrics["overall_metrics_percent"]["recall"], 98.4)
-        self.assertEqual(metrics["overall_metrics_percent"]["map50"], 98.9)
-        self.assertEqual(metrics["overall_metrics_percent"]["map50_95"], 62.5)
+        self.assertEqual(metrics["status"], "NOT_PROVIDED")
+        self.assertEqual(metrics["result_status"], "NOT_PROVIDED")
         self.assertFalse(metrics["independent_test_metrics_present"])
         self.assertFalse(metrics["checkpoint_dataset_provenance_complete"])
-        self.assertEqual(
-            metrics["source_evidence"]["original_sha256"],
-            "e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c",
-        )
+        self.assertFalse(metrics["raw_evaluator_output_present"])
+        self.assertTrue(all(value is None for value in metrics["overall_metrics_percent"].values()))
+        self.assertFalse((ROOT / "docs" / "results" / "project-validation-screenshot.png").exists())
+
+    def test_held_out_validation_returns_failure_when_any_class_has_no_test_annotations(self):
+        exporter = (ROOT / "pcb_engine_kit" / "train_export.py").read_text(encoding="utf-8")
+        self.assertIn('return 0 if report["result_status"] == "COMPLETE" else 1', exporter)
 
     def test_no_external_pcb_detector_or_external_benchmark_values_remain(self):
         provisioner = (ROOT / "scripts" / "provision_pi5.sh").read_text(encoding="utf-8")
