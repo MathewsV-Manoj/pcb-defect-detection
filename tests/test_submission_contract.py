@@ -280,6 +280,19 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertTrue(manifest["performance"]["project_validation_metrics_present"])
         self.assertFalse(manifest["performance"]["project_test_accuracy_metrics_present"])
         self.assertFalse(manifest["performance"]["external_pcb_benchmarks_are_project_results"])
+        vision_metrics = manifest["vision"]["metrics"]
+        self.assertEqual(vision_metrics["split"], "validation")
+        self.assertEqual(vision_metrics["map50_percent"], 98.9)
+        self.assertEqual(vision_metrics["map50_95_percent"], 62.5)
+        self.assertFalse(vision_metrics["independent_test_metrics_present"])
+        self.assertFalse(vision_metrics["reproduced_from_raw_evaluator_output"])
+        validation_note = (ROOT / "docs" / "results" / "PROJECT_VALIDATION_RESULTS.md").read_text(encoding="utf-8")
+        self.assertIn("validation metrics", validation_note.lower())
+        self.assertIn("not an independently held-out test result", validation_note.lower())
+        self.assertIn("e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c", data["project_results"]["validation_source_image"]["sha256"])
+        checklist = (ROOT / "docs" / "PHASE1_SUBMISSION_CHECKLIST.md").read_text(encoding="utf-8")
+        self.assertIn("23 November 2026", checklist)
+        self.assertIn("Original work", checklist)
 
     def test_external_benchmarks_are_explicitly_separate_from_project_measurements(self):
         reference = (ROOT / "docs" / "REFERENCE_BENCHMARKS.md").read_text(encoding="utf-8")
