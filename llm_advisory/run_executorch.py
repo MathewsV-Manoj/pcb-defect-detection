@@ -137,8 +137,8 @@ def run_cli(
     if not runner_path.is_file():
         raise RuntimeError(
             f"ExecuTorch llama_main was not found at {runner_path}. "
-            "Build it with 'bash llm_advisory/build_pi5_runner.sh' on a Linux x86_64 host "
-            "and copy models/llama/runtime to the Pi."
+            "Build it with 'bash llm_advisory/build_pi5_runner.sh' on the Pi 5, or cross-build "
+            "on x86_64 with EXECUTORCH_SYSROOT set to the target Pi root filesystem."
         )
     if not os.access(runner_path, os.X_OK):
         raise RuntimeError(f"ExecuTorch runner is not executable: {runner_path}")
