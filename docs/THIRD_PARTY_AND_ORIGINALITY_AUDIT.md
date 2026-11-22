@@ -50,7 +50,7 @@ This repository cleanup was performed with ChatGPT assistance at the repository 
 - `tests/test_submission_contract.py`, `tests/test_onnx_parity_contract.py`, and `tests/test_release_audit_tool.py` — test updates/additions.
 - The README, dataset guide, technical report, submission documents, release manifest, validation/audit records and commissioning templates were also rewritten or added with AI assistance.
 
-The team must review the actual final diff, follow the challenge's AI-assistance disclosure requirements, and decide how these contributions should be declared. This document does not claim that the assistant's generated code has been independently validated on the team's hardware or data. CI passing verifies the listed software checks only; it does not establish who wrote the code or whether the project satisfies an originality rule.
+The team reports that its individual-contribution and AI-assistance declaration has already been submitted separately. This document records the ChatGPT-assisted cleanup scope for transparency; it does not replace the submitted declaration or independently verify its signed copy. The generated code has not been independently validated here on the team's hardware or data. CI passing verifies the listed software checks only; it does not establish who wrote the code or whether the project satisfies an originality rule.
 
 ## Project-specific source areas
 
@@ -96,6 +96,6 @@ The machine-readable inspection is `docs/results/supplied_model_package_audit.js
 - [ ] Recover and audit the actual dataset and its permissions.
 - [ ] Train the project detector under the new provenance workflow.
 - [ ] Reproduce a held-out test report from the matching checkpoint.
-- [ ] Obtain team-level source-authorship and AI/reuse disclosures. A draft for individual review is in `docs/TEAM_DECLARATION_TEMPLATE.md`.
+- [x] Team reports that the individual-contribution and AI/reuse declaration has been submitted separately. The signed copy/receipt is not archived in this repository; `docs/TEAM_DECLARATION_TEMPLATE.md` is supplemental only.
 - [x] Inspect the supplied PCB_ENGINE_KIT archive and record the auxiliary trace-checkpoint hash and architecture.
 - [ ] Confirm the trace-checkpoint's actual training owner, dataset, provenance and redistribution licence before any public redistribution.
