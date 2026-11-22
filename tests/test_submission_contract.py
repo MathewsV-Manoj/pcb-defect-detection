@@ -159,8 +159,12 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("models/best.onnx", provisioner)
         self.assertIn("models/best.onnx.json", provisioner)
         self.assertIn("dataset_audit_sha256", provisioner)
+        self.assertIn("training_provenance_sha256", provisioner)
+        self.assertIn("VERIFIED_PROJECT_TRAINING", provisioner)
         self.assertIn("llama_main", runtime_test)
         self.assertIn("CPUExecutionProvider", runtime_test)
+        self.assertIn("Raspberry Pi 5", runtime_test)
+        self.assertIn("/proc/device-tree/model", runtime_test)
 
     def test_llama_is_disclosed_as_a_third_party_text_only_advisory(self):
         readme = (ROOT / "README.md").read_text(encoding="utf-8").lower()
