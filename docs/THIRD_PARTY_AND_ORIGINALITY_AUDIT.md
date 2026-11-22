@@ -8,7 +8,7 @@ This document separates project-specific integration from third-party models, fr
 
 **Repository policy after this cleanup:**
 - No external PCB detector checkpoint is configured in the Pi provisioner.
-- The former Sulojan YOLOv8s PCB checkpoint download/export path and its associated baseline document have been removed.
+- The former third-party PCB checkpoint download/export path and its associated baseline document have been removed.
 - The project training entry point starts from an Ultralytics architecture YAML and sets `pretrained=False`.
 - It rejects a .pt file supplied as the initial model.
 - Validation/export and Pi inference require SHA-256-linked checkpoint, dataset-audit and training-provenance metadata.
