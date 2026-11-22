@@ -291,7 +291,7 @@ def main() -> int:
         report["sidecar_marked_verified"] = report["status"] == "PASS"
         if report["status"] != "PASS":
             report["sidecar_marking_note"] = "Parity failed; the ONNX sidecar will remain unverified."
-    report_bytes = (json.dumps(report, indent=2) + "\\n").encode("utf-8")
+    report_bytes = (json.dumps(report, indent=2) + "\n").encode("utf-8")
     report_path.write_bytes(report_bytes)
     report_hash = hashlib.sha256(report_bytes).hexdigest()
 
