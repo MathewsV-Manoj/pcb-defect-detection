@@ -66,7 +66,7 @@ Public Raspberry Pi 5 measurements for Llama 3.2 1B using llama.cpp/GGUF report 
 
 ### Project validation metrics reported by the team
 
-A team-supplied training-results screenshot reports validation precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%. Per-class precision/recall/mAP@0.50 are 97.8%/98.2%/98.5% for Missing Hole, 99.1%/99.6%/99.5% for Open Circuit, and 97.9%/97.6%/98.8% for Short Circuit. These are validation figures transcribed from the screenshot. The raw evaluator output, checkpoint hash, dataset/split identity and sample counts are not yet archived, and these scores do not establish held-out test accuracy or Pi 5 runtime.
+A team-supplied training-results screenshot reports validation precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%. The canonical evidence note and screenshot hash are in [PROJECT_VALIDATION_RESULTS.md](results/PROJECT_VALIDATION_RESULTS.md). Per-class precision/recall/mAP@0.50 are 97.8%/98.2%/98.5% for Missing Hole, 99.1%/99.6%/99.5% for Open Circuit, and 97.9%/97.6%/98.8% for Short Circuit. These are validation figures transcribed from the screenshot. The raw evaluator output, checkpoint hash, dataset/split identity and sample counts are not yet archived, and these scores do not establish held-out test accuracy or Pi 5 runtime.
 
 ### Published PCB detection research benchmarks
 
