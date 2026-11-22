@@ -190,10 +190,11 @@
   "demo_video": {
     "path": null,
     "file_present": false,
-    "repository_status": "REMOVED_BY_TEAM_REQUEST",
+    "repository_status": "NOT_STORED_REMOVED_BY_TEAM_REQUEST",
+    "team_reported_uploaded_externally": true,
     "external_submission_link_recorded": false,
-    "review_status": "NO_VIDEO_RETAINED_OR_REVIEWED",
-    "note": "No demo MP4 is stored in this repository. Provide an approved external submission link separately if the challenge requires a video."
+    "review_status": "TEAM_REPORTED_UPLOADED_EXTERNAL_LINK_NOT_ARCHIVED",
+    "note": "The team confirms that the video has been uploaded separately. The repository does not retain the MP4 or the submission URL/receipt."
   },
   "third_party_components": [
     "Ultralytics YOLO architecture and training/runtime code",
@@ -208,7 +209,9 @@
     "external_pcb_benchmark_values_used_as_project_results": false,
     "team_authorship_of_each_custom_source_file_independently_verified": false,
     "team_must_confirm_individual_contributions_and_review_all_licenses": true,
-    "team_declaration_status": "DRAFT_FOR_TEAM_REVIEW"
+    "team_declaration_status": "TEAM_REPORTED_DECLARATION_AVAILABLE_REPOSITORY_REVIEW_PENDING",
+    "individual_contribution_and_ai_assistance_declaration_reported_available": true,
+    "declaration_receipt_or_signed_copy_archived": false
   },
-  "release_note": "The uploaded PCB_ENGINE_KIT archive contains an auxiliary ResAttentionUNet trace-mask checkpoint, not the primary three-class fault detector. Its SHA-256 matches the archive manifest, but training provenance, dataset and evaluation results are absent. The repository still does not contain the primary YOLO checkpoint, ONNX export or dataset. The team reports physical build/tests complete; supporting commissioning evidence has not been committed. No demo MP4 is retained in this repository. Do not claim unverified metrics or test outcomes."
+  "release_note": "The uploaded PCB_ENGINE_KIT archive contains an auxiliary ResAttentionUNet trace-mask checkpoint, not the primary three-class fault detector. Its SHA-256 matches the archive manifest, the state dictionary loads strictly into the included architecture and a dummy forward pass is finite; training provenance, data and evaluation are absent. The repository still does not contain the primary YOLO checkpoint, ONNX export or dataset. The team reports physical build/tests complete, with evidence not yet committed. The team also reports the demo video and contribution/AI-assistance declaration have been uploaded/are available separately; their external receipt/link is not archived in this repository. Do not claim unverified model metrics."
 }
