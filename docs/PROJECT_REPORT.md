@@ -118,7 +118,7 @@ The documented target runtime is a Raspberry Pi 5 CPU. OpenCV preprocessing and 
 
 The Pi provisioner requires a project-trained ONNX file with a valid sidecar and refuses a model that does not declare matching hashes, the correct class order and random-initialization provenance. It downloads/builds the separately licensed Llama and ExecuTorch assets as part of setup. A successful provisioner run would still be a software smoke test, not proof of physical station operation.
 
-No Pi smoke-test record, target-device latency result, end-to-end capture-cycle measurement, offline-operation record or external power-meter reading is currently present in the repository.
+No Pi smoke-test record, target-device latency result, end-to-end capture-cycle measurement, offline-operation record or external power-meter reading is currently present in the repository. The team separately reports physical build/tests complete; their detailed commissioning records have not been archived here.
 
 ## 8. Current evidence and limitations
 
@@ -134,7 +134,7 @@ No Pi smoke-test record, target-device latency result, end-to-end capture-cycle 
 | Raspberry Pi runtime smoke test | Not available |
 | Physical GPIO/camera/illumination commissioning | Team reports build/tests complete; detailed evidence not committed, so repository status remains unverified |
 | Offline test | Not verified |
-| Demo video | Removed from this repository at team request; no external submission link recorded |
+| Demo video | Team reports uploaded separately; MP4 removed from repository at team request; external receipt/link not archived |
 | Severity rules | Configured but provisional |
 
 The project should not state that a particular accuracy, latency, frame rate, power draw, reliability level, physical cycle or offline result has been achieved unless the corresponding source data and measurement record are retained.
@@ -153,4 +153,4 @@ The project should not state that a particular accuracy, latency, frame rate, po
 10. Complete the Pi smoke test, physical commissioning, repeated-cycle tests and offline test.
 11. Provide a separately approved demo-video link through the official submission channel if the challenge requires one; no MP4 is retained in this repository. Obtain QA/engineering approval for the provisional severity policy.
 
-This report distinguishes source-code availability from evidence of successful execution. Update it only when new artefacts and reproducible test records are available.
+The team also reports that the individual-contribution and AI-assistance declaration is available/submitted separately. The repository's originality audit discloses ChatGPT-assisted cleanup work; the signed external declaration is not stored in this checkout. See `docs/FINAL_PROJECT_AND_SUBMISSION_AUDIT.md` for the full reconciliation. This report distinguishes source-code availability from evidence of successful execution. Update it only when new artefacts and reproducible test records are available.
