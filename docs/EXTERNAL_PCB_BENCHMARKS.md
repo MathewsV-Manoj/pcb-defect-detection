@@ -16,7 +16,7 @@ The closest public datasets in the reviewed papers are DeepPCB and PKU-Market-PC
 
 ### Dataset and evaluation context
 
-**YOLO-MBBi — DeepPCB.** Du et al. describe DeepPCB as 1,500 defect images with corresponding defect-free reference images. They report a 1,200/150/150 train/validation/test division and average the metrics from three random divisions. Their DeepPCB comparison table reports YOLO-MBBi precision 0.986, recall 0.971 and mAP@0.50 0.990. The paper's overall recall and precision are averages across the six categories.
+**YOLO-MBBi — DeepPCB.** Du et al. describe DeepPCB as 1,500 defect images with corresponding defect-free reference images. They report a 1,200/150/150 train/validation/test division and average the metrics from three random divisions. The DeepPCB test-set comparison table reports YOLO-MBBi precision 0.987, recall 0.975, mAP@0.50 0.990 and 69.5 FPS. Its class-specific mAP, precision and recall tables provide further per-defect breakdowns.
 
 **PCB-MMF and RT-DETR-L — DeepPCB.** Jin et al. describe 1,500 paired defect/reference images and six annotations: open, short, mouse bite, spur, copper and pin-hole. Their images are binarized and split 7:2:1 into training, validation and test sets. Table 5 reports the precision, recall, mAP@0.50, mAP@0.75 and mAP@0.50:0.95 values listed above. These models were evaluated by the paper's authors, not on this project's Raspberry Pi station.
 
