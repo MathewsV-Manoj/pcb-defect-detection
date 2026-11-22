@@ -133,7 +133,11 @@ def main() -> None:
         label_value = (row.get("label") or "").strip()
         image_path = (manifest_path.parent / image_value).resolve()
         label_path = (manifest_path.parent / label_value).resolve()
-        if not image_value or not image_path.is_file():
+        if not image_value or not label_value:
+            raise ValueError(f"Image or annotation path is empty at manifest row {row_number}")
+        if manifest_path.parent not in image_path.parents or manifest_path.parent not in label_path.parents:
+            raise ValueError(f"Image and annotation paths must remain under the import-manifest directory at row {row_number}")
+        if not image_path.is_file():
             raise FileNotFoundError(f"Image missing at manifest row {row_number}: {image_path}")
         if not label_value or not label_path.is_file():
             raise FileNotFoundError(f"Annotation file missing at manifest row {row_number}: {label_path}")
