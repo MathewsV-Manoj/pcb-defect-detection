@@ -228,6 +228,8 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn('"f1": macro_f1', exporter)
         self.assertIn('"harmonic_mean_of_macro_precision_recall": harmonic_macro_pr', exporter)
         self.assertIn('"test_ground_truth_instances"', exporter)
+        self.assertIn('"test_ground_truth_images"', exporter)
+        self.assertIn('f1_values = floats(getattr(box, "f1", []))', exporter)
         self.assertIn('"classes_without_test_annotations"', exporter)
         self.assertIn('"minimum_confidence_for_precision_recall_curve": args.val_conf', exporter)
         self.assertIn('"nms_iou": args.val_iou', exporter)
