@@ -99,7 +99,7 @@ class SubmissionContractTests(unittest.TestCase):
         release = json.loads((ROOT / "docs" / "results" / "project_release_audit.json").read_text(encoding="utf-8"))
         self.assertEqual(dataset["status"], "NOT_PROVIDED")
         self.assertFalse(dataset["release_ready"])
-        self.assertEqual(checkpoint["status"], "NOT_PROVIDED")
+        self.assertIn("PRIMARY_FAULT_DETECTOR_NOT_PROVIDED", checkpoint["status"])
         self.assertFalse(checkpoint["release_ready"])
         self.assertFalse(release["release_ready"])
         audit_tool = (ROOT / "pcb_engine_kit" / "audit_release.py").read_text(encoding="utf-8")
