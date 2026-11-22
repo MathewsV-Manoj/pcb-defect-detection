@@ -84,6 +84,26 @@ See [PCB upstream baseline](PCB_UPSTREAM_BASELINE.md) for model provenance,
 license declaration, checkpoint checksum, dataset and source links, detailed
 metrics and exact download/export commands.
 
+## 4.2 Published research comparison
+
+Several independent PCB-defect studies provide reference points on public
+datasets. On DeepPCB, YOLO-MBBi reports 98.7% precision, 97.5% recall and
+99.0% mAP@0.50; PCB-MMF reports 96.23% precision, 97.02% recall, 98.68%
+mAP@0.50 and 82.16% mAP@0.50:0.95; RT-DETR-L reports 98.20% precision,
+97.66% recall, 98.74% mAP@0.50 and 82.34% mAP@0.50:0.95. On
+PKU-Market-PCB, PCB-YOLO reports 96.1% precision, 97.4% recall, 98.4%
+mAP@0.50 and 71.6% mAP@0.50:0.95. PCB-YOLO's separate DeepPCB experiment
+reports 99.0% mAP@0.50 and 80.4% mAP@0.50:0.95.
+
+These are results from the cited papers' own trained models, datasets and
+evaluation environments. They demonstrate the performance reported in the
+literature, not accuracy achieved by this project. Dataset class definitions,
+splits, imaging conditions, evaluator settings and target hardware differ;
+the FPS figures in those papers are not Raspberry Pi 5 measurements. Full
+provenance, dataset details and source links are recorded in
+[EXTERNAL_PCB_BENCHMARKS.md](EXTERNAL_PCB_BENCHMARKS.md), with the values also
+stored in [published_pcb_benchmarks.json](results/published_pcb_benchmarks.json).
+
 ## 5. Inspection event and operator advisory
 
 Each inspection event includes a record ID, board ID, timestamp, source type, model filename and class order, thresholds, inference latency, detections and station information. Each detection stores a class ID/name, confidence, bounding box and image-relative location.
