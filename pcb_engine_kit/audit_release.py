@@ -26,7 +26,6 @@ def write_json(path: Path, value: dict[str, Any]) -> None:
 
 
 def dataset_audit(data_value: str | None) -> dict[str, Any]:
-    import yaml
     report: dict[str, Any] = {
         "schema_version": 1,
         "audit_type": "project_dataset_release_audit",
@@ -52,6 +51,7 @@ def dataset_audit(data_value: str | None) -> dict[str, Any]:
     report["dataset_yaml_path"] = str(data_path)
     report["dataset_yaml_sha256"] = sha256_file(data_path)
     try:
+        import yaml
         config = yaml.safe_load(data_path.read_text(encoding="utf-8"))
         names = config.get("names") if isinstance(config, dict) else None
         if isinstance(names, dict):
