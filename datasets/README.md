@@ -8,7 +8,7 @@ The detector's fixed class order is:
 2 short_circuit
 ```
 
-**No training dataset is included in this repository.** The sample CSV is a template only. Do not describe DeepPCB, PKU-Market-PCB, Kaggle data, or any other public dataset as used by this project unless its actual files and annotations appear in the completed import manifest and have been reviewed.
+**No raw or processed training dataset is included in this repository. No external PCB dataset is currently confirmed as used.** The source register is intentionally header-only until the team has the exact dataset revision, files, source URL and licence/permission record. A source listed as a candidate is not evidence of use.
 
 ## Import manifest
 
@@ -24,6 +24,8 @@ Copy `import_manifest.example.csv` to `import_manifest.csv` and replace every ex
 | `license_or_permission` | Exact licence or permission basis; do not guess |
 | `rights_review_status` | Set to `CONFIRMED_BY_TEAM` only after the team checks the terms |
 | `annotation_review_status` | Set to `REVIEWED_BY_TEAM` only after a person reviews the class and box |
+
+The importer deliberately accepts only YOLO and Pascal VOC annotations. Annotations from other datasets must not be mapped into project classes by assuming numeric class IDs. Convert them to the canonical YOLO format only after the team has reviewed the source's exact class definitions and manually verified each mapping.
 
 A `PENDING` review status is intentionally not release-ready. The audit records team declarations; it does not independently verify licensing or annotation correctness.
 
@@ -64,6 +66,6 @@ python pcb_engine_kit/audit_release.py \
 
 The audit creates `project_dataset_audit.json`, `project_checkpoint_audit.json` and `project_release_audit.json`. A missing dataset/checkpoint is recorded as `NOT_PROVIDED` or `INCOMPLETE`; missing artefacts are never treated as a pass.
 
-## Dataset source register
+## Source register
 
-`SOURCE_MANIFEST.csv` is a source register, not proof that a dataset was used. It lists possible origins and review requirements. Actual use is determined only by the completed import manifest and the hashes in the generated audit.
+`SOURCE_MANIFEST.csv` is intentionally header-only because no external dataset has been confirmed as used. Add one row per actual source only after inspecting the exact revision, class definitions, terms and redistribution permissions. The completed import manifest and its hashes determine which images entered the project dataset.
