@@ -11,7 +11,7 @@ This checklist records what is visible in the repository. A file existing is not
 | Deliverable | Location | Status |
 |---|---|---|
 | Source code | Repository root, raspberry_pi/, dashboard/, pcb_engine_kit/, llm_advisory/ | Published |
-| Application | Pi-targeted station API and browser dashboard | Source published; target hardware operation unverified |
+| Application | Pi-targeted station API and browser dashboard | Source published; team reports physical build/tests complete; live project-model execution on target is not evidenced in this repository |
 | Demonstration video | [Original MP4 in `demo_video/`](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4) | Team reports separate official upload; sampled review shows the on-screen result is explicitly simulated, not live detector output |
 | Technical report | docs/PROJECT_REPORT.md | Published; no independently reproduced test/performance results |
 
