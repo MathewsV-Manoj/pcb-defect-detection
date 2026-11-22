@@ -92,7 +92,7 @@ Measure on the Raspberry Pi, not on the training workstation:
 - Llama total response time and peak RAM; TTFT/tokens per second when the runner emits ExecuTorch observer telemetry, otherwise leave them null;
 - power only if measured with an appropriate external meter.
 
-For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method. Clearly label publisher-reported PCB model metrics, Arm's Pi 5 runtime reference and other published Llama results as external references. The DLMR vision-language paper is unrelated to PCB detection and is not a valid metric source for this system. See [LOCAL_EXECUTION_AND_PERFORMANCE.md](LOCAL_EXECUTION_AND_PERFORMANCE.md).
+For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method. Clearly label publisher-reported PCB model metrics, Arm's Pi 5 runtime reference and other published Llama results as external references. The DLMR vision-language paper is unrelated to PCB detection and is not a valid metric source for this system. See [LOCAL_EXECUTION_AND_PERFORMANCE.md](LOCAL_EXECUTION_AND_PERFORMANCE.md) and the detailed [published PCB detection benchmark comparison](EXTERNAL_PCB_BENCHMARKS.md). External study figures are literature references only; the project accuracy fields remain unmeasured until the project's own held-out boards are scored.
 
 ## Eligibility and submission-form checks
 
