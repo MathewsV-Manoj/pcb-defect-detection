@@ -19,7 +19,7 @@ Copy `import_manifest.example.csv` to `import_manifest.csv` and replace every ex
 | `split` | `train`, `val` or `test` |
 | `group` | Stable physical-board/design/capture-session group ID |
 | `image`, `label` | Paths relative to the manifest CSV |
-| `format` | `yolo`, `voc` or `deeppcb` |
+| `format` | `yolo` or `voc` |
 | `source_name`, `source_url` | Actual origin of the image |
 | `license_or_permission` | Exact licence or permission basis; do not guess |
 | `rights_review_status` | Set to `CONFIRMED_BY_TEAM` only after the team checks the terms |
