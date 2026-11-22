@@ -1,47 +1,51 @@
 # Project PCB detector validation results
 
-**Result type:** Team-reported validation metrics  
-**Source:** User-supplied screenshot titled "Training results"  
-**Source image filename:** `image(20261122-041729).png`  
-**Source image SHA-256:** `e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c`  
-**Source image dimensions:** 1093 × 740 pixels  
-**Recorded on:** 22 November 2026  
-**Archived screenshot:** [project-validation-screenshot.png](project-validation-screenshot.png)
+**Result type:** Team-supplied screenshot transcription; not independently reproduced  
+**Evaluation split shown/reported:** Validation  
+**Source filename:** image(20261122-041729).png  
+**Original source-image SHA-256:** e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c  
+**Original dimensions:** 1093 × 740 pixels  
+**Archived image:** project-validation-screenshot.png  
+**Machine-readable record:** project_validation_metrics.json
 
-![Archived copy of the supplied training-results screenshot](project-validation-screenshot.png)
+![Team-supplied training-results screenshot](project-validation-screenshot.png)
 
-## Overall validation metrics
+## Values visible in the supplied screenshot
 
 | Metric | Reported value |
 |---|---:|
-| Precision | **98.3%** |
-| Recall | **98.4%** |
-| mAP@0.50 | **98.9%** |
-| mAP@0.50:0.95 | **62.5%** |
+| Precision | 98.3% |
+| Recall | 98.4% |
+| mAP@0.50 | 98.9% |
+| mAP@0.50:0.95 | 62.5% |
 
-## Per-class validation metrics
-
-| Defect | Precision | Recall | mAP@0.50 |
+| Defect class | Precision | Recall | mAP@0.50 |
 |---|---:|---:|---:|
-| Missing Hole (`missing_hole`) | 97.8% | 98.2% | 98.5% |
-| Open Circuit (`open_circuit`) | 99.1% | 99.6% | 99.5% |
-| Short Circuit (`short_circuit`) | 97.9% | 97.6% | 98.8% |
+| Missing hole | 97.8% | 98.2% | 98.5% |
+| Open circuit | 99.1% | 99.6% | 99.5% |
+| Short circuit | 97.9% | 97.6% | 98.8% |
 
-## Interpretation and limits
+## Provenance not visible in the screenshot
 
-These numbers are transcribed from the screenshot. They are **validation results**, not an independently held-out test result, not a Raspberry Pi 5 measurement, and not a measurement of the separately published YOLOv8s baseline unless the exact checkpoint identity confirms that relationship.
+The screenshot does not identify the model checkpoint path or SHA-256, training-provenance sidecar, dataset name/version, import-manifest hash, group-level split manifest, validation image/object counts, image size, confidence threshold, NMS IoU threshold, evaluator version or raw evaluation output.
 
-The screenshot does not show the dataset name/version, number of validation images or instances, board-level split manifest, model/checkpoint path or SHA-256, image size, confidence threshold, NMS IoU threshold, evaluator version, or raw evaluator output. Those fields are deliberately left unknown in the machine-readable record.
+The repository currently has no project-trained checkpoint, processed dataset or completed provenance audit. As a result:
 
-Before using these figures as reproducible experimental results, archive:
-1. The exact `best.pt` checkpoint and its SHA-256.
-2. The dataset version, source/licence records, import manifest and generated dataset audit.
-3. The train/validation/test split manifest, with all images from one physical board/design/capture group confined to one split.
-4. The raw validation log/report and evaluator version/settings.
-5. The ONNX export and metadata, followed by source-checkpoint/ONNX prediction-parity checks.
+- these values remain **team-supplied screenshot-reported validation metrics**;
+- they are not independently reproduced by the current repository scripts;
+- they cannot yet be associated with the random-initialization training workflow introduced in the latest code;
+- they are not held-out test metrics or target-device performance;
+- they must not be replaced with numbers from other authors' PCB models or device benchmarks.
 
-A separate board-level held-out test set must be evaluated before reporting generalisation/test accuracy. Do not use the validation split as the final test split. Do not substitute published-paper metrics for project measurements.
+## Required reconciliation
 
-## Machine-readable record
+Before these values can be treated as reproducible project results, recover the exact original checkpoint, training run and dataset that produced this screenshot. Compute and preserve their hashes, reconstruct the split manifest, and retain the raw evaluator output. If the exact model or source data cannot be recovered, keep this record as an unverified historical report and produce a new result using the current audited pipeline.
 
-The same values are stored in [published_pcb_benchmarks.json](published_pcb_benchmarks.json), under `project_results`. External literature benchmarks are stored separately in the `benchmarks` array.
+Run a separate held-out board-group test before claiming test performance. Do not reuse validation boards as test boards.
+
+## File hashes
+
+- Original screenshot SHA-256: e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c
+- Archived repository image SHA-256: 8fddc32aeb9565bc8e2598885a1c88268a29eb2f18c9ab07b2bfc529430219b9
+
+No numerical metrics from other PCB detectors, papers, hardware benchmarks or Llama deployments are included in the project-results record.
