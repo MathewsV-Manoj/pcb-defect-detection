@@ -50,6 +50,17 @@ def main() -> int:
     parser.add_argument("--timeout-seconds", type=int, default=300)
     args = parser.parse_args()
 
+    device_tree_model = Path("/proc/device-tree/model")
+    if (
+        platform.system() != "Linux"
+        or platform.machine() != "aarch64"
+        or not device_tree_model.is_file()
+    ):
+        parser.error("This smoke test must run on a 64-bit Linux Raspberry Pi 5.")
+    hardware_model = device_tree_model.read_bytes().replace(b"\\x00", b"").decode("utf-8", errors="replace")
+    if "Raspberry Pi 5" not in hardware_model:
+        parser.error(f"Expected Raspberry Pi 5 hardware, detected: {hardware_model!r}")
+
     model = Path(args.model).expanduser()
     if not model.is_absolute():
         model = ROOT / model
