@@ -14,7 +14,7 @@ The detector must be trained through pcb_engine_kit/train_export.py from a YOLO 
 
 The inference application rejects an ONNX file without the expected provenance declaration and matching SHA-256. The Pi provisioner also checks the model metadata before runtime setup.
 
-The current repository does not include best.pt, best.onnx or their provenance files. See docs/results/project_checkpoint_audit.json.
+The current repository does not include the primary three-class best.pt, best.onnx or their provenance files. The uploaded `PCB_ENGINE_KIT(2).zip` contains a separate five-channel ResAttention U-Net trace-mask checkpoint with one output channel. That checkpoint is not a defect classifier, is not integrated with the Pi runtime and has no training dataset/provenance/metrics in the supplied archive. Its checksum and architecture smoke check are recorded in docs/results/supplied_model_package_audit.json. See docs/results/project_checkpoint_audit.json for the still-open primary detector gate.
 
 ## Advisory model
 
