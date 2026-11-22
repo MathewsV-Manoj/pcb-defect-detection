@@ -17,10 +17,10 @@ The repository has undergone a substantial cleanup. External PCB benchmark mater
 
 The team has separately confirmed that:
 - the physical station has been built and physical tests have been completed;
-- the demonstration video has been uploaded separately; and
+- the original demonstration MP4 is restored in this repository, and the team reports a separate upload through the official submission channel; and
 - the individual-contribution and AI-assistance declaration is available/submitted separately.
 
-Those are recorded as **team-reported statuses**. The corresponding external video link, submission receipt and signed declaration are not archived in this GitHub checkout. The physical test record is also not yet populated with the actual pin map, device details, cycle counts or supporting logs/photos. This does not mean that the team did not do the work; it means that the public repository cannot independently reproduce or inspect it.
+The physical-build completion, separate official video upload and declaration availability remain **team-reported statuses**. The original MP4 is now archived in this GitHub checkout at [demo_video/](../demo_video/). The official submission link/receipt and signed declaration are not archived here. The physical test record is also not yet populated with the actual pin map, device details, cycle counts or supporting logs/photos. This does not mean that the team did not do the work; it means that the public repository cannot independently reproduce or inspect it.
 
 The uploaded `PCB_ENGINE_KIT(2).zip` was inspected. It contains an auxiliary five-channel ResAttention U-Net checkpoint producing a one-channel trace mask. Its checksum matches the archive manifest, the state dictionary loads strictly into the included architecture and a dummy forward pass produces a finite 320 × 320 output. **This is not the project's primary three-class RGB fault detector.** It cannot be used as evidence for missing-hole/open-circuit/short-circuit detection or for the validation screenshot values.
 
@@ -28,7 +28,7 @@ The uploaded `PCB_ENGINE_KIT(2).zip` was inspected. It contains an auxiliary fiv
 
 - **Repository hygiene and software contract checks:** completed; latest recorded GitHub Actions run passed.
 - **Physical build and tests:** team reports complete; repository evidence fields need to be populated from the original test records.
-- **Demo video:** team reports uploaded separately; external link/receipt is not archived here.
+- **Demo video:** original MP4 present in `demo_video/`; team reports a separate official upload, whose link/receipt is not archived here; content review remains pending.
 - **Contribution and AI-assistance declaration:** team reports available/submitted separately; actual signed copy/receipt is not archived here.
 - **Primary three-class detector, source dataset and reproducible evaluation:** not established by the currently inspected repository and supplied ZIP.
 - **Full evidence-based technical release:** not yet verifiable from this repository.
@@ -262,15 +262,15 @@ These are data-entry and evidence-archiving tasks, not instructions to rerun alr
 
 ## 9. Demo video status
 
-The demo MP4 was removed from the GitHub repository at the team's request. The team has now confirmed that the demonstration video has been uploaded separately.
+The original MP4 has been restored at [demo_video/WhatsApp Video 2026-11-21 at 5.48.59 PM.mp4](../demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4). Its SHA-256 is `fc562f5889e80173a06e5220328c2bdb5140c02e762a50c3a6640fc9a1348003`, matching the file previously committed in the repository. The team also reports a separate official upload; its submission URL/receipt is not archived here. The video content has not yet been independently reviewed.
 
 The repository therefore records:
 
 ```text
-TEAM_REPORTED_UPLOADED_EXTERNALLY_LINK_NOT_ARCHIVED
+REPOSITORY_COPY_PRESENT_TEAM_REPORTED_EXTERNAL_UPLOAD_RECEIPT_NOT_ARCHIVED_CONTENT_REVIEW_PENDING
 ```
 
-This means the current repository does not contain the MP4 or its external submission URL/receipt. It does **not** mean the team failed to submit a video. The remaining check is administrative: ensure that the final intended video is attached to the official submission form/portal and retain the submission confirmation or link in the team's records. There is no need to restore the MP4 to GitHub unless the team deliberately chooses to publish it there.
+The MP4 is now present in the repository, but the external official submission URL/receipt is still not archived here. This does **not** establish that the GitHub copy is the same file attached to the official portal; verify the portal attachment and retain its confirmation. The content review also remains pending.
 
 ---
 
@@ -388,13 +388,13 @@ The items below are what remain to make the public technical evidence complete. 
 | Pi runtime evidence | NOT PROVIDED | Target smoke-test record absent |
 | Physical build/tests | TEAM REPORTED COMPLETE | Archive existing test data; no need to repeat completed tests |
 | Offline test | NOT VERIFIED IN REPOSITORY | Preserve the actual test record or state not tested |
-| Demo video | TEAM REPORTED UPLOADED EXTERNALLY | Keep external submission link/receipt; MP4 intentionally not in GitHub |
+| Demo video | REPOSITORY COPY PRESENT; TEAM REPORTS EXTERNAL UPLOAD | MP4 restored in `demo_video/`; verify official portal attachment/receipt; content review pending |
 | Individual contribution / AI declaration | TEAM REPORTED AVAILABLE/SUBMITTED | Keep signed copy/receipt; AI assistance is disclosed in repository |
 | Severity policy | PROVISIONAL | Requires engineering/QA approval |
 
 ## 16. Overall conclusion
 
-The cleaned repository is a substantially better and more honest source package than the earlier version. The demo video is reported submitted separately, the individual-contribution and AI-assistance declaration is reported available separately, and the physical build/tests are reported complete. Those team confirmations have been reflected without pretending that external submissions or unarchived test files are independently visible from GitHub.
+The cleaned repository is a substantially better and more honest source package than the earlier version. The original demo MP4 is now present in the repository and the team reports a separate official upload; the individual-contribution and AI-assistance declaration is reported available separately, and the physical build/tests are reported complete. Those team confirmations have been reflected without pretending that external submissions or unarchived test files are independently visible from GitHub.
 
 The main unresolved technical issue is not the trace-extraction U-Net. It is the identity and provenance of the **actual three-class fault detector**, its dataset and its reproducible evaluation. The supplied U-Net checkpoint is a separate trace-mask model and cannot be used to fill that gap.
 
