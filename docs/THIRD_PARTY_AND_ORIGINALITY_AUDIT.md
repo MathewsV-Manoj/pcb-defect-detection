@@ -37,6 +37,21 @@ The repository contains an import manifest template and a header-only source reg
 
 Before using any external images, record the actual revision, source URL, licence/permission basis, class definitions and annotation format. Review each class mapping manually; do not infer equivalence from similar names or numeric class IDs. Dataset sources that cannot be lawfully used or whose annotations cannot be validated must not be included.
 
+## AI-assisted changes made during this cleanup
+
+This repository cleanup was performed with ChatGPT assistance at the repository owner's request. The following files were created or materially rewritten with AI assistance in this session and must not be represented as entirely hand-written by the team:
+
+- `pcb_engine_kit/dataset.py` — dataset import and source/provenance audit.
+- `pcb_engine_kit/train_export.py` — random-initialized training, held-out test evaluation and ONNX export.
+- `pcb_engine_kit/audit_release.py` — dataset, checkpoint and full-release evidence audit.
+- `pcb_engine_kit/compare_pt_onnx.py` — checkpoint-to-ONNX prediction parity checker.
+- `scripts/provision_pi5.sh` — project-only ONNX provisioning gate.
+- `raspberry_pi/inspect_image.py` — strict project-model sidecar validation.
+- `tests/test_submission_contract.py`, `tests/test_onnx_parity_contract.py`, and `tests/test_release_audit_tool.py` — test updates/additions.
+- The README, dataset guide, technical report, submission documents, release manifest, validation/audit records and commissioning templates were also rewritten or added with AI assistance.
+
+The team must review the actual final diff, follow the challenge's AI-assistance disclosure requirements, and decide how these contributions should be declared. This document does not claim that the assistant's generated code has been independently validated on the team's hardware or data. CI passing verifies the listed software checks only; it does not establish who wrote the code or whether the project satisfies an originality rule.
+
 ## Project-specific source areas
 
 The following are custom project integration areas in the repository. Listing them does not independently prove authorship by a particular team member:
