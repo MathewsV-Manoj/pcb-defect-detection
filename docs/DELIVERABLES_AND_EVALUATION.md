@@ -12,7 +12,7 @@ This checklist is based on the project repository and the PS5 scope documented b
 |---|---|---|
 | Source code | Controller, dashboard, inference, training, audit, advisory and event schema source | Present |
 | Application | Pi-targeted HTTP service and browser dashboard | Source present; target hardware test absent |
-| Demonstration video | demo_video/pcb-inspection-demo.mp4 | File present; content requires human review |
+| Demonstration video | No video retained in this repository (removed at team request) | Provide an approved external link through the challenge portal if a video is required |
 | Technical report | docs/PROJECT_REPORT.md | Present; must be updated with real measured evidence when available |
 
 ## Functional architecture
@@ -43,7 +43,7 @@ The only numeric values retained in the repository are the team's screenshot-rep
 | mAP@0.50 | 98.9% |
 | mAP@0.50:0.95 | 62.5% |
 
-The per-class values are in docs/results/PROJECT_VALIDATION_RESULTS.md. The checkpoint identity, dataset/split provenance, sample counts and raw evaluator output are unknown. These numbers have not been reproduced and are not independent test scores. They must not be attributed to the current training pipeline without recovering and hashing the original checkpoint and dataset.
+The per-class values are in docs/results/PROJECT_VALIDATION_RESULTS.md. The checkpoint identity, dataset/split provenance, sample counts and raw evaluator output are unknown. These numbers have not been reproduced and are not independent test scores. The separately supplied `PCB_ENGINE_KIT(2).zip` contains a ResAttention U-Net trace-mask checkpoint (5-channel input, 1-channel output), not the three-class detector; the archive does not include the U-Net training dataset, log, provenance or metrics. The trace checkpoint therefore cannot identify or validate the screenshot scores. See docs/results/supplied_model_package_audit.json.
 
 For new results, use the audited training workflow and test split. Record per-class precision, recall and F1, mAP@0.50 and mAP@0.50:0.95, test support, confusion matrix and reviewed false positives/false negatives. All images from the same board/design/capture group must stay in one split.
 
@@ -58,7 +58,7 @@ bash scripts/run_station_pi5.sh
 
 The provisioner checks the ONNX hash, random-initialization provenance and dataset/checkpoint sidecar fields, then provisions the separately licensed Llama/ExecuTorch path. It does not establish physical wiring or prove the station has passed.
 
-Complete docs/PI5_COMMISSIONING.md. Test arming, IR trigger, LED timing, camera capture, dashboard preview, detector result, advisory output, repeated-board operation and offline mode. Record attempts, successful cycles, missed/duplicate triggers and failure events.
+Complete the evidence fields in docs/PI5_COMMISSIONING.md from the team's existing physical test records. The team reports that the build and physical tests are complete; add the pin map, actual device/camera details and real repeated-cycle results rather than inventing values or repeating tests unnecessarily. Test and record the separate Pi runtime and offline-operation evidence if those were not part of the completed physical tests.
 
 For performance, measure detector preprocessing, inference and postprocessing latency; p50/p95; sequential FPS; RAM; CPU temperature; Llama response telemetry; physical capture-to-result time; and power only using an external meter. Store the actual Pi configuration, software versions, model hashes, test image list and measurement method. No performance value from other models or devices may be entered as a project result.
 
@@ -70,4 +70,4 @@ The public repository cannot establish whether the team registration, college no
 
 ## Current conclusion
 
-The repository contains the software source and evidence-generation tools. The project-trained detector, actual dataset, independent test results and target hardware commissioning evidence are absent from the checkout. The challenge deliverables must be described accordingly until the outstanding artefacts are added.
+The repository contains the software source and evidence-generation tools. The uploaded package adds an auxiliary trace-mask checkpoint only; the primary three-class detector, actual dataset and independent test results are still absent from the checkout. The team reports physical build/tests complete, but the supporting commissioning evidence is not yet committed. No demo MP4 is stored in the repository. The challenge deliverables must be described accordingly until the remaining artefacts and team declarations are added.
