@@ -84,6 +84,9 @@
   },
   "release_audit": {
     "portable_audit_report": "docs/results/project_release_audit.json",
+    "held_out_test_metrics": "docs/results/project_test_metrics.json",
+    "onnx_parity_report": "docs/results/project_onnx_parity.json",
+    "pi_runtime_smoke_test": "docs/results/pi5_runtime_smoke_test.json",
     "release_ready": false
   },
   "advisory": {
