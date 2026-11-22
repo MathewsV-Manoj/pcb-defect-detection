@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "result_type": "team_supplied_screenshot_transcription",
+  "status": "UNVERIFIED_VALIDATION_RESULT",
+  "evaluation_split_reported": "validation",
+  "source_evidence": {
+    "description": "Training-results screenshot supplied by the project team",
+    "original_filename": "image(20261122-041729).png",
+    "original_sha256": "e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c",
+    "dimensions_pixels": [1093, 740],
+    "archived_repository_file": "docs/results/project-validation-screenshot.png",
+    "archived_file_sha256": "8fddc32aeb9565bc8e2598885a1c88268a29eb2f18c9ab07b2bfc529430219b9",
+    "recorded_on": "2026-11-22"
+  },
+  "overall_metrics_percent": {
+    "precision": 98.3,
+    "recall": 98.4,
+    "map50": 98.9,
+    "map50_95": 62.5
+  },
+  "per_class_metrics_percent": {
+    "missing_hole": {"precision": 97.8, "recall": 98.2, "map50": 98.5},
+    "open_circuit": {"precision": 99.1, "recall": 99.6, "map50": 99.5},
+    "short_circuit": {"precision": 97.9, "recall": 97.6, "map50": 98.8}
+  },
+  "unavailable_provenance": {
+    "checkpoint_path": null,
+    "checkpoint_sha256": null,
+    "training_provenance_file": null,
+    "dataset_name_and_version": null,
+    "dataset_manifest_sha256": null,
+    "validation_split_manifest": null,
+    "validation_image_count": null,
+    "validation_instance_count": null,
+    "image_size": null,
+    "confidence_threshold": null,
+    "nms_iou_threshold": null,
+    "evaluator_version": null,
+    "raw_evaluator_output": null
+  },
+  "reporting_restrictions": [
+    "These values are copied from the team-supplied screenshot and have not been independently reproduced from a checkpoint.",
+    "They are validation metrics only; they are not held-out test accuracy.",
+    "They cannot be attributed to the current project training pipeline or ONNX deployment until the exact checkpoint and dataset are identified and hashed.",
+    "They are not Raspberry Pi measurements.",
+    "No metrics from third-party PCB detectors, papers, hardware benchmarks or other model deployments are included in this project-results file."
+  ],
+  "reproduction_required": true,
+  "independent_test_metrics_present": false,
+  "checkpoint_dataset_provenance_complete": false
+}
