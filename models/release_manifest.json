@@ -122,7 +122,7 @@
   "demo_video": {
     "path": "demo_video/pcb-inspection-demo.mp4",
     "file_present": true,
-    "team_confirms_complete": true,
+    "team_content_review_status": "NOT_CONFIRMED",
     "content_reviewed_by_auditor": false
   },
   "third_party_components": [
