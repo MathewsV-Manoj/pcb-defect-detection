@@ -1,10 +1,14 @@
 {
-  "schema_version": 3,
-  "release_status": "SOURCE_PRESENT_MODEL_AND_DATASET_NOT_PROVIDED",
+  "schema_version": 4,
+  "release_status": "AUXILIARY_TRACE_CHECKPOINT_SUPPLIED_PRIMARY_FAULT_DETECTOR_AND_DATASET_NOT_PROVIDED",
   "project_identity": {
     "repository": "MathewsV-Manoj/pcb-defect-detection",
     "primary_task": "Three-class visual PCB defect screening",
-    "class_order": ["missing_hole", "open_circuit", "short_circuit"],
+    "class_order": [
+      "missing_hole",
+      "open_circuit",
+      "short_circuit"
+    ],
     "claim_policy": "Only values reproduced from the matching project checkpoint and audited project dataset may be reported as project results."
   },
   "vision": {
@@ -16,9 +20,16 @@
       "training_provenance_sidecar": "project_training_provenance.json"
     },
     "runtime": "ONNX Runtime CPU; Raspberry Pi 5 is the documented target platform",
-    "class_order": ["missing_hole", "open_circuit", "short_circuit"],
+    "class_order": [
+      "missing_hole",
+      "open_circuit",
+      "short_circuit"
+    ],
     "input": {
-      "size": [640, 640],
+      "size": [
+        640,
+        640
+      ],
       "channels": 3,
       "color_order": "RGB",
       "layout": "NCHW",
@@ -52,9 +63,21 @@
       "map50_percent": 98.9,
       "map50_95_percent": 62.5,
       "per_class": {
-        "missing_hole": {"precision_percent": 97.8, "recall_percent": 98.2, "map50_percent": 98.5},
-        "open_circuit": {"precision_percent": 99.1, "recall_percent": 99.6, "map50_percent": 99.5},
-        "short_circuit": {"precision_percent": 97.9, "recall_percent": 97.6, "map50_percent": 98.8}
+        "missing_hole": {
+          "precision_percent": 97.8,
+          "recall_percent": 98.2,
+          "map50_percent": 98.5
+        },
+        "open_circuit": {
+          "precision_percent": 99.1,
+          "recall_percent": 99.6,
+          "map50_percent": 99.5
+        },
+        "short_circuit": {
+          "precision_percent": 97.9,
+          "recall_percent": 97.6,
+          "map50_percent": 98.8
+        }
       },
       "source_report": "docs/results/PROJECT_VALIDATION_RESULTS.md",
       "machine_readable_record": "docs/results/project_validation_metrics.json",
@@ -63,6 +86,31 @@
       "raw_evaluator_output_present": false,
       "independent_test_metrics_present": false,
       "reproduced_by_repository_validation_script": false
+    },
+    "auxiliary_trace_extractor": {
+      "source_archive": "PCB_ENGINE_KIT(2).zip",
+      "archive_member": "pcb_engine_kit/optional_unet/pcb_ultra_resatt_unet.pth",
+      "present_in_repository": false,
+      "present_in_supplied_archive": true,
+      "size_bytes": 32897063,
+      "sha256": "23107a1805c13e57f3bccace4aa20bd59e5b400468cb3c0b26f6dba0bce1426c",
+      "archive_sha256_manifest_match": true,
+      "architecture": "ResAttentionUNet",
+      "input_channels": 5,
+      "output_channels": 1,
+      "state_dict_keys": 199,
+      "state_tensor_elements": 8207071,
+      "parameter_elements_excluding_batchnorm_buffers": 8200185,
+      "documented_task": "Single-channel PCB trace-mask extraction for diagnostic use",
+      "training_dataset_in_archive": false,
+      "training_log_in_archive": false,
+      "checkpoint_training_provenance": "NOT_PROVIDED",
+      "validation_metrics": "NOT_PROVIDED",
+      "class_labels": [],
+      "compatible_with_primary_three_class_rgb_detector": false,
+      "integrated_with_current_pi_inference_path": false,
+      "deployment_approved": false,
+      "audit_record": "docs/results/supplied_model_package_audit.json"
     }
   },
   "dataset": {
@@ -79,8 +127,9 @@
   },
   "checkpoint_audit": {
     "portable_audit_report": "docs/results/project_checkpoint_audit.json",
-    "audit_status": "NOT_PROVIDED",
-    "release_ready": false
+    "audit_status": "PRIMARY_FAULT_DETECTOR_NOT_PROVIDED_AUXILIARY_TRACE_CHECKPOINT_INSPECTED",
+    "release_ready": false,
+    "auxiliary_trace_extractor": "docs/results/supplied_model_package_audit.json"
   },
   "release_audit": {
     "portable_audit_report": "docs/results/project_release_audit.json",
@@ -124,13 +173,17 @@
     "severity_policy": {
       "path": "models/severity_policy.json",
       "status": "PROVISIONAL_REQUIRES_BOARD_LEVEL_VALIDATION"
-    }
+    },
+    "team_reported_physical_build_and_tests_complete": true,
+    "physical_evidence_status": "TEAM_REPORTED_COMPLETE_EVIDENCE_PENDING"
   },
   "demo_video": {
-    "path": "demo_video/pcb-inspection-demo.mp4",
-    "file_present": true,
-    "team_content_review_status": "NOT_CONFIRMED",
-    "content_reviewed_by_auditor": false
+    "path": null,
+    "file_present": false,
+    "repository_status": "REMOVED_BY_TEAM_REQUEST",
+    "external_submission_link_recorded": false,
+    "review_status": "NO_VIDEO_RETAINED_OR_REVIEWED",
+    "note": "No demo MP4 is stored in this repository. Provide an approved external submission link separately if the challenge requires a video."
   },
   "third_party_components": [
     "Ultralytics YOLO architecture and training/runtime code",
@@ -144,7 +197,8 @@
     "third_party_pcb_detector_checkpoint_configured": false,
     "external_pcb_benchmark_values_used_as_project_results": false,
     "team_authorship_of_each_custom_source_file_independently_verified": false,
-    "team_must_confirm_individual_contributions_and_review_all_licenses": true
+    "team_must_confirm_individual_contributions_and_review_all_licenses": true,
+    "team_declaration_status": "DRAFT_FOR_TEAM_REVIEW"
   },
-  "release_note": "The repository contains software source and a documented deployment path. The project-trained model checkpoint, completed dataset audit, target-device commissioning evidence and independent held-out test report are not present. Do not claim these activities have been completed."
+  "release_note": "The uploaded PCB_ENGINE_KIT archive contains an auxiliary ResAttentionUNet trace-mask checkpoint, not the primary three-class fault detector. Its SHA-256 matches the archive manifest, but training provenance, dataset and evaluation results are absent. The repository still does not contain the primary YOLO checkpoint, ONNX export or dataset. The team reports physical build/tests complete; supporting commissioning evidence has not been committed. No demo MP4 is retained in this repository. Do not claim unverified metrics or test outcomes."
 }
