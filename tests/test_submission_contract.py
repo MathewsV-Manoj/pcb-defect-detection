@@ -223,6 +223,17 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("llama_main", runtime_test)
         self.assertIn("station_controller.py", launcher)
 
+    def test_accuracy_report_uses_macro_f1_and_exposes_test_support(self):
+        exporter = (ROOT / "pcb_engine_kit" / "train_export.py").read_text(encoding="utf-8")
+        self.assertIn('"f1": macro_f1', exporter)
+        self.assertIn('"harmonic_mean_of_macro_precision_recall": harmonic_macro_pr', exporter)
+        self.assertIn('"test_ground_truth_instances"', exporter)
+        self.assertIn('"classes_without_test_annotations"', exporter)
+        self.assertIn('"minimum_confidence_for_precision_recall_curve": args.val_conf', exporter)
+        self.assertIn('"nms_iou": args.val_iou', exporter)
+        self.assertIn('"audit_sha256": dataset_audit_sha', exporter)
+        self.assertNotIn('"f1": overall_f1', exporter)
+
     def test_external_benchmarks_are_explicitly_separate_from_project_measurements(self):
         reference = (ROOT / "docs" / "REFERENCE_BENCHMARKS.md").read_text(encoding="utf-8")
         pipeline = (ROOT / "raspberry_pi" / "benchmark_pipeline.py").read_text(encoding="utf-8")
