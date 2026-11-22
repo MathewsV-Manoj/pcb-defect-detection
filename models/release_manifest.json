@@ -39,6 +39,8 @@
       "metadata_path": "models/best.onnx.json",
       "provenance_status": "NOT_PROVIDED",
       "prediction_parity_verified": false,
+      "parity_verifier": "pcb_engine_kit/compare_pt_onnx.py",
+      "parity_report": "docs/results/project_onnx_parity.json",
       "validated_on_target_device": false
     },
     "external_pcb_detector_weights_used_by_current_provisioner": false,
