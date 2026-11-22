@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "measurement_type": "project_held_out_test_accuracy",
+  "status": "NOT_PROVIDED",
+  "model_checkpoint_sha256": null,
+  "training_provenance_sha256": null,
+  "dataset_yaml_sha256": null,
+  "dataset_audit_sha256": null,
+  "evaluation_split": "test",
+  "overall": {
+    "precision": null,
+    "recall": null,
+    "macro_f1": null,
+    "map50": null,
+    "map50_95": null
+  },
+  "per_class": [],
+  "test_set_support": null,
+  "source_evidence": null,
+  "note": "No project checkpoint or processed dataset is present in this repository snapshot. No held-out test metric has been generated. Null values are intentional and must not be replaced by estimates or published-model values."
+}
