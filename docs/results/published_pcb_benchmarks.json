@@ -138,7 +138,8 @@
       "map50_percent": 94.1,
       "map50_95_percent": 50.3,
       "inference_ms_author_reported": 18.4,
-      "evaluation_notes": "This is the third-party checkpoint fetched by the repository's provisioner. Its original six-class metrics are not measurements after this project's class mapping, ONNX export or Pi deployment."
+      "evaluation_notes": "This is the third-party checkpoint fetched by the repository's provisioner. Its original six-class metrics are not measurements after this project's class mapping, ONNX export or Pi deployment.",
+      "source_code_url": "https://github.com/Sulojan2027/PCB_Defect_Detect"
     }
   ],
   "project_results": {
