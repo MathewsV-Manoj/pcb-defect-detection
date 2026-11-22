@@ -47,7 +47,7 @@ The screenshot does not identify the checkpoint, dataset version, validation sam
 | Project checkpoint | Train from the architecture YAML with pretrained=False |
 | Checkpoint provenance | Preserve project_training_provenance.json and exact best.pt SHA-256 |
 | Held-out test | Evaluate the reserved test groups and archive per-class and overall outputs |
-| ONNX validation | Compare source checkpoint and ONNX predictions, then record the model hash |
+| ONNX validation | Run `pcb_engine_kit/compare_pt_onnx.py` over the full held-out test split and retain `project_onnx_parity.json` |
 | Pi deployment | Copy project ONNX and sidecar, provision target, retain runtime smoke test |
 | Physical station | Record actual BCM pins, sensor polarity, camera, LED driver and repeated cycles |
 | Offline run | Complete a real inspection with WAN disconnected and local LAN maintained |
