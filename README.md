@@ -205,12 +205,15 @@ On a machine with access to the Hugging Face model:
     hf auth login
     python llm_advisory/download_model.py
 
-Build the official Pi 5 C++ runtime on a Linux x86_64 host with CMake 3.26+:
+Build the official Pi 5 C++ runtime directly on the Pi 5 (recommended), with CMake 3.26+:
 
     bash llm_advisory/build_pi5_runner.sh
 
-Copy the local models/llama/ directory (model, tokenizer and runtime) to the
-Pi. The default raspberry_pi/.env.example points to these paths and keeps
+For a Linux x86_64 cross-build, set `EXECUTORCH_SYSROOT` to the root filesystem
+from the exact target Pi OS before running the same script; do not use a generic
+sysroot. When built on the Pi, the runner is already in `models/llama/runtime`.
+When cross-built, copy that runtime directory to the Pi. The default
+raspberry_pi/.env.example points to these paths and keeps
 PCB_LLAMA_REQUIRED=true. The Llama component receives the structured
 inspection event as text only and produces an operator advisory; it does not
 modify detections or control machinery. Full instructions:
