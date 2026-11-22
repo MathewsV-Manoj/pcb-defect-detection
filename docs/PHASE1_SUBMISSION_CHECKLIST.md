@@ -12,7 +12,7 @@ This checklist records what is visible in the repository. A file existing is not
 |---|---|---|
 | Source code | Repository root, raspberry_pi/, dashboard/, pcb_engine_kit/, llm_advisory/ | Published |
 | Application | Pi-targeted station API and browser dashboard | Source published; target hardware operation unverified |
-| Demonstration video | Not stored in this repository (removed at team request) | If required, provide the final approved video through the official submission channel and record its external link |
+| Demonstration video | Team reports submitted/uploaded separately; no MP4 stored in repository | Verify that the official form contains the intended final video and retain its submission receipt/link |
 | Technical report | docs/PROJECT_REPORT.md | Published; no independently reproduced test/performance results |
 
 ## Screenshot-reported validation metrics
@@ -44,9 +44,9 @@ Per-class values are recorded in docs/results/PROJECT_VALIDATION_RESULTS.md and 
 - [ ] Add the existing physical build/test evidence: verified GPIO mapping, sensor voltage/polarity, LED-driver wiring, camera capture and repeated-cycle counts. The team reports these tests are complete; do not rerun them solely to satisfy this checklist if the original records can be supplied.
 - [ ] Demonstrate local inference with WAN disconnected while the Pi and operator browser remain on the same LAN.
 - [ ] Obtain QA/engineering approval for the provisional severity policy or clearly state that it is an unapproved screening rule.
-- [ ] If the challenge requires a demo video, provide a separate final video link and review it for actual hardware, genuine detector outputs and credentials. No MP4 is retained in this repository.
+- [ ] Confirm the separately uploaded demo video is attached to the official submission and retain its URL/receipt. The MP4 is intentionally not stored in this repository.
 - [ ] Confirm team registration, college nomination, same-college membership, Faculty Mentor and eligibility using the original registration evidence.
-- [ ] Review third-party licences and accurately identify custom code, reused code, AI-assisted contributions and external dependencies according to challenge rules.
+- [ ] Retain the separately submitted individual-contribution and AI-assistance declaration/receipt. The repository already discloses ChatGPT-assisted cleanup in docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md; ensure the submitted declaration covers that work and any other AI/reused contributions.
 
 ## Current technical statements supported by the repository
 
