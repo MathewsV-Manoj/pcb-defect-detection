@@ -3,16 +3,16 @@
   "audit_type": "project_full_release_evidence_audit",
   "dataset_status": "NOT_PROVIDED",
   "dataset_release_ready": false,
-  "checkpoint_status": "NOT_PROVIDED",
+  "checkpoint_status": "PRIMARY_FAULT_DETECTOR_NOT_PROVIDED_AUXILIARY_TRACE_CHECKPOINT_INSPECTED",
   "checkpoint_release_ready": false,
   "evidence_status": {
     "held_out_test_metrics": "NOT_PROVIDED",
     "onnx_prediction_parity": "NOT_PROVIDED",
     "pi_runtime_smoke_test": "NOT_RUN",
-    "physical_station_commissioning": "NOT_VERIFIED",
+    "physical_station_commissioning": "TEAM_REPORTED_COMPLETE_EVIDENCE_PENDING",
     "offline_operation": "NOT_VERIFIED",
-    "demo_video_content_review": "NOT_CONFIRMED",
-    "source_authorship_review": "TEAM_ATTESTATION_REQUIRED"
+    "demo_video_content_review": "REMOVED_BY_TEAM_REQUEST_NO_EXTERNAL_LINK_RECORDED",
+    "source_authorship_review": "DRAFT_FOR_TEAM_REVIEW"
   },
   "evidence_checks": {
     "held_out_test_metrics_bound_to_project_artifacts": false,
@@ -24,16 +24,18 @@
     "team_authorship_and_reuse_review_complete": false
   },
   "evidence_blockers": [
-    "Dataset has not been supplied or audited.",
-    "Project checkpoint and its training provenance have not been supplied.",
-    "No held-out test metrics have been generated.",
-    "Checkpoint-to-ONNX prediction parity has not been tested.",
-    "Raspberry Pi runtime smoke test has not been run.",
-    "Physical station commissioning evidence is missing.",
-    "Offline operation evidence is missing.",
-    "Demo MP4 content has not been reviewed against the working system and block diagram.",
-    "Team source authorship and third-party reuse/AI assistance require attestation."
+    "The uploaded archive contains an auxiliary trace-mask U-Net, not the primary three-class PCB fault detector; the primary checkpoint and its provenance are still not provided.",
+    "The uploaded archive contains no training dataset, label manifest, training log or validation metrics for the auxiliary checkpoint.",
+    "No actual project training dataset or completed import audit is present in the repository.",
+    "No held-out test metrics have been generated from an identified primary detector checkpoint and audited dataset.",
+    "Checkpoint-to-ONNX prediction parity has not been tested for the primary detector.",
+    "Raspberry Pi runtime smoke-test evidence is not present in the repository.",
+    "The team reports that the physical build and tests are complete, but the pin map, cycle counts and supporting commissioning evidence have not been committed; commissioning therefore remains unverified in this repository.",
+    "Offline operation evidence is not present.",
+    "The demo MP4 was removed from the repository at the team's request; no external submission link or reviewed final clip is recorded here.",
+    "The contributor mapping, reused/adapted-code review, individual team confirmations and challenge-specific AI-assistance declaration remain for the team to complete."
   ],
   "release_ready": false,
-  "rule": "A complete release requires an audited dataset and matching project checkpoint, reproducible held-out test metrics, ONNX prediction parity, Pi smoke test, physical/offline evidence, video review and team authorship attestation."
+  "rule": "A complete technical release requires the primary three-class detector bound to its audited dataset, reproducible held-out test metrics, ONNX parity, target-Pi smoke-test evidence, physical/offline evidence, any required externally submitted demo and team authorship/reuse attestation. An auxiliary trace-mask checkpoint does not satisfy the detector gate.",
+  "supplied_model_package_audit": "docs/results/supplied_model_package_audit.json"
 }
