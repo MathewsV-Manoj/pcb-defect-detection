@@ -103,9 +103,21 @@ def dataset_audit(data_value: str | None) -> dict[str, Any]:
         manifest_hash_matches = bool(
             manifest_exists and sha256_file(manifest_path) == audit.get("import_manifest_sha256")
         )
+        source_hash_checks = []
+        if manifest_exists:
+            manifest_root = manifest_path.resolve().parent
+            for record in records:
+                for field, hash_field in (("source_image", "source_image_sha256"),
+                                          ("source_label", "source_label_sha256")):
+                    source_path = (manifest_root / str(record.get(field, ""))).resolve()
+                    within_root = manifest_root in source_path.parents
+                    exists = within_root and source_path.is_file()
+                    hash_matches = exists and sha256_file(source_path) == record.get(hash_field)
+                    source_hash_checks.append(bool(hash_matches))
         provenance_checks = {
             "import_manifest_available": manifest_exists,
             "import_manifest_hash_matches": manifest_hash_matches,
+            "original_source_image_and_label_hashes_match": bool(records) and bool(source_hash_checks) and all(source_hash_checks),
             "importer_provenance_status_complete": audit.get("provenance_status") == "COMPLETE_AS_DECLARED",
             "no_provenance_issues_recorded": not audit.get("provenance_issues"),
             "all_rows_declare_source_identity_and_url": bool(records) and all(
