@@ -4,6 +4,10 @@ A three-class PCB visual-inspection project for **missing hole**, **open circuit
 
 The repository is a **software and deployment source checkout**, not a verified release of the trained model or the complete physical station. The current checkout does not contain the processed training dataset, a project-trained checkpoint, a completed dataset/checkpoint audit, or target-device commissioning results. Those absences are recorded below rather than filled with assumed values.
 
+## System block diagram
+
+![PCB inspection station system block diagram](docs/inspection_workflow.svg)
+
 ## What the source implements
 
 | Area | Present in repository | Verification status |
