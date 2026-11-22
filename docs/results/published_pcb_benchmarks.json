@@ -24,7 +24,45 @@
       "map50_percent": 99,
       "map50_95_percent": null,
       "fps_author_reported": 69.5,
-      "evaluation_notes": "The DeepPCB test-set table reports 98.7% precision, 97.5% recall, 99.0% mAP@0.50 and 69.5 FPS. The authors describe three random data divisions and report averaged metrics."
+      "evaluation_notes": "The DeepPCB test-set table reports 98.7% precision, 97.5% recall, 99.0% mAP@0.50 and 69.5 FPS. The authors describe three random data divisions and report averaged metrics.",
+      "per_class": {
+        "open": {
+          "source_class": "open",
+          "project_class_mapping": "open_circuit",
+          "precision_percent": 98.4,
+          "recall_percent": 98.3,
+          "map50_percent": 99.4
+        },
+        "short": {
+          "source_class": "short",
+          "project_class_mapping": "short_circuit",
+          "precision_percent": 99.3,
+          "recall_percent": 94.7,
+          "map50_percent": 98.8
+        },
+        "mouse_bite": {
+          "precision_percent": 98.9,
+          "recall_percent": 97.3,
+          "map50_percent": 99.1
+        },
+        "spur": {
+          "precision_percent": 96.4,
+          "recall_percent": 97.7,
+          "map50_percent": 98.9
+        },
+        "copper": {
+          "precision_percent": 99.3,
+          "recall_percent": 96,
+          "map50_percent": 98.3
+        },
+        "pin_hole": {
+          "project_class_mapping": "NOT_EQUIVALENT_TO_missing_hole",
+          "precision_percent": 99.4,
+          "recall_percent": 98.8,
+          "map50_percent": 99.5
+        }
+      },
+      "per_class_note": "Per-class values are from the paper's separate DeepPCB tables: Tables 7, 8 and 9. The source pin_hole label is not a verified match for the project's missing_hole class."
     },
     {
       "model": "PCB-MMF",
