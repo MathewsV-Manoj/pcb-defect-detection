@@ -18,7 +18,7 @@ Use this template only if a repository-side copy is useful. The team should reta
 2. **Reused or adapted material:** identify every code fragment, model, architecture, dataset, tutorial, repository, example or design adapted from another source. Add the original URL, author/owner, licence and the exact files affected.
 3. **AI-assisted work:** the repository cleanup and several source/documentation files were materially prepared or rewritten with ChatGPT assistance. The affected areas are explicitly listed in `docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md`. Each member must review those changes and disclose them using the challenge's actual AI-use rules. Do not claim those cleanup changes were entirely hand-written by the team.
 4. **Third-party software and models:** review and preserve the licences/notices for Ultralytics, PyTorch, OpenCV, ONNX Runtime, ExecuTorch, Llama and any other dependency actually used. The uploaded `PCB_ENGINE_KIT(2).zip` also contains an auxiliary ResAttentionUNet trace-mask checkpoint whose training ownership and redistribution licence are not established by the archive. Do not claim it as team-trained until the original evidence supports that claim.
-5. **Evidence accuracy:** do not attribute the screenshot-reported three-class metrics to the U-Net checkpoint. The supplied U-Net is documented as a trace-mask extractor, not the three-class defect detector.
+5. **Evidence accuracy:** no numerical accuracy result is included in this repository because the primary detector, audited dataset and raw evaluator output are not connected. The supplied U-Net is documented as a trace-mask extractor, not the three-class defect detector.
 
 ## Draft declaration text
 
@@ -28,7 +28,9 @@ After the review is complete, each team member may independently approve the fol
 
 This wording is a draft only. Use the exact declaration format required by the challenge if it differs.
 
-## Individual sign-off
+## Local template sign-off fields (not the separately submitted declaration)
+
+The placeholder entries below describe this optional repository template only. They do not indicate that the separately submitted official declaration is unsigned or incomplete.
 
 | Team member | Signature / explicit approval | Date |
 |---|---|---|
@@ -46,4 +48,4 @@ This wording is a draft only. Use the exact declaration format required by the c
 - [ ] Each member has personally approved or signed the final declaration.
 - [ ] `docs/results/source_authorship_attestation.json` has been updated from the completed review.
 
-Until all conditions above are met, the machine-readable attestation remains `DRAFT_FOR_TEAM_REVIEW`.
+This optional template is not signed and is not the submitted official declaration. The separate machine-readable status records the team's report that the official declaration has already been submitted; the signed copy/receipt is not stored in this repository.
