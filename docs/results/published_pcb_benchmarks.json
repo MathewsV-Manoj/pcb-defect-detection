@@ -1,8 +1,7 @@
 {
   "schema_version": 1,
-  "measurement_type": "published_literature_benchmarks_not_project_results",
-  "project_accuracy_claimed": false,
-  "warning": "All metrics below belong to separately published models and their authors' evaluation datasets. They are not results from the PCB inspection project or its Raspberry Pi 5 station.",
+  "measurement_type": "published_literature_benchmarks_plus_project_validation_metrics",
+  "warning": "Published literature metrics belong to the separately cited authors and datasets. The project validation metrics below are transcribed from a team-supplied screenshot; they are validation results, not independent held-out test results or Raspberry Pi deployment measurements.",
   "benchmarks": [
     {
       "model": "YOLO-MBBi",
@@ -214,12 +213,44 @@
     }
   ],
   "project_results": {
-    "status": "NOT_MEASURED",
-    "precision_percent": null,
-    "recall_percent": null,
+    "status": "REPORTED_VALIDATION_SCREENSHOT_NOT_INDEPENDENT_TEST",
+    "evaluation_split": "validation",
+    "validation_source": "Team-supplied screenshot titled 'Training results'",
+    "precision_percent": 98.3,
+    "recall_percent": 98.4,
     "macro_f1_percent": null,
-    "map50_percent": null,
-    "map50_95_percent": null,
-    "note": "Requires the project's own annotated held-out PCB test set and final checkpoint."
-  }
+    "map50_percent": 98.9,
+    "map50_95_percent": 62.5,
+    "per_class": {
+      "missing_hole": {
+        "precision_percent": 97.8,
+        "recall_percent": 98.2,
+        "map50_percent": 98.5
+      },
+      "open_circuit": {
+        "precision_percent": 99.1,
+        "recall_percent": 99.6,
+        "map50_percent": 99.5
+      },
+      "short_circuit": {
+        "precision_percent": 97.9,
+        "recall_percent": 97.6,
+        "map50_percent": 98.8
+      }
+    },
+    "unavailable_run_metadata": {
+      "dataset_name": null,
+      "validation_image_count": null,
+      "validation_instance_count": null,
+      "checkpoint_path": null,
+      "checkpoint_sha256": null,
+      "image_size": null,
+      "confidence_threshold": null,
+      "nms_iou_threshold": null,
+      "raw_evaluator_output": null
+    },
+    "note": "These values are reported from the supplied validation-results screenshot. The dataset identity, split provenance, sample counts, checkpoint identity and raw evaluator output are not yet archived in this repository. Do not label these figures as independent test-set accuracy, Raspberry Pi 5 measurements or independently reproduced metrics."
+  },
+  "project_validation_metrics_reported": true,
+  "project_test_accuracy_claimed": false
 }
