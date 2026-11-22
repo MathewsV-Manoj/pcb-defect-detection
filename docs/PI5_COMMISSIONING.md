@@ -163,6 +163,6 @@ Do not substitute figures from published papers or other hardware. Power must be
 - Llama model/tokenizer identities and build information.
 - Actual BCM pin mapping and this completed commissioning sheet.
 - Repeated-cycle log and offline test evidence.
-- If required by the challenge, a link to the final approved demonstration video submitted separately through the official channel; no MP4 is retained in this repository.
+- The original demo MP4 is retained in `demo_video/`; if required by the challenge, also retain the final approved video link/receipt from the official submission channel.
 
 Record failures as failures. Leave skipped or unmeasured fields blank. Do not claim that the station passed a test that was not conducted.
