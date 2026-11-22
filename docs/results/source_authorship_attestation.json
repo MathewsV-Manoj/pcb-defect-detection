@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "measurement_type": "team_source_authorship_and_reuse_attestation",
+  "status": "TEAM_ATTESTATION_REQUIRED",
+  "team_reviewed_all_project_source": false,
+  "file_to_contributor_mapping": null,
+  "reused_or_adapted_code_disclosed": false,
+  "ai_assisted_code_disclosed_according_to_challenge_rules": false,
+  "third_party_licenses_and_notices_reviewed": false,
+  "each_team_member_confirmed_contribution": false,
+  "attestation_date": null,
+  "team_approved_by": [],
+  "note": "The repository can identify third-party dependencies but cannot prove who authored each custom source line. The team must review and complete this record truthfully."
+}
