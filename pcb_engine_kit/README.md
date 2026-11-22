@@ -1,6 +1,6 @@
-# PCB dataset and YOLO training tools
+# Project-owned PCB detector training and export
 
-This folder contains the dataset importer, annotation utility and YOLO training/ONNX export scripts used to prepare the detector deployed by the Raspberry Pi station.
+This folder contains the dataset importer, annotation utility, training/evaluation script and release audit utility.
 
 The deployment class order is fixed:
 
@@ -10,74 +10,65 @@ The deployment class order is fixed:
 2 short_circuit
 ```
 
-## Prepare the dataset
+## Dataset preparation
 
-Copy `datasets/import_manifest.example.csv` to `datasets/import_manifest.csv` and enter the real image and annotation paths. The manifest contains one row per image.
-
-| Column | Meaning |
-|---|---|
-| `image` | Source image path, relative to the CSV |
-| `label` | Annotation path, relative to the CSV |
-| `format` | `yolo`, `voc` or `deeppcb` |
-| `split` | `train`, `val` or `test` |
-| `group` | Physical board/design/capture group |
-
-Keep images from the same PCB or capture group in one split. The importer checks files, class IDs, bounding boxes, exact duplicate image hashes and group/split consistency. It writes `data.yaml` and `audit.json` into a new output folder.
+The repository does not include the team's raw or processed training dataset. Follow [the dataset provenance guide](../datasets/README.md), complete the real import manifest and rebuild the dataset:
 
 ```bash
-cd pcb_engine_kit
-cp ../datasets/import_manifest.example.csv ../datasets/import_manifest.csv
-# Replace every example path and group in the CSV.
-python dataset.py ../datasets/import_manifest.csv ../datasets/processed/pcb3
+python -m pip install -r pcb_engine_kit/requirements-train.txt
+python pcb_engine_kit/dataset.py datasets/import_manifest.csv datasets/processed/pcb3
+python pcb_engine_kit/audit_release.py --data datasets/processed/pcb3/data.yaml --output-dir docs/results
 ```
 
-The importer checks the class mapping. DeepPCB open/short labels are mapped only after checking the source annotation convention. Its `pin-hole` category is not treated as `missing_hole`.
+Training is blocked unless the generated audit has complete team-declared source/rights/annotation metadata and all three classes are represented in train, validation and test. The importer will not reinterpret DeepPCB `pin-hole` or any other class as `missing_hole`.
 
-## Train and validate
+## Train from an architecture YAML — no pretrained detector weights
 
-Install the training dependencies in a separate environment:
-
-```bash
-python -m pip install -r requirements-train.txt
-```
-
-Train the detector:
+The project training entry point accepts a model architecture YAML (default: `yolov8n.yaml`) and deliberately rejects `.pt` initial weights. The model is initialized without pretrained weights:
 
 ```bash
-python train_export.py train \
-  --data ../datasets/processed/pcb3/data.yaml \
-  --weights yolov8n.pt \
+python pcb_engine_kit/train_export.py train \
+  --data datasets/processed/pcb3/data.yaml \
+  --model-yaml yolov8n.yaml \
   --size 640 --epochs 100 --batch 4 --device 0
 ```
 
-The script validates the class names in the dataset YAML before training and prints the exact `best.pt` path after training. Use that printed path for the next steps; do not assume a run-directory name.
+The script prints the exact output checkpoint. It also writes `project_training_provenance.json` beside the run's `weights/best.pt`, recording the checkpoint SHA-256, dataset YAML/audit hashes, class order, training parameters, software version and the explicit random-initialization declaration.
 
-Run held-out test evaluation:
+This record ties the checkpoint bytes to the recorded training inputs. It is not proof of the operator's identity, legal rights, annotation correctness or generalization. The project team must truthfully confirm that the documented run was actually performed by its members.
+
+## Evaluate the held-out test split
+
+Use the exact checkpoint printed by the training command:
 
 ```bash
-python train_export.py validate \
-  --data ../datasets/processed/pcb3/data.yaml \
-  --weights <EXACT_BEST_PT_PATH> \
-  --size 640 --device 0
+python pcb_engine_kit/train_export.py validate \
+  --data datasets/processed/pcb3/data.yaml \
+  --checkpoint runs/pcb/weights/best.pt \
+  --size 640 --device 0 \
+  --report-out docs/results/project_test_metrics.json
 ```
 
-Keep the checkpoint, data YAML, import manifest, generated audit, training arguments and test output together. Do not report metrics from a different checkpoint or split.
+The validation command evaluates the `test` split, not train or validation. The machine-readable report includes checkpoint and dataset hashes, test support per class, per-class precision/recall/F1/AP and aggregate metrics. A test split without any one target class is incomplete and must not be presented as complete three-class evaluation.
 
-## Export the Raspberry Pi ONNX model
-
-The station expects a raw YOLO ONNX model without NMS embedded in the graph:
+## Export for the Raspberry Pi application
 
 ```bash
-python -m pip install -r requirements-export.txt
-python train_export.py export-onnx \
-  --weights <EXACT_BEST_PT_PATH> \
+python pcb_engine_kit/train_export.py export-onnx \
+  --data datasets/processed/pcb3/data.yaml \
+  --checkpoint runs/pcb/weights/best.pt \
   --size 640 --out deployment
 ```
 
-This writes `best.onnx` and `best.onnx.json`. Copy both into the repository's `models/` folder on the Pi. The metadata records the class order, image preprocessing contract and ONNX SHA-256. Export completion does not mean the model has been validated on the Pi.
+The exporter writes `best.onnx` and `best.onnx.json`. The metadata binds the ONNX file to the project checkpoint SHA-256, dataset audit and training-provenance hashes. Export success alone does not prove prediction parity or Raspberry Pi performance. Those must be tested separately on labelled images and on the actual target device.
 
-## Annotation and utility scripts
+## Portable release audit
 
-- `label.py` — draw and save YOLO bounding boxes with OpenCV.
-- `safe_extract.py` — extract a dataset ZIP after checking for path traversal, symlinks and oversized archives.
-- `test_contracts.py` — dependency-light checks for archive extraction and dataset-import contracts.
+```bash
+python pcb_engine_kit/audit_release.py \
+  --data datasets/processed/pcb3/data.yaml \
+  --checkpoint runs/pcb/weights/best.pt \
+  --output-dir docs/results
+```
+
+Do not copy another author's PCB model or published benchmark into the project's model/result fields. External libraries and the Llama foundation model are third-party components and must remain attributed in the software/dependency disclosures.
