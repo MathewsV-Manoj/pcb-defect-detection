@@ -57,7 +57,7 @@ def main() -> int:
         or not device_tree_model.is_file()
     ):
         parser.error("This smoke test must run on a 64-bit Linux Raspberry Pi 5.")
-    hardware_model = device_tree_model.read_bytes().replace(b"\\x00", b"").decode("utf-8", errors="replace")
+    hardware_model = device_tree_model.read_bytes().replace(b"\x00", b"").decode("utf-8", errors="replace")
     if "Raspberry Pi 5" not in hardware_model:
         parser.error(f"Expected Raspberry Pi 5 hardware, detected: {hardware_model!r}")
 
