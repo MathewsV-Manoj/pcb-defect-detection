@@ -67,29 +67,6 @@ def parse_voc(label_path: Path) -> list[tuple[int, float, float, float, float]]:
     return boxes
 
 
-def parse_deeppcb(label_path: Path) -> list[tuple[int, float, float, float, float]]:
-    # DeepPCB IDs 1 and 2 represent open and short. No hole class is inferred.
-    class_map = {1: NAMES.index("open_circuit"), 2: NAMES.index("short_circuit")}
-    boxes = []
-    for line_number, line in enumerate(label_path.read_text(encoding="utf-8").splitlines(), start=1):
-        if not line.strip():
-            continue
-        fields = line.replace(",", " ").split()
-        if len(fields) != 5:
-            raise ValueError(f"Expected x1 y1 x2 y2 class in {label_path}:{line_number}")
-        try:
-            x1, y1, x2, y2, raw_class = map(float, fields)
-        except ValueError as exc:
-            raise ValueError(f"Non-numeric DeepPCB annotation in {label_path}:{line_number}") from exc
-        if not raw_class.is_integer():
-            raise ValueError(f"DeepPCB class ID must be an integer in {label_path}:{line_number}")
-        class_id = int(raw_class)
-        if class_id in class_map:
-            boxes.append((class_map[class_id], x1, y1, x2, y2))
-        # Other DeepPCB labels are deliberately not translated into project classes.
-    return boxes
-
-
 def parse_yolo(label_path: Path, width: int, height: int) -> list[tuple[int, float, float, float, float]]:
     boxes = []
     for line_number, line in enumerate(label_path.read_text(encoding="utf-8").splitlines(), start=1):
@@ -173,8 +150,6 @@ def main() -> None:
         annotation_format = (row.get("format") or "").strip().lower()
         if annotation_format == "voc":
             boxes = parse_voc(label_path)
-        elif annotation_format == "deeppcb":
-            boxes = parse_deeppcb(label_path)
         elif annotation_format == "yolo":
             boxes = parse_yolo(label_path, width, height)
         else:
