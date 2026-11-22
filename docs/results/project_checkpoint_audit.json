@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "audit_type": "project_checkpoint_provenance_audit",
+  "status": "NOT_PROVIDED",
+  "release_ready": false,
+  "repository_state": {
+    "best_pt_present": false,
+    "best_onnx_present": false,
+    "training_provenance_sidecar_present": false,
+    "checkpoint_sha256": null
+  },
+  "required_next_inputs": [
+    "Project-trained best.pt created by the random-initialization training workflow",
+    "project_training_provenance.json beside the run's weights directory",
+    "Matching dataset data.yaml and audit.json",
+    "A matching project-trained best.onnx and best.onnx.json export"
+  ],
+  "audit_command": "python pcb_engine_kit/audit_release.py --data datasets/processed/pcb3/data.yaml --checkpoint runs/pcb/weights/best.pt --output-dir docs/results",
+  "note": "This is a NOT_PROVIDED status record, not a completed checkpoint audit. No checkpoint identity or SHA-256 is invented."
+}
