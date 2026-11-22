@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "measurement_type": "published_literature_benchmarks_not_project_results",
+  "project_accuracy_claimed": false,
+  "warning": "All metrics below belong to separately published models and their authors' evaluation datasets. They are not results from the PCB inspection project or its Raspberry Pi 5 station.",
+  "benchmarks": [
+    {
+      "model": "YOLO-MBBi",
+      "authors": "Du et al.",
+      "year": 2023,
+      "doi": "10.3390/electronics12132821",
+      "url": "https://doi.org/10.3390/electronics12132821",
+      "dataset": "DeepPCB",
+      "classes": [
+        "open",
+        "short",
+        "mouse_bite",
+        "spur",
+        "copper",
+        "pin_hole"
+      ],
+      "precision_percent": 98.6,
+      "recall_percent": 97.1,
+      "map50_percent": 99,
+      "map50_95_percent": null,
+      "fps_author_reported": 48.9,
+      "evaluation_notes": "The authors report 1200/150/150 training/validation/test images and average results over three random dataset divisions. Six defect categories."
+    },
+    {
+      "model": "PCB-MMF",
+      "authors": "Jin et al.",
+      "year": 2026,
+      "doi": "10.1038/s41598-026-49734-2",
+      "url": "https://doi.org/10.1038/s41598-026-49734-2",
+      "dataset": "DeepPCB",
+      "classes": [
+        "open",
+        "short",
+        "mouse_bite",
+        "spur",
+        "copper",
+        "pin_hole"
+      ],
+      "precision_percent": 96.23,
+      "recall_percent": 97.02,
+      "map50_percent": 98.68,
+      "map75_percent": 94.56,
+      "map50_95_percent": 82.16,
+      "fps_author_reported": 73.79,
+      "parameters_million": 2.36,
+      "evaluation_notes": "The paper describes 1500 defect/reference image pairs, binarized images and a 7:2:1 random train/validation/test split."
+    },
+    {
+      "model": "RT-DETR-L",
+      "authors": "Jin et al.",
+      "year": 2026,
+      "doi": "10.1038/s41598-026-49734-2",
+      "url": "https://doi.org/10.1038/s41598-026-49734-2",
+      "dataset": "DeepPCB",
+      "classes": [
+        "open",
+        "short",
+        "mouse_bite",
+        "spur",
+        "copper",
+        "pin_hole"
+      ],
+      "precision_percent": 98.2,
+      "recall_percent": 97.66,
+      "map50_percent": 98.74,
+      "map75_percent": 94.65,
+      "map50_95_percent": 82.34,
+      "fps_author_reported": 30,
+      "parameters_million": 32,
+      "evaluation_notes": "Same study and test protocol as PCB-MMF; 103.5 GFLOPs reported."
+    },
+    {
+      "model": "PCB-YOLO",
+      "authors": "Wang et al.",
+      "year": 2026,
+      "doi": "10.3390/electronics15061191",
+      "url": "https://doi.org/10.3390/electronics15061191",
+      "dataset": "PKU-Market-PCB",
+      "classes": [
+        "missing_hole",
+        "mouse_bite",
+        "open_circuit",
+        "short",
+        "spurious_copper",
+        "spur"
+      ],
+      "precision_percent": 96.1,
+      "recall_percent": 97.4,
+      "map50_percent": 98.4,
+      "map50_95_percent": 71.6,
+      "fps_author_reported": 224,
+      "parameters_million": 2.4,
+      "evaluation_notes": "The paper describes 1386 images split 1109/138/139 for train/validation/test; 6.9 GFLOPs reported."
+    },
+    {
+      "model": "PCB-YOLO",
+      "authors": "Wang et al.",
+      "year": 2026,
+      "doi": "10.3390/electronics15061191",
+      "url": "https://doi.org/10.3390/electronics15061191",
+      "dataset": "DeepPCB cross-dataset evaluation",
+      "classes": [
+        "open",
+        "short",
+        "mouse_bite",
+        "spur",
+        "pin_hole",
+        "spurious_copper"
+      ],
+      "precision_percent": null,
+      "recall_percent": null,
+      "map50_percent": 99,
+      "map50_95_percent": 80.4,
+      "fps_author_reported": 196,
+      "evaluation_notes": "Authors report per-class AP greater than 98.2%, including 98.2% for short. Overall precision/recall are not provided in the cited summary."
+    },
+    {
+      "model": "YOLOv8s PCB defect detector",
+      "authors": "Sulojan Rajkumar",
+      "year": null,
+      "url": "https://huggingface.co/Sulojan/pcb-defect-yolov8s",
+      "dataset": "Author-reported held-out set; 70 images and 286 boxes",
+      "classes": [
+        "missing_hole",
+        "mouse_bite",
+        "open_circuit",
+        "short",
+        "spur",
+        "spurious_copper"
+      ],
+      "precision_percent": 97.2,
+      "recall_percent": 91.2,
+      "map50_percent": 94.1,
+      "map50_95_percent": 50.3,
+      "inference_ms_author_reported": 18.4,
+      "evaluation_notes": "This is the third-party checkpoint fetched by the repository's provisioner. Its original six-class metrics are not measurements after this project's class mapping, ONNX export or Pi deployment."
+    }
+  ],
+  "project_results": {
+    "status": "NOT_MEASURED",
+    "precision_percent": null,
+    "recall_percent": null,
+    "macro_f1_percent": null,
+    "map50_percent": null,
+    "map50_95_percent": null,
+    "note": "Requires the project's own annotated held-out PCB test set and final checkpoint."
+  }
+}
