@@ -152,7 +152,21 @@ def main() -> int:
     provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
     dataset_audit = json.loads(data_audit_path.read_text(encoding="utf-8"))
     data_config = yaml.safe_load(data_path.read_text(encoding="utf-8"))
-    class_order = ordered_names(data_config.get("names") if isinstance(data_config, dict) else None)
+    if not isinstance(data_config, dict) or not data_config.get("test"):
+        raise RuntimeError("Dataset YAML must define the held-out test split.")
+    dataset_root_value = Path(data_config.get("path", data_path.parent)).expanduser()
+    dataset_root = dataset_root_value if dataset_root_value.is_absolute() else data_path.parent / dataset_root_value
+    expected_test_dir_value = Path(data_config["test"]).expanduser()
+    expected_test_dir = expected_test_dir_value if expected_test_dir_value.is_absolute() else dataset_root / expected_test_dir_value
+    expected_test_dir = expected_test_dir.resolve()
+    if images_dir != expected_test_dir:
+        raise ValueError(
+            f"--images-dir must be the exact held-out test directory from data.yaml: {expected_test_dir}"
+        )
+    if args.mark_verified and args.limit:
+        parser.error("--mark-verified requires the full held-out test split; do not use --limit")
+    class_order = ordered_names(data_config.get("names"))
+
 
     provenance_checks = {
         "onnx_hash_matches_sidecar": metadata.get("sha256") == onnx_hash,
@@ -164,6 +178,7 @@ def main() -> int:
         "random_initialization_declared": provenance.get("initialization_method") == "random_initialization_from_yolo_yaml",
         "pretrained_weights_not_used": provenance.get("pretrained_weights_used") is False,
         "dataset_import_audit_release_ready": dataset_audit.get("release_ready") is True,
+        "test_directory_matches_dataset_yaml": images_dir == expected_test_dir,
         "dataset_and_metadata_class_order_match": class_order == CLASS_ORDER and metadata.get("class_order") == CLASS_ORDER,
     }
     failed_provenance = [key for key, passed in provenance_checks.items() if not passed]
@@ -272,19 +287,24 @@ def main() -> int:
     if not report_path.is_absolute():
         report_path = Path(__file__).resolve().parents[1] / report_path
     report_path.parent.mkdir(parents=True, exist_ok=True)
-    report_bytes = (json.dumps(report, indent=2) + "\n").encode("utf-8")
+    if args.mark_verified:
+        report["sidecar_marked_verified"] = report["status"] == "PASS"
+        if report["status"] != "PASS":
+            report["sidecar_marking_note"] = "Parity failed; the ONNX sidecar will remain unverified."
+    report_bytes = (json.dumps(report, indent=2) + "\\n").encode("utf-8")
     report_path.write_bytes(report_bytes)
     report_hash = hashlib.sha256(report_bytes).hexdigest()
 
-    if args.mark_verified and report["status"] == "PASS":
-        metadata["prediction_parity_verified"] = True
-        metadata["prediction_parity_report_path"] = str(report_path)
-        metadata["prediction_parity_report_sha256"] = report_hash
-        sidecar_path.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
-        report["sidecar_marked_verified"] = True
-    elif args.mark_verified:
-        report["sidecar_marked_verified"] = False
-        report["sidecar_marking_note"] = "Parity failed; the ONNX sidecar was not marked verified."
+    if args.mark_verified:
+        metadata["prediction_parity_verified"] = report["status"] == "PASS"
+        if report["status"] == "PASS":
+            metadata["prediction_parity_report_path"] = str(report_path)
+            metadata["prediction_parity_report_sha256"] = report_hash
+        else:
+            metadata.pop("prediction_parity_report_path", None)
+            metadata.pop("prediction_parity_report_sha256", None)
+        sidecar_path.write_text(json.dumps(metadata, indent=2) + "\\n", encoding="utf-8")
+
 
     print(json.dumps({
         "status": report["status"],
