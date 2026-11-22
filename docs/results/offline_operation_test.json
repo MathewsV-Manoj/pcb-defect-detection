@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "measurement_type": "offline_operation_test",
+  "status": "NOT_VERIFIED",
+  "wan_disconnected": null,
+  "pi_and_operator_laptop_same_private_lan": null,
+  "camera_capture_completed": null,
+  "project_detector_completed": null,
+  "text_advisory_completed": null,
+  "local_event_and_image_saved": null,
+  "firebase_sync_disabled": null,
+  "test_date_and_operator": null,
+  "evidence_files": [],
+  "note": "This is an empty evidence record. Mark PASS only after completing the full inspection path with the WAN disconnected."
+}
