@@ -1,4 +1,4 @@
-# Project-owned PCB detector training and export
+# PCB detector training, evaluation and export pipeline
 
 This folder contains the dataset importer, annotation utility, training/evaluation script and release audit utility.
 
