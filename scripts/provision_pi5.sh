@@ -58,6 +58,26 @@ echo "[3/8] Installing detector, ONNX and station dependencies"
   -r pcb_engine_kit/requirements-train.txt \
   -r pcb_engine_kit/requirements-export.txt \
   "huggingface_hub>=0.30,<2"
+"$PYTHON" -m pip check
+"$PYTHON" - <<'PY'
+import cv2
+import numpy as np
+import onnx
+import onnxruntime as ort
+import torch
+import ultralytics
+
+providers = ort.get_available_providers()
+if "CPUExecutionProvider" not in providers:
+    raise SystemExit("ONNX Runtime CPU provider unavailable: " + str(providers))
+print("Verified detector/export Python packages:")
+print("  NumPy: " + np.__version__)
+print("  OpenCV: " + cv2.__version__)
+print("  ONNX: " + onnx.__version__)
+print("  ONNX Runtime: " + ort.__version__ + "; providers=" + str(providers))
+print("  PyTorch: " + torch.__version__)
+print("  Ultralytics: " + ultralytics.__version__)
+PY
 
 echo "[4/8] Downloading and verifying the attributed PCB YOLOv8s checkpoint"
 "$PYTHON" models/pretrained/download_sulojan_pcb_yolov8s.py
