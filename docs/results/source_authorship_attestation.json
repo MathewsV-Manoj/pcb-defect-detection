@@ -10,7 +10,7 @@
   "each_team_member_confirmed_contribution": "TEAM_REPORTED_DECLARATION_AVAILABLE_NOT_INDEPENDENTLY_REVIEWED",
   "attestation_date": null,
   "team_approved_by": [],
-  "note": "The user confirms that the individual-contribution and AI-assistance declaration has already been submitted separately. This repository does not contain the signed declaration or official receipt, so its exact per-member mapping and third-party licence review cannot be independently inspected here. The repository separately discloses ChatGPT-assisted cleanup edits in docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md. docs/TEAM_DECLARATION_TEMPLATE.md is a supplemental template only, not the submitted signed declaration.",
+  "note": "The user confirms that the individual-contribution and AI-assistance declaration has already been submitted separately. This repository does not contain the signed declaration or official receipt, so its exact per-member mapping and third-party licence review cannot be independently inspected here. The repository separately discloses ChatGPT-assisted cleanup edits in docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md. No duplicate draft declaration is included in this public repository.",
   "ai_assistance_disclosed_in_repository": true,
   "team_members": [
     {
