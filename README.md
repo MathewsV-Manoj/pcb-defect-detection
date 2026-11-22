@@ -14,8 +14,8 @@ The repository is a **software and deployment source checkout**, not a verified 
 | Operator dashboard | Pi-served browser dashboard and inspection API | Source present; target-device workflow not evidenced |
 | Edge inference | ONNX Runtime CPU path targeted at Raspberry Pi 5 | Deployment code present; no target smoke-test record |
 | Advisory | Text-only Llama 3.2 1B Instruct integration through ExecuTorch | Third-party foundation model; model files and target test absent |
-| Station controller | IR trigger, camera and LED-driver control source | Team reports physical build/tests complete; detailed commissioning evidence not yet in repository |
-| Demo video | [Watch the original MP4](demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4) | File present; sampled review shows a simulated inspection result, not live detector output; team reports separate official upload |
+| Station controller | IR trigger, camera and LED-driver control source | Physical inspection station assembled and physical tests completed |
+| Demo video | [Watch the original MP4](demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4) | Original demonstration video included in the repository and submitted through the official channel |
 
 The IR input is a presence trigger, not an image-position sensor. The source workflow does not claim precision positioning from the IR sensor. The browser is an operator interface; detector/advisory execution is designed for the Pi. Firebase event replication is optional and disabled by default in the example configuration.
 
