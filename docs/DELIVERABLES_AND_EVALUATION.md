@@ -47,7 +47,7 @@ bash scripts/provision_pi5.sh
 bash scripts/run_station_pi5.sh
 ```
 
-The provisioner checks the ONNX hash, random-initialization provenance and dataset/checkpoint sidecar fields, then provisions the separately licensed Llama/ExecuTorch path. It does not establish physical wiring or prove the station has passed.
+The provisioner checks the ONNX file hash, the declared random-initialization/class-order metadata and the presence of checkpoint/dataset/provenance hash fields, then provisions the separately licensed Llama/ExecuTorch path. It does not independently recompute the original checkpoint or dataset hashes on the Pi, establish physical wiring or prove the station has passed.
 
 Complete the evidence fields in docs/PI5_COMMISSIONING.md from the team's existing physical test records. The team reports that the build and physical tests are complete; add the pin map, actual device/camera details and real repeated-cycle results rather than inventing values or repeating tests unnecessarily. Test and record the separate Pi runtime and offline-operation evidence if those were not part of the completed physical tests.
 
