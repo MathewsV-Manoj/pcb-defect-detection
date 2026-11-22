@@ -147,7 +147,7 @@ def main() -> None:
         if split not in SPLITS:
             raise ValueError(f"Invalid split {split!r} at manifest row {row_number}")
         if not group:
-            raise ValueError(f"Board/capture group is empty at manifest row {row_number}")
+            raise ValueError(f"Board group/capture ID is empty at manifest row {row_number}")
         previous_split = groups.setdefault(group, split)
         if previous_split != split:
             raise ValueError(f"Board/capture group {group!r} crosses splits ({previous_split!r}, {split!r})")
