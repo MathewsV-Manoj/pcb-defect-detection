@@ -110,7 +110,10 @@
     "project_results_present": false,
     "project_accuracy_metrics_present": false,
     "power_measurement_present": false,
-    "external_references_document": "docs/REFERENCE_BENCHMARKS.md"
+    "external_references_document": "docs/REFERENCE_BENCHMARKS.md",
+    "external_pcb_benchmarks_document": "docs/EXTERNAL_PCB_BENCHMARKS.md",
+    "external_pcb_benchmarks_data": "docs/results/published_pcb_benchmarks.json",
+    "external_pcb_benchmarks_are_project_results": false
   },
   "external_pretrained_baseline": {
     "publisher": "Sulojan Rajkumar",
