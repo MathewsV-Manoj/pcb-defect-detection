@@ -74,6 +74,20 @@ python pcb_engine_kit/train_export.py validate \
 
 Keep the dataset audit, group-split evidence, checkpoint SHA-256 and evaluator report with the submission. The report generator now records per-class test image/object support, per-class precision/recall/F1/AP, macro-F1 and the evaluation settings. A test split with a missing target class must be treated as incomplete.
 
+## Use in the Bharat AI-SoC submission
+
+The challenge rules state that entries must be the entrants' original work,
+be solely owned by the entrants and must not violate third-party intellectual
+property. This literature comparison is appropriate as related-work and
+benchmark context; it is not evidence that this project trained the listed
+models, owns their checkpoints or achieved their scores. Keep model/data
+attribution and licence notices with any third-party baseline, and verify the
+rights to the actual model weights and training data used in the submission.
+The checkpoint currently fetched by the provisioner is declared MIT by its
+model card, but the dataset terms still require separate verification.
+
+Official challenge page: https://armbharatchallenge.com/
+
 ## Sources
 
 1. Bowei Du, Fang Wan, Guangbo Lei, Li Xu, Chengzhi Xu and Ying Xiong, “YOLO-MBBi: PCB Surface Defect Detection Method Based on Enhanced YOLOv5,” *Electronics*, 12(13), 2821 (26 June 2023). https://doi.org/10.3390/electronics12132821
