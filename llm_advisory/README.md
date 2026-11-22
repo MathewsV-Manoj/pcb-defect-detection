@@ -1,9 +1,11 @@
-# Required Llama advisory — ExecuTorch on Raspberry Pi 5
+# Llama advisory integration source — ExecuTorch on Raspberry Pi 5
 
-The on-device advisory is an implemented part of the inspection pipeline, not
-an optional cloud feature. The default configuration uses **Llama 3.2 1B
-Instruct SpinQuant INT4/EO8**, its matching tokenizer, and the ExecuTorch
-C++ `llama_main` runner on the Raspberry Pi 5 CPU.
+This directory contains the source integration for a text-only, on-device
+advisory using **Llama 3.2 1B Instruct SpinQuant INT4/EO8** with ExecuTorch.
+The model file, tokenizer and compiled `llama_main` runner are downloaded or
+built separately and are not stored in this repository. The repository does
+not contain a Pi execution record, so this documentation describes the
+configured integration path, not a verified runtime result.
 
 The YOLO model remains the authority for detection. Llama receives structured
 detection records as text, writes an operator explanation and checks, and
@@ -13,7 +15,7 @@ makes the disposition decision.
 
 ## 1. Download the model and matching tokenizer
 
-Run from the repository root on a machine with internet access. For the complete Pi setup, use `bash scripts/provision_pi5.sh`; it installs dependencies, downloads this package, and builds the runner automatically.
+Run from the repository root on a machine with internet access. The Pi setup script is intended to install dependencies, download this package and build the runner after the primary project ONNX detector and sidecar have been supplied.
 
 ```bash
 python -m pip install "huggingface_hub>=0.30,<2"
@@ -81,9 +83,7 @@ The default settings require Llama:
 - `PCB_LLAMA_SEQ_LEN=1024`
 - `PCB_LLAMA_TIMEOUT_SECONDS=180`
 
-Do not disable the required advisory setting for the submitted demonstration.
-Vision-only mode is reserved for hardware commissioning while the Llama
-package is being installed.
+Do not claim that the submitted demonstration ran this advisory unless the actual model, tokenizer and ExecuTorch runner were installed and the run was recorded. The current repository video shows a simulated inspection result and does not demonstrate a live Llama response.
 
 ## 4. Smoke test and run one event
 
