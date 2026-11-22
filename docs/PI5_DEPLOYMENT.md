@@ -30,6 +30,20 @@ python pcb_engine_kit/audit_release.py \
   --output-dir docs/results
 ```
 
+Before copying the export to the Pi, compare it with the source checkpoint on the complete held-out test split:
+
+```bash
+python pcb_engine_kit/compare_pt_onnx.py \
+  --checkpoint runs/pcb/weights/best.pt \
+  --onnx deployment/best.onnx \
+  --data datasets/processed/pcb3/data.yaml \
+  --images-dir datasets/processed/pcb3/images/test \
+  --report-out docs/results/project_onnx_parity.json \
+  --mark-verified
+```
+
+A successful result marks `prediction_parity_verified` in the ONNX metadata sidecar. It verifies consistency of the export against the source checkpoint under the stated settings; it does not measure defect-detection accuracy or Raspberry Pi latency.
+
 Copy deployment/best.onnx and deployment/best.onnx.json into models/ on the Pi. Do not edit the sidecar or substitute a different model after export. The sidecar contains the ONNX hash, source checkpoint hash, dataset audit hash and training-provenance hash. The provisioner refuses a model that does not carry the expected project-training metadata.
 
 ## 2. Provision the Pi runtime
