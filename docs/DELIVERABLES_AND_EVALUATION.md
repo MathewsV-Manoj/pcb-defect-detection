@@ -16,7 +16,7 @@ This checklist is specific to the Bharat AI-SoC Challenge 2026–27, Problem Sta
 | Challenge requirement | Project implementation | Status |
 |---|---|---|
 | Llama-family reasoning/advisory model | Pinned Llama 3.2 1B Instruct SpinQuant INT4/EO8 package downloader, tokenizer pair and structured advisory prompt | Deployment recipe committed; download and target smoke test still required |
-| ExecuTorch on-device runtime | Production coordinator invokes the ExecuTorch C++ llama_main runner; Pi 5 build script is committed | Build on Linux x86_64, copy the local runtime to the Pi and verify the runner there |
+| ExecuTorch on-device runtime | Production coordinator invokes the ExecuTorch C++ llama_main runner; Pi 5 build script supports Pi-native build or x86_64 cross-build with the target Pi sysroot | Run the build and advisory smoke test on the target Pi; evidence is still pending |
 | Arm-based edge platform | Raspberry Pi 5 CPU deployment path | Described in source; target-device commissioning is not recorded |
 | Detect visual defects | Three-class YOLO detector source and annotated-image output | Model artifacts and held-out detection evidence are absent |
 | Classify defect type and severity | Three target classes with a configurable type-based screening severity policy | Provisional rules are implemented; board-specific QA validation/approval remains required |
@@ -60,8 +60,8 @@ The following manual commands are retained for diagnosis or re-installation:
     hf auth login
     python llm_advisory/download_model.py
 
-Build the official runner on a Linux x86_64 host and copy models/llama/runtime
-to the Pi:
+Build the official runner directly on the Pi 5 (recommended). For x86_64 cross-builds,
+set EXECUTORCH_SYSROOT to the exact target Pi root filesystem:
 
     bash llm_advisory/build_pi5_runner.sh
 
