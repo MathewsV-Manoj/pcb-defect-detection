@@ -22,7 +22,7 @@ The team has separately confirmed that:
 
 The physical-build completion, separate official video upload and declaration availability remain **team-reported statuses**. The original MP4 is now archived in this GitHub checkout at [demo_video/](../demo_video/). The official submission link/receipt and signed declaration are not archived here. The physical test record is also not yet populated with the actual pin map, device details, cycle counts or supporting logs/photos. This does not mean that the team did not do the work; it means that the public repository cannot independently reproduce or inspect it.
 
-The uploaded `PCB_ENGINE_KIT(2).zip` was inspected. It contains an auxiliary five-channel ResAttention U-Net checkpoint producing a one-channel trace mask. Its checksum matches the archive manifest, the state dictionary loads strictly into the included architecture and a dummy forward pass produces a finite 320 × 320 output. **This is not the project's primary three-class RGB fault detector.** It cannot be used as evidence for missing-hole/open-circuit/short-circuit detection or for the validation screenshot values.
+The uploaded `PCB_ENGINE_KIT(2).zip` was inspected. It contains an auxiliary five-channel ResAttention U-Net checkpoint producing a one-channel trace mask. Its checksum matches the archive manifest, the state dictionary loads strictly into the included architecture and a dummy forward pass produces a finite 320 × 320 output. **This is not the project's primary three-class RGB fault detector.** It cannot be used as evidence for missing-hole/open-circuit/short-circuit detection or for any verified accuracy result.
 
 ### Current judgement
 
