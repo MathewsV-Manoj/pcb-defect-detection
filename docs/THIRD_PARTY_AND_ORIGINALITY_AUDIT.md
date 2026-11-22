@@ -15,7 +15,7 @@ This document separates project-specific integration from third-party models, fr
 
 **Current artifact state:** no project checkpoint, ONNX export, training provenance sidecar, processed dataset or completed dataset/checkpoint audit exists in the repository. Therefore the repository currently does not prove that a first-party detector has been trained. The code establishes a future training policy, not proof of a completed run.
 
-The user-supplied screenshot metrics remain as a separate unverified validation transcription. Their model and dataset are unidentified; do not claim that they were produced by the newly introduced random-initialized workflow.
+Screenshot-derived accuracy values have been excluded from the submission-facing results because the model, dataset and evaluator provenance could not be established. No numerical project accuracy claim is made.
 
 ## Third-party software and model dependencies
 
@@ -75,7 +75,7 @@ Do not state "100% written by us" unless the team can substantiate that claim fi
 
 The previous external PCB-model benchmark documents and corresponding benchmark JSON were removed. The third-party PCB checkpoint downloader/exporter was removed. The report, README, submission checklist and performance document no longer use published PCB-model or external Pi/Llama numbers as project measurements.
 
-The only accuracy figures retained are the team's supplied screenshot transcription. The exact checkpoint, dataset and evaluator record remain unavailable, so the values stay explicitly unverified.
+No numerical accuracy figures from the supplied screenshot are retained in the submission-facing results. The exact checkpoint, dataset and evaluator provenance could not be established, so those values are not attributed to this project.
 
 ## Supplied PCB_ENGINE_KIT archive inspection
 
