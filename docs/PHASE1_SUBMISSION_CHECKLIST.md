@@ -31,7 +31,7 @@ The official Phase 1 deliverables are source code, application, demonstration vi
 | Open Circuit | 99.1% | 99.6% | 99.5% |
 | Short Circuit | 97.9% | 97.6% | 98.8% |
 
-These are screenshot-reported **validation** metrics only. They are not held-out test results, Pi 5 runtime measurements, or the upstream publisher's results. The source screenshot's filename and SHA-256 are recorded in `PROJECT_VALIDATION_RESULTS.md`; the underlying checkpoint, dataset/split and raw evaluator output remain to be archived.
+These are screenshot-reported **validation** metrics only. They are not held-out test results, Pi 5 runtime measurements, or the upstream publisher's results. The supplied screenshot is archived at [results/project-validation-screenshot.png](results/project-validation-screenshot.png), with its source filename and original SHA-256 recorded in [results/PROJECT_VALIDATION_RESULTS.md](results/PROJECT_VALIDATION_RESULTS.md). The underlying checkpoint, dataset/split and raw evaluator output remain to be archived.
 
 ## Final checks before submitting
 
@@ -45,7 +45,7 @@ These are screenshot-reported **validation** metrics only. They are not held-out
 - [ ] Demonstrate offline operation with WAN disconnected while the Pi and operator laptop remain on the same private LAN.
 - [ ] Review the MP4 against `demo_video/README.md` and confirm that the required live hardware/model sequence is visible.
 - [ ] Obtain QA/engineering approval for the provisional severity policy, or explicitly state that it is a prototype screening rule awaiting approval.
-- [ ] Check third-party model/dataset rights and the challenge's original-work / Participant Materials rules. The current Pi provisioner downloads a separately authored six-class YOLOv8s checkpoint whose model card declares MIT; the model's attribution and licence do not by themselves verify the dataset's terms or settle the organisers' interpretation of the originality requirement. Ask the organisers for written clarification if this checkpoint is part of the final entry.
+- [ ] Check third-party model/dataset rights and the challenge's **Original work** requirement (original-work / sole-ownership rule) and Participant Materials rules. The current Pi provisioner downloads a separately authored six-class YOLOv8s checkpoint whose model card declares MIT; the model's attribution and licence do not by themselves verify the dataset's terms or settle the organisers' interpretation of the originality requirement. Ask the organisers for written clarification if this checkpoint is part of the final entry.
 
 ## Technical claims that are safe to make now
 

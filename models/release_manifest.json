@@ -60,7 +60,10 @@
       "reproduced_from_raw_evaluator_output": false,
       "dataset_checkpoint_provenance_complete": false,
       "report": "docs/results/PROJECT_VALIDATION_RESULTS.md",
-      "machine_readable_record": "docs/results/published_pcb_benchmarks.json"
+      "machine_readable_record": "docs/results/published_pcb_benchmarks.json",
+      "validation_source_image_repository_path": "docs/results/project-validation-screenshot.png",
+      "validation_source_image_repository_file_sha256": "8fddc32aeb9565bc8e2598885a1c88268a29eb2f18c9ab07b2bfc529430219b9",
+      "validation_source_image_original_sha256": "e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c"
     },
     "validated_on_pi": false,
     "runtime_benchmark_script": "raspberry_pi/benchmark_onnx.py",

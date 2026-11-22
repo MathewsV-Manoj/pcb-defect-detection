@@ -85,7 +85,7 @@
       "map50_95_percent": 82.16,
       "fps_author_reported": 73.79,
       "parameters_million": 2.36,
-      "evaluation_notes": "The paper describes 1500 defect/reference image pairs, binarized images and a 7:2:1 random train/validation/test split."
+      "evaluation_notes": "The paper describes 1500 defect/reference image pairs, a 7:2:1 random train/validation/test split."
     },
     {
       "model": "RT-DETR-L",
@@ -257,7 +257,9 @@
         1093,
         740
       ],
-      "note": "Original screenshot was supplied in the conversation; the screenshot itself is not stored in this Git repository."
+      "note": "A compact 2-colour archive copy is included in this repository. The original user-supplied image SHA-256 is recorded above; the archived image is a derivative for compact evidence storage.",
+      "repository_path": "docs/results/project-validation-screenshot.png",
+      "repository_file_sha256": "8fddc32aeb9565bc8e2598885a1c88268a29eb2f18c9ab07b2bfc529430219b9"
     },
     "documentation": "docs/results/PROJECT_VALIDATION_RESULTS.md"
   },

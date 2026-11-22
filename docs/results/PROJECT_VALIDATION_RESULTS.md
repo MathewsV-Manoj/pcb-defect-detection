@@ -5,7 +5,10 @@
 **Source image filename:** `image(20261122-041729).png`  
 **Source image SHA-256:** `e3e0bcf601d66d29163757287bf646ec18d6967ebc594688a169893c8cb02b0c`  
 **Source image dimensions:** 1093 × 740 pixels  
-**Recorded on:** 22 November 2026
+**Recorded on:** 22 November 2026  
+**Archived screenshot:** [project-validation-screenshot.png](project-validation-screenshot.png)
+
+![Archived copy of the supplied training-results screenshot](project-validation-screenshot.png)
 
 ## Overall validation metrics
 
