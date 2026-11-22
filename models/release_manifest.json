@@ -119,7 +119,8 @@
         320
       ],
       "dummy_forward_output_finite": true,
-      "verification_scope": "Architecture smoke check only; not a data/accuracy or deployment test"
+      "verification_scope": "Architecture smoke check only; not a data/accuracy or deployment test",
+      "source_archive_sha256": "23f22faf49664fe245633d152557bf42a63f25f8ee09acbd0f926ebb3b5bb704"
     }
   },
   "dataset": {
