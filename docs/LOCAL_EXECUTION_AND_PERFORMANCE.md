@@ -1,82 +1,74 @@
-# Local execution and performance record
+# Local execution and project performance record
 
-## Execution model
+## Intended execution architecture
 
-The intended production path is **on-device inference on the Raspberry Pi 5 CPU**. The laptop browser is an operator display only; it does not execute the vision model or the language model.
+The application source is configured for a Raspberry Pi 5 target. This describes the intended runtime path; it is not evidence that the complete physical station has been commissioned.
 
-| Component | Runtime location | Runtime |
-|---|---|---|
-| IR trigger, illumination and camera control | Raspberry Pi 5 | GPIO, camera driver and local Python process |
-| Image preprocessing | Raspberry Pi 5 | OpenCV |
-| PCB defect detection | Raspberry Pi 5 CPU | ONNX Runtime with `CPUExecutionProvider`; YOLO ONNX file stored on the Pi |
-| Advisory generation | Raspberry Pi 5 CPU | Llama 3.2 1B Instruct SpinQuant PTE through the ExecuTorch C++ `llama_main` runner |
-| Inspection events and images | Raspberry Pi 5 local storage | Local JSON and image files |
-| Operator dashboard | Served by Raspberry Pi 5; viewed in a laptop browser | Static HTML/JavaScript and same-origin HTTP requests to the Pi |
-| Optional event replication | Off by default | Firebase Realtime Database; stores records only and does not run inference |
+| Component | Intended location | Software path | Current evidence |
+|---|---|---|---|
+| IR trigger, illumination and camera controller | Raspberry Pi 5 | GPIO/camera controller source | Source present; hardware not verified |
+| Image preprocessing | Raspberry Pi 5 CPU | OpenCV | Source present; target test absent |
+| PCB detector | Raspberry Pi 5 CPU | ONNX Runtime CPUExecutionProvider | Source present; project ONNX model absent |
+| Text advisory | Raspberry Pi 5 CPU | Llama 3.2 1B Instruct through ExecuTorch C++ runner | Integration source present; model assets and target test absent |
+| Event and image storage | Raspberry Pi local storage | JSON and image files | Source present; physical-use evidence absent |
+| Operator dashboard | Served by Pi, viewed in browser | Static HTML/JavaScript and same-origin HTTP | Source present; target end-to-end evidence absent |
+| Optional record replication | Off by default | Firebase Realtime Database | Optional source present; not used for inference |
 
-No external vision endpoint, hosted LLM endpoint or remote inference API is part of the configured inference path. The detector receives the captured image locally. The Llama component receives only the structured detector event as text. The browser sends an inspection request to the Pi and displays the response.
+The Llama foundation model is a third-party model, not trained by the project team. Its prompt receives the structured detection event only. It does not receive the PCB image, change detector predictions or control hardware.
 
-### What requires the internet, and what does not
+## Internet and offline scope
 
-Internet access is needed during provisioning when downloading Python packages, the published YOLO checkpoint, or the licensed Llama PTE/tokenizer. Build dependencies may also need to be downloaded when preparing the ExecuTorch runner.
+Internet access is required for first-time installation and download of dependencies/model assets. Once the detector, Llama package, tokenizer and ExecuTorch runner are installed, the design is intended to run locally. Firebase synchronization is disabled by default; enabling it requires outbound network access for event-record replication.
 
-After those assets and dependencies are installed on the Pi, **inference is designed to run without internet access**. The ONNX file, PTE file, tokenizer and ExecuTorch runner must already be present on local storage. The dashboard can be opened over a private LAN that has no WAN connection. For a fully isolated demonstration, keep `PCB_FIREBASE_PUBLISH=false`; this is the default in `raspberry_pi/.env.example`.
+Offline operation is **not yet demonstrated** by evidence in this repository. To verify it, keep the Raspberry Pi and browser on the same private LAN, disconnect the WAN uplink, run a real inspection and retain the event JSON, terminal log and model hashes.
 
-Firebase is an optional record-synchronization feature. Enabling it makes outbound HTTPS requests to Firebase, so the station is no longer network-isolated, but the vision and Llama algorithms still execute locally. Firebase is not required for capture, inference, the advisory or local event history.
+## Project validation screenshot
 
-## Offline demonstration checklist
+The only project-specific numerical accuracy values currently recorded are transcriptions from the team-supplied training-results screenshot:
 
-Perform this check on the actual Raspberry Pi 5 after all model/runtime assets have been provisioned:
-
-1. Confirm `models/best.onnx` and its sidecar `models/best.onnx.json` are present.
-2. Confirm the Llama PTE, matching tokenizer and executable `models/llama/runtime/llama_main` are present.
-3. Set `PCB_LLAMA_REQUIRED=true` and `PCB_FIREBASE_PUBLISH=false` in `raspberry_pi/.env`.
-4. Start the station and open the dashboard from a browser on the same private LAN.
-5. Disconnect the LAN's WAN/internet uplink while keeping the Pi and operator browser on the same LAN. Do not remove local connectivity between them.
-6. Run a real inspection and verify that the event includes `advisory_runtime.status = "COMPLETED"`, the detector result is saved, and the annotated image is available.
-7. Save the event JSON, the terminal log, model hashes and the completed commissioning sheet as evidence.
-
-Until this offline test is completed and recorded, describe the system as **configured for offline local inference**, not as an offline test already passed.
-
-## Performance references (external, not project measurements)
-
-These figures provide comparison points only. They were produced by other authors on different models, datasets or hardware configurations.
-
-### PCB detector reference
-
-Sulojan Rajkumar's published six-class YOLOv8s PCB model reports the following on its author's 70-image / 286-box test split:
-
-| Metric | Published result |
+| Metric | Screenshot-reported validation value |
 |---|---:|
-| Precision | 97.2% |
-| Recall | 91.2% |
-| mAP@0.50 | 94.1% |
-| mAP@0.50:0.95 | 50.3% |
-| Inference time | 18.4 ms/image (author's test environment) |
+| Precision | 98.3% |
+| Recall | 98.4% |
+| mAP@0.50 | 98.9% |
+| mAP@0.50:0.95 | 62.5% |
 
-Per-class mAP@0.50 for the three classes mapped into this application's event schema is 99.5% for `missing_hole`, 99.2% for `open_circuit` and 97.5% for upstream class `short` (mapped to `short_circuit`). The upstream checkpoint has six output classes; three are ignored by this application's three-class mapping. These are the publisher's measurements, not Raspberry Pi 5 measurements or results from this team's test set. Full provenance and class mapping are in [PCB_UPSTREAM_BASELINE.md](PCB_UPSTREAM_BASELINE.md).
+These values are not independently reproduced. The screenshot does not identify the dataset version, checkpoint hash, validation sample counts, split manifest, evaluator version or raw evaluator output. They are validation figures only, not test accuracy or Raspberry Pi performance. See PROJECT_VALIDATION_RESULTS.md and project_validation_metrics.json.
 
-### Raspberry Pi 5 vision-runtime reference
+No values from other PCB detectors, research papers, Raspberry Pi benchmark devices or Llama deployments are copied into the project performance record.
 
-Arm's published Raspberry Pi 5 benchmark for its separate YOLO26n INT8 ONNX model reports p50 latency 166.050 ms, p90 173.912 ms, p99 179.881 ms, 6.02 frames/s and 154.22 MB peak memory. It uses a different model, quantization, output contract and NMS arrangement. It is an edge-runtime reference only and is not the latency or memory result of this PCB YOLO model. Details are in [REFERENCE_BENCHMARKS.md](REFERENCE_BENCHMARKS.md).
+## Measurements that still need to be produced
 
-### Llama generation reference
+### Dataset and checkpoint provenance
 
-Public Raspberry Pi 5 measurements for Llama 3.2 1B using llama.cpp/GGUF report approximately 10.8–14.5 generated tokens/s in their stated configurations. Those are not ExecuTorch SpinQuant PTE measurements. The ExecuTorch community model-card result for the matching SpinQuant PTE family is from a OnePlus 12 Android device, not a Raspberry Pi 5; it must not be copied as Pi performance. See [REFERENCE_BENCHMARKS.md](REFERENCE_BENCHMARKS.md).
+Use the release audit before a model release:
 
-### Project validation metrics reported by the team
+```bash
+python pcb_engine_kit/audit_release.py \
+  --data datasets/processed/pcb3/data.yaml \
+  --checkpoint runs/pcb/weights/best.pt \
+  --output-dir docs/results
+```
 
-A team-supplied training-results screenshot reports validation precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%. The canonical evidence note and screenshot hash are in [PROJECT_VALIDATION_RESULTS.md](results/PROJECT_VALIDATION_RESULTS.md). Per-class precision/recall/mAP@0.50 are 97.8%/98.2%/98.5% for Missing Hole, 99.1%/99.6%/99.5% for Open Circuit, and 97.9%/97.6%/98.8% for Short Circuit. These are validation figures transcribed from the screenshot. The raw evaluator output, checkpoint hash, dataset/split identity and sample counts are not yet archived, and these scores do not establish held-out test accuracy or Pi 5 runtime.
+A release is not complete while either audit is NOT_PROVIDED, INCOMPLETE or UNVERIFIED.
 
-### Published PCB detection research benchmarks
+### Held-out test accuracy
 
-Independent papers report approximately 98–99% mAP@0.50 on their own PCB datasets for several trained detectors. See [the detailed external PCB benchmark comparison](EXTERNAL_PCB_BENCHMARKS.md), including DeepPCB and PKU-Market-PCB, class coverage, dataset splits and caveats. These results do not establish accuracy of the current project checkpoint or this Pi station. The `project_test_metrics.json` report must be generated from the project's own held-out PCB groups.
+Evaluate only the held-out test split and use the exact checkpoint that has the matching training-provenance sidecar:
 
-## Pi runtime and held-out test measurements: not yet recorded
+```bash
+python pcb_engine_kit/train_export.py validate \
+  --data datasets/processed/pcb3/data.yaml \
+  --checkpoint runs/pcb/weights/best.pt \
+  --size 640 --device 0 \
+  --report-out docs/results/project_test_metrics.json
+```
 
-The repository contains benchmark scripts, but no valid Pi 5 benchmark output or project-owned held-out test report is currently committed. Screenshot-reported validation metrics are documented above; archive the raw run artifacts and evaluate the detector on separate held-out board groups. The detector, full software pipeline and physical station must be measured separately.
+Record per-class precision, recall, F1, AP, test support, confusion matrix and reviewed false-positive/false-negative examples. Test groups must be separate physical PCB/design/capture groups, not merely alternate crops of training boards.
 
-Run the detector benchmark on the Raspberry Pi 5 with a representative image set:
+### Target Pi detector benchmark
+
+After installing the exact project ONNX export on the actual Pi:
 
 ```bash
 python raspberry_pi/benchmark_onnx.py \
@@ -86,7 +78,7 @@ python raspberry_pi/benchmark_onnx.py \
   --out docs/results/pi_onnx_benchmark.json
 ```
 
-Run the real still-image detector-plus-Llama path:
+### Vision-plus-advisory pipeline benchmark
 
 ```bash
 python raspberry_pi/benchmark_pipeline.py \
@@ -96,15 +88,12 @@ python raspberry_pi/benchmark_pipeline.py \
   --out docs/results/pi_pipeline_benchmark.json
 ```
 
-Report these measurements from the resulting JSON files:
+These scripts measure software processing of still images. They do not measure conveyor travel, IR trigger reliability, LED settling, physical camera capture or the full browser cycle. Record those through repeated physical commissioning tests.
 
-- Detector preprocessing, inference and post-processing mean latency; p50, p95 and maximum total latency; sequential FPS; process peak RSS; start/end temperature.
-- Full still-image pipeline wall time; detector latency; Llama response time; TTFT and generated tokens/s only when the selected runner exposes telemetry; peak child-process RSS.
-- Physical capture-to-result time and successful/attempted cycles from repeated conveyor tests. This is not measured by either still-image benchmark.
-- Power only from a calibrated external power meter. Neither CPU utilization nor temperature is a power measurement.
+### Physical cycle, memory and power
 
-Detection accuracy is a separate labelled-data evaluation. Use a held-out split grouped by PCB design/capture session and report per-class precision, recall, F1, confusion matrix, mAP@0.50 and mAP@0.50:0.95. Do not convert upstream metrics or benchmark-reference values into project measurements.
+Record detector p50/p95 latency, throughput, peak process RAM, CPU temperature, Llama response-time telemetry where available, full capture-to-dashboard time, attempted/successful cycle counts, missed/duplicate triggers and failure counts. Measure power only with an external meter and retain its make/model and method. Do not infer wattage from CPU temperature or utilization.
 
-## Evaluator-facing statement
+## Current measured-project-results state
 
-> The vision detector and Llama advisory are designed to execute locally on the Raspberry Pi 5 CPU. OpenCV and ONNX Runtime perform image processing and YOLO inference on the Pi; Llama 3.2 1B runs through the ExecuTorch C++ runtime on the same device. The browser is only the operator interface. No cloud inference API is used. Firebase event synchronization is disabled by default and is not part of the inference path. After models and dependencies are provisioned, the system is designed to operate without internet access. Offline operation must be demonstrated with the Pi and operator browser on a private LAN and verified using a completed inspection event.
+No project Pi latency, FPS, RAM, power, end-to-end cycle time, offline pass rate or independent test-set accuracy has been recorded in this repository. Blank values must remain blank until measured on the named target hardware. The external benchmark comparison documents have been removed so that outside model values cannot be mistaken for project measurements.
