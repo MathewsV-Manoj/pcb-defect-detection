@@ -21,7 +21,7 @@ This document distinguishes source code from tested deliverables. It is not a cl
 | Advisory | Llama 3.2 1B Instruct + ExecuTorch integration source | Third-party model; weights/runtime not stored or target-tested |
 | Dashboard | Browser operator interface | Source present; no target-device integration evidence |
 | Pi controller | IR/camera/LED source | Team reports physical build/tests complete; commissioning evidence not yet committed |
-| Demo video | Repository MP4 removed at team request | No external submission link recorded; provide one separately only if required by the challenge |
+| Demo video | Team reports uploaded separately; no MP4 stored in repository | Keep/check the official submission link or receipt in team records |
 | Team/registration eligibility | Names are listed in README | Registration, nomination and mentor evidence not established by repo |
 
 ## Model and dataset ownership controls
@@ -76,6 +76,6 @@ Current reports deliberately say NOT_PROVIDED. Do not edit them to pass; regener
 
 ## Submission wording that is supportable now
 
-The current repository contains the application and dashboard source, dataset/training/audit utilities, ONNX inference path, Llama/ExecuTorch integration source, Raspberry Pi deployment scripts and technical report. The uploaded package's auxiliary trace-mask checkpoint is recorded separately and is not treated as the primary defect detector. The repository retains screenshot-reported validation values with an explicit provenance limitation; no demo MP4 is retained.
+The current repository contains the application and dashboard source, dataset/training/audit utilities, ONNX inference path, Llama/ExecuTorch integration source, Raspberry Pi deployment scripts and technical report. The uploaded package's auxiliary trace-mask checkpoint is recorded separately and is not treated as the primary defect detector. The repository retains screenshot-reported validation values with an explicit provenance limitation; the team reports that the demo video and individual-contribution/AI-assistance declaration have been submitted/are available separately. Their external receipt/copy is not archived here.
 
 The current repository does **not** prove a primary three-class project-trained detector, completed dataset audit, independent test accuracy, target-Pi runtime or offline operation. The team reports that physical build/tests are complete, but the corresponding evidence is not yet in the repository. Do not claim independently verified results until the matching records are added.
