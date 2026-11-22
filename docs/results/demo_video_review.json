@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "measurement_type": "demo_video_content_review",
-  "status": "NOT_CONFIRMED",
-  "video_path": "demo_video/pcb-inspection-demo.mp4",
-  "video_file_present_in_repository": true,
+  "status": "REMOVED_BY_TEAM_REQUEST_NO_EXTERNAL_LINK_RECORDED",
+  "video_path": null,
+  "video_file_present_in_repository": false,
   "video_sha256": null,
   "reviewed_by": null,
   "review_date": null,
@@ -18,5 +18,6 @@
     "video_matches_current_block_diagram": null,
     "no_credentials_or_secrets_exposed": null
   },
-  "note": "The MP4 file is present, but its video/audio content has not been inspected in this audit."
+  "note": "The repository MP4 was removed at the team's request and was not reviewed. This record does not imply that the team has no separate video. If the challenge requires a demo, provide the approved final video through the official submission channel and record its link/review separately.",
+  "external_submission_link_recorded": false
 }
