@@ -64,13 +64,17 @@ Arm's published Raspberry Pi 5 benchmark for its separate YOLO26n INT8 ONNX mode
 
 Public Raspberry Pi 5 measurements for Llama 3.2 1B using llama.cpp/GGUF report approximately 10.8–14.5 generated tokens/s in their stated configurations. Those are not ExecuTorch SpinQuant PTE measurements. The ExecuTorch community model-card result for the matching SpinQuant PTE family is from a OnePlus 12 Android device, not a Raspberry Pi 5; it must not be copied as Pi performance. See [REFERENCE_BENCHMARKS.md](REFERENCE_BENCHMARKS.md).
 
+### Project validation metrics reported by the team
+
+A team-supplied training-results screenshot reports validation precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%. Per-class precision/recall/mAP@0.50 are 97.8%/98.2%/98.5% for Missing Hole, 99.1%/99.6%/99.5% for Open Circuit, and 97.9%/97.6%/98.8% for Short Circuit. These are validation figures transcribed from the screenshot. The raw evaluator output, checkpoint hash, dataset/split identity and sample counts are not yet archived, and these scores do not establish held-out test accuracy or Pi 5 runtime.
+
 ### Published PCB detection research benchmarks
 
 Independent papers report approximately 98–99% mAP@0.50 on their own PCB datasets for several trained detectors. See [the detailed external PCB benchmark comparison](EXTERNAL_PCB_BENCHMARKS.md), including DeepPCB and PKU-Market-PCB, class coverage, dataset splits and caveats. These results do not establish accuracy of the current project checkpoint or this Pi station. The `project_test_metrics.json` report must be generated from the project's own held-out PCB groups.
 
 ## Project measurements: not yet recorded
 
-The repository contains benchmark scripts, but no valid Pi 5 benchmark output or project-owned held-out accuracy report is currently committed. The detector, full software pipeline and physical station must be measured separately.
+The repository contains benchmark scripts, but no valid Pi 5 benchmark output or project-owned held-out test report is currently committed. Screenshot-reported validation metrics are documented above; archive the raw run artifacts and evaluate the detector on separate held-out board groups. The detector, full software pipeline and physical station must be measured separately.
 
 Run the detector benchmark on the Raspberry Pi 5 with a representative image set:
 
