@@ -11,8 +11,8 @@
     "pi_runtime_smoke_test": "NOT_RUN",
     "physical_station_commissioning": "TEAM_REPORTED_COMPLETE_EVIDENCE_PENDING",
     "offline_operation": "NOT_VERIFIED",
-    "demo_video_content_review": "REMOVED_BY_TEAM_REQUEST_NO_EXTERNAL_LINK_RECORDED",
-    "source_authorship_review": "DRAFT_FOR_TEAM_REVIEW"
+    "demo_video_content_review": "TEAM_REPORTED_UPLOADED_EXTERNALLY_LINK_NOT_ARCHIVED",
+    "source_authorship_review": "TEAM_REPORTED_DECLARATION_AVAILABLE_REPOSITORY_REVIEW_PENDING"
   },
   "evidence_checks": {
     "held_out_test_metrics_bound_to_project_artifacts": false,
@@ -32,10 +32,10 @@
     "Raspberry Pi runtime smoke-test evidence is not present in the repository.",
     "The team reports that the physical build and tests are complete, but the pin map, cycle counts and supporting commissioning evidence have not been committed; commissioning therefore remains unverified in this repository.",
     "Offline operation evidence is not present.",
-    "The demo MP4 was removed from the repository at the team's request; no external submission link or reviewed final clip is recorded here.",
-    "The contributor mapping, reused/adapted-code review, individual team confirmations and challenge-specific AI-assistance declaration remain for the team to complete."
+    "The team reports that the demo video has been uploaded separately; the external link/receipt is not archived in this repository. Verify that the official form contains the correct video link.",
+    "The team reports that the individual-contribution and AI-assistance declaration is available/submitted separately. The signed declaration/receipt and per-person mapping are not archived in this repository for independent review."
   ],
   "release_ready": false,
-  "rule": "A complete technical release requires the primary three-class detector bound to its audited dataset, reproducible held-out test metrics, ONNX parity, target-Pi smoke-test evidence, physical/offline evidence, any required externally submitted demo and team authorship/reuse attestation. An auxiliary trace-mask checkpoint does not satisfy the detector gate.",
+  "rule": "The GitHub source/evidence checkout is considered reproducible only when primary-detector artefacts, dataset provenance, held-out evaluation, ONNX parity and Pi/offline evidence are retained. A separately submitted video or authorship declaration may satisfy the challenge portal requirements, but this repository cannot independently verify external submissions without their receipt or link.",
   "supplied_model_package_audit": "docs/results/supplied_model_package_audit.json"
 }
