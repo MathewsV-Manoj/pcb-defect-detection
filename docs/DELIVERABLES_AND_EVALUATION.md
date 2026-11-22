@@ -1,113 +1,73 @@
 # Phase 1 deliverables and evaluation
 
-This checklist is specific to the Bharat AI-SoC Challenge 2026–27, Problem Statement 5: Real-time industrial defect detection and quality-control assistant. The official Phase 1 deadline is **23 November 2026**. The official deliverables are source code, application, demonstration video and technical report.
+**Challenge:** Bharat AI-SoC Challenge 2026–27  
+**Problem statement:** PS5 — Real-time industrial defect detection and quality-control assistant  
+**Phase 1 deadline recorded in project materials:** 23 November 2026
+
+This checklist is based on the project repository and the PS5 scope documented by the team. It distinguishes source presence from demonstrated operation.
 
 ## Phase 1 deliverables
 
-| Required deliverable | Repository evidence | Status |
+| Deliverable | Repository evidence | Current status |
 |---|---|---|
-| Source code | Raspberry Pi controller, OpenCV/ONNX inference, ExecuTorch runner source, dashboard, schemas, dataset and training utilities | Source is present; trained/runtime model assets are not |
-| Application | Pi-hosted operator page and local inspection API | Source is present; final end-to-end target-device validation is outstanding |
-| Demonstration video | `demo_video/pcb-inspection-demo.mp4` | File is present; confirm the clip shows the real live sequence and final result |
-| Technical report | `docs/PROJECT_REPORT.md` | Present; add final measured results and actual model/runtime identities after testing |
+| Source code | Controller, dashboard, inference, training, audit, advisory and event schema source | Present |
+| Application | Pi-targeted HTTP service and browser dashboard | Source present; target hardware test absent |
+| Demonstration video | demo_video/pcb-inspection-demo.mp4 | File present; content requires human review |
+| Technical report | docs/PROJECT_REPORT.md | Present; must be updated with real measured evidence when available |
 
-## Required technology and functional checks
+## Functional architecture
 
-| Challenge requirement | Project implementation | Status |
+The documented target path is Raspberry Pi 5 CPU for OpenCV preprocessing, ONNX Runtime detector execution and ExecuTorch text advisory. The browser is an operator interface. Firebase is optional record replication and disabled by default in the example configuration.
+
+The Llama 3.2 1B Instruct foundation model is third-party software, not trained by the team. It receives structured detection findings only and does not change detector output. The project code now refuses an unproven PCB model sidecar; the Pi provisioner does not download a third-party PCB detector.
+
+| Capability | Source implementation | Evidence required before calling it complete |
 |---|---|---|
-| Llama-family reasoning/advisory model | Pinned Llama 3.2 1B Instruct SpinQuant INT4/EO8 package downloader, tokenizer pair and structured advisory prompt | Deployment recipe committed; download and target smoke test still required |
-| ExecuTorch on-device runtime | Production coordinator invokes the ExecuTorch C++ llama_main runner; Pi 5 build script supports Pi-native build or x86_64 cross-build with the target Pi sysroot | Run the build and advisory smoke test on the target Pi; evidence is still pending |
-| Arm-based edge platform | Raspberry Pi 5 CPU deployment path | Described in source; target-device commissioning is not recorded |
-| Detect visual defects | Three-class YOLO detector source and annotated-image output | Model artifacts and held-out detection evidence are absent |
-| Classify defect type and severity | Three target classes with a configurable type-based screening severity policy | Provisional rules are implemented; board-specific QA validation/approval remains required |
-| Actionable operator guidance | Mandatory structured Llama advisory in the coordinator and dashboard | Verify generated four-field JSON from the actual Pi runner; detector data remains authoritative |
-| Inspection logging | Local JSON events, annotated images and history endpoint | Source is present; physical repeated-cycle validation is outstanding |
-| Edge operation without cloud dependence | Local capture, detector and advisory path; Firebase mirrors records only when configured | Offline operation must be demonstrated on the Pi |
-| Real-time operation | Pi-side ONNX detector benchmark and full still-image vision-plus-Llama pipeline benchmark | Scripts are committed; execute on target Pi and compare measured percentiles to the separately cited external references |
+| Three-class PCB detection | ONNX decoder, class contract and training/export utility | Audited model checkpoint, ONNX parity and held-out test report |
+| Data provenance | Import manifest and dataset audit | Actual dataset, source/rights review and group-safe split |
+| Defect severity | Configurable provisional type rules | Approval against board-level electrical/QA requirements |
+| Operator advisory | Llama/ExecuTorch text-only integration | Model/tokenizer download, target runner smoke test and valid output record |
+| Inspection logging | JSON events, annotated images and local history | Real multi-board cycle and record review |
+| Edge execution | CPU-only ONNX/ExecuTorch target path | Test on actual Raspberry Pi 5 |
+| Offline operation | No cloud inference path; Firebase disabled by default | Full inspection with WAN disconnected and LAN retained |
+| Real-time performance | Detector and pipeline benchmark scripts | Measured target-device JSON; no outside benchmark values substituted |
 
-The PS5 hardware list includes a Raspberry Pi 5 CPU-only configuration. The configured station path is OpenCV + ONNX Runtime CPU for vision and Llama + ExecuTorch C++ on the Raspberry Pi 5 CPU. The browser is an operator interface only; Firebase event replication is disabled by default and is not used for inference.
+## Project detector evaluation
 
-## Defect model evaluation
+The only numeric values retained in the repository are the team's screenshot-reported validation figures:
 
-The team has supplied a screenshot reporting these **validation** metrics: precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%. Per-class results are Missing Hole (97.8% precision, 98.2% recall, 98.5% mAP@0.50), Open Circuit (99.1%, 99.6%, 99.5%) and Short Circuit (97.9%, 97.6%, 98.8%). These are transcribed into [PROJECT_VALIDATION_RESULTS.md](results/PROJECT_VALIDATION_RESULTS.md) and `docs/results/published_pcb_benchmarks.json`; the original screenshot filename/hash are recorded, but the raw training log, dataset identity, split manifest, checkpoint hash and validation sample counts have not yet been archived. Describe them as screenshot-reported validation results only, not independent test accuracy or Raspberry Pi performance.
+| Metric | Reported validation |
+|---|---:|
+| Precision | 98.3% |
+| Recall | 98.4% |
+| mAP@0.50 | 98.9% |
+| mAP@0.50:0.95 | 62.5% |
 
-Use a separately held-out test set of PCB boards or board/capture groups. Images from the same physical PCB or capture session must not be split between training and test data.
+The per-class values are in docs/results/PROJECT_VALIDATION_RESULTS.md. The checkpoint identity, dataset/split provenance, sample counts and raw evaluator output are unknown. These numbers have not been reproduced and are not independent test scores. They must not be attributed to the current training pipeline without recovering and hashing the original checkpoint and dataset.
 
-Record at minimum:
+For new results, use the audited training workflow and test split. Record per-class precision, recall and F1, mAP@0.50 and mAP@0.50:0.95, test support, confusion matrix and reviewed false positives/false negatives. All images from the same board/design/capture group must stay in one split.
 
-- per-class precision, recall and F1;
-- confusion matrix and precision-recall curves;
-- mAP@50 and mAP@50–95;
-- false positives on good boards and missed target defects;
-- visual examples of correct detections, false positives and false negatives;
-- the exact checkpoint hash, dataset split, image size and confidence/NMS thresholds.
+## Pi target commissioning and measurement
 
-Do not use training images as evidence of generalization. Do not map an upstream dataset label to a target class without checking what the source annotation actually represents.
+After the project ONNX artifact and matching sidecar have been produced:
 
-## Severity and decision wording
+```bash
+bash scripts/provision_pi5.sh
+bash scripts/run_station_pi5.sh
+```
 
-The detector applies a provisional type-based priority rule: missing hole = MEDIUM, open circuit = HIGH, short circuit = HIGH. The rationale and provisional status are stored with each event. This is an initial screening priority, not a board-specific electrical risk assessment. A qualified project/QA owner must validate or revise it against the actual board design. Detector confidence is not severity.
+The provisioner checks the ONNX hash, random-initialization provenance and dataset/checkpoint sidecar fields, then provisions the separately licensed Llama/ExecuTorch path. It does not establish physical wiring or prove the station has passed.
 
-The dashboard must describe an empty detection list as “No configured target defect detected in this frame”. It must not call the board “defect-free”.
+Complete docs/PI5_COMMISSIONING.md. Test arming, IR trigger, LED timing, camera capture, dashboard preview, detector result, advisory output, repeated-board operation and offline mode. Record attempts, successful cycles, missed/duplicate triggers and failure events.
 
-## Raspberry Pi commissioning
+For performance, measure detector preprocessing, inference and postprocessing latency; p50/p95; sequential FPS; RAM; CPU temperature; Llama response telemetry; physical capture-to-result time; and power only using an external meter. Store the actual Pi configuration, software versions, model hashes, test image list and measurement method. No performance value from other models or devices may be entered as a project result.
 
-Run the checks on the actual Raspberry Pi 5. A one-command provisioner now installs dependencies, downloads and exports the YOLO baseline, downloads the Llama PTE/tokenizer, builds the ExecuTorch runner against the Pi's own sysroot and runs software smoke tests:
+## Rights, authorship and challenge eligibility
 
-    bash scripts/provision_pi5.sh
+Keep attribution and license notices for all third-party libraries and the Llama model. The training workflow does not use external PCB checkpoint weights. The dataset import manifest must record actual dataset sources and team review; the source register alone does not prove use or permission.
 
-The following manual commands are retained for diagnosis or re-installation:
+The public repository cannot establish whether the team registration, college nomination, student eligibility and Faculty Mentor requirements were completed. Confirm those facts against the original registration record.
 
-    python -m pip install "huggingface_hub>=0.30,<2"
-    hf auth login
-    python llm_advisory/download_model.py
+## Current conclusion
 
-Build the official runner directly on the Pi 5 (recommended). For x86_64 cross-builds,
-set EXECUTORCH_SYSROOT to the exact target Pi root filesystem:
-
-    bash llm_advisory/build_pi5_runner.sh
-
-Then:
-
-1. Confirm the GPIO pins and sensor/driver polarity against the physical wiring.
-2. Confirm the three-second initial arming sequence and armed state after release.
-3. Confirm the next IR activation starts one capture cycle.
-4. Confirm the LED driver is enabled for capture and switched off afterward.
-5. Confirm the current captured frame appears in the browser.
-6. Confirm the operator run button starts inference on the Pi.
-7. Confirm the event JSON and annotated image are written.
-8. Confirm the ExecuTorch advisory returns valid structured output.
-9. Disconnect the WAN/internet uplink while keeping the Raspberry Pi and operator browser connected to the same private LAN; confirm the full local inspection and advisory still work.
-10. Confirm the next PCB is captured without repeating the arming sequence.
-11. Repeat the cycle and record attempts, successful runs, missed triggers, duplicate triggers and failures.
-
-Use `docs/PI5_COMMISSIONING.md` to record actual pins, environment versions and results.
-
-## Performance and reproducibility
-
-Measure on the Raspberry Pi, not on the training workstation:
-
-- detector preprocessing, inference and post-processing latency;
-- p50 and p95 latency and sequential FPS;
-- peak RAM and CPU temperature;
-- complete capture-to-dashboard-result time;
-- Llama total response time and peak RAM; TTFT/tokens per second when the runner emits ExecuTorch observer telemetry, otherwise leave them null;
-- power only if measured with an appropriate external meter.
-
-For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method. Clearly label publisher-reported PCB model metrics, Arm's Pi 5 runtime reference and other published Llama results as external references. The DLMR vision-language paper is unrelated to PCB detection and is not a valid metric source for this system. See [LOCAL_EXECUTION_AND_PERFORMANCE.md](LOCAL_EXECUTION_AND_PERFORMANCE.md) and the detailed [published PCB detection benchmark comparison](EXTERNAL_PCB_BENCHMARKS.md). External study figures are literature references only. Screenshot-reported validation metrics are now recorded, but project held-out test accuracy remains unmeasured until the project's own held-out boards are scored.
-
-## Eligibility and submission-form checks
-
-The official challenge page states that teams may have 1–3 members; student teams must be from the same college, have a faculty mentor and be nominated by their college. Registration closed on 19 October 2026, before the Phase 1 deadline. The public repository cannot confirm whether this team registered, was nominated or recorded its Faculty Mentor. Confirm those facts against the original registration record; do not assume a new registration can be completed now.
-
-### Original work, model provenance and data rights
-
-The challenge rules require original work and require entrants to have the rights and permissions needed for Participant Materials. The Pi provisioner currently references Sulojan Rajkumar's third-party YOLOv8s checkpoint (the model card declares MIT) and the dataset source manifest does not verify all upstream dataset terms. MIT attribution alone does not establish that every training-data right is clear or that the complete entry meets the organisers' originality/ownership interpretation. Preserve model attribution, verify all data/software licences and obtain written organiser clarification before relying on that checkpoint in the final entry. See the [official challenge terms](https://armbharatchallenge.com/).
-
-## Current assessment
-
-See the consolidated [Phase 1 submission checklist](PHASE1_SUBMISSION_CHECKLIST.md) for direct links and the final outstanding evidence.
-
-The source-code and documentation deliverables, pinned Llama/ExecuTorch deployment path, benchmark tooling and a demonstration MP4 are committed. Screenshot-reported validation metrics are now documented, but their dataset/checkpoint provenance and raw evaluator output must still be archived. Remaining release evidence includes a separately held-out test evaluation; downloaded Llama assets and a successful on-device smoke test; physical commissioning; and a validated severity policy. Keep each item open until its evidence is recorded. Published reference values are not project measurements; see docs/REFERENCE_BENCHMARKS.md.
-
-Official challenge information: https://armbharatchallenge.com/
+The repository contains the software source and evidence-generation tools. The project-trained detector, actual dataset, independent test results and target hardware commissioning evidence are absent from the checkout. The challenge deliverables must be described accordingly until the outstanding artefacts are added.
