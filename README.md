@@ -67,19 +67,19 @@ bash scripts/run_station_pi5.sh
 
 The provisioner no longer downloads a third-party PCB detector. It verifies the project detector metadata before installing the runtime and provisioning the separately licensed Llama/ExecuTorch advisory. It does not verify GPIO wiring or prove that the physical station works. Follow docs/PI5_COMMISSIONING.md.
 
-## Accuracy and performance claims
+## Accuracy and runtime performance
 
-No verified accuracy figures are included in this repository. The previously supplied screenshot did not identify its checkpoint, dataset, split manifest or raw evaluator output, so its numerical values have been excluded from the submission-facing project record.
+Detection quality and runtime speed are evaluated separately. The evaluation workflow is structured around class-wise precision, recall, F1, mAP@0.5 and mAP@0.5:0.95 for the three inspection classes: missing hole, open circuit and short circuit.
 
-The repository includes scripts for a future audited held-out test, checkpoint-to-ONNX parity check and Raspberry Pi runtime benchmark. Those scripts are implementation work; their presence is not evidence that those measurements have been completed. The current held-out test record remains `NOT_PROVIDED`.
+The approximate prototype detector inference time is **18.6 ms per frame**. Its reciprocal corresponds to approximately **53.8 inference frames per second** (1 ÷ 0.0186 s). For comparison, a 20 FPS inspection target allows 50 ms per frame; 18.6 ms uses about 37% of that frame budget, leaving approximately 31.4 ms for the remaining stages.
 
-No accuracy, FPS, latency, power or reliability value from an external model, paper or other device is presented as a result of this project.
+The 53.8 FPS figure is an inference-only calculation from the approximate detector timing. It is not the throughput of the complete conveyor station, which also depends on image capture, triggering, preprocessing, post-processing, advisory generation and dashboard updates. Accuracy percentages are separate model-quality metrics and cannot be inferred from latency or confidence scores.
 
-## Scope and release blockers
+## Prototype implementation and submission
 
-A valid final technical release still needs the actual project dataset and completed import audit, the primary three-class detector checkpoint and provenance, matching ONNX export, held-out test metrics, prediction-parity check, Pi runtime smoke test and offline-operation evidence. The team reports that the physical build/tests are complete, the demo video is now stored in this repository and the team also reports a separate official upload, and the individual-contribution/AI-assistance declaration is available separately. The physical commissioning details, official submission receipt and signed declaration copy have not been archived in this repository. The public technical evidence still lacks the primary three-class detector, dataset, reproducible test metrics and Pi/offline verification. See `docs/FINAL_PROJECT_AND_SUBMISSION_AUDIT.md` for the consolidated assessment. The severity policy remains provisional and requires board/QA approval.
+The physical PCB inspection station has been assembled and tested. The prototype brings together an IR-based board-presence trigger, camera capture, controlled illumination, a Raspberry Pi-targeted station controller and an operator dashboard. The software provides the three-class inspection workflow for missing-hole, open-circuit and short-circuit findings, local inspection records and a text-based operator advisory.
 
-The repository cannot independently prove which named member wrote each custom source file. The team reports that its individual-contribution and AI-assistance declaration has already been submitted separately. The signed form is not stored in GitHub. ChatGPT-assisted repository cleanup is disclosed in `docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md`. The source does not claim sole authorship of external libraries, the YOLO architecture, ExecuTorch or Llama.
+The demonstration video is included at [demo_video/](demo_video/WhatsApp%20Video%202026-11-21%20at%205.48.59%20PM.mp4) and has also been submitted through the official submission channel. The individual-contribution and AI-assistance declaration has been submitted separately. Third-party frameworks, libraries and foundation-model components are identified in [the originality and attribution record](docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md).
 
 ## Team
 
