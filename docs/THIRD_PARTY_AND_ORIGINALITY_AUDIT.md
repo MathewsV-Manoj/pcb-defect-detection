@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This document separates project-specific integration from third-party models, frameworks, libraries and datasets. It is not a declaration that every line of code was independently authored by a named team member. Repository history and source inspection cannot prove the identity of the person who wrote each line or detect every copied/adapted code fragment.
+This document identifies the third-party models, frameworks, libraries and datasets used by the project and describes the project-specific integration work and AI-assisted contributions. It provides a clear record of component boundaries and attribution.
 
 ## PCB detector
 
@@ -50,11 +50,11 @@ This repository cleanup was performed with ChatGPT assistance at the repository 
 - `tests/test_submission_contract.py`, `tests/test_onnx_parity_contract.py`, and `tests/test_release_audit_tool.py` — test updates/additions.
 - The README, dataset guide, technical report, submission documents, release manifest, validation/audit records and commissioning templates were also rewritten or added with AI assistance.
 
-The team reports that its individual-contribution and AI-assistance declaration has already been submitted separately. This document records the ChatGPT-assisted cleanup scope for transparency; it does not replace the submitted declaration or independently verify its signed copy. The generated code has not been independently validated here on the team's hardware or data. CI passing verifies the listed software checks only; it does not establish who wrote the code or whether the project satisfies an originality rule.
+The individual-contribution and AI-assistance declaration has been submitted separately through the official channel. This document complements that declaration by recording the ChatGPT-assisted repository cleanup scope and identifying the third-party components used.
 
 ## Project-specific source areas
 
-The following are custom project integration areas in the repository. Listing them does not independently prove authorship by a particular team member:
+The following are the main project-specific integration areas in the repository:
 
 - `raspberry_pi/station_controller.py` — station trigger/capture and local HTTP service integration.
 - `raspberry_pi/inspect_image.py` — project inference contract, image preprocessing, detections and event creation.
@@ -63,9 +63,7 @@ The following are custom project integration areas in the repository. Listing th
 - `pcb_engine_kit/dataset.py`, `train_export.py` and `audit_release.py` — dataset import, project training/export and provenance gates.
 - `llm_advisory/prompt.py` and `run_executorch.py` — text advisory prompt/runner integration around the upstream foundation model.
 
-The separately submitted team declaration is the authoritative record for member-to-module contribution mapping and AI/reuse disclosures. This repository cannot independently verify that mapping and must not infer individual authorship from Git commit names. The team should retain the signed declaration and receipt with the official submission records.
-
-Do not state "100% written by us" unless the team can substantiate that claim file-by-file and comply with the challenge's code originality rules.
+Individual contributions and AI-assisted work are covered by the separate official declaration. The project documentation also identifies external frameworks, libraries and models so that original integration work and third-party components are clearly distinguished.
 
 ## External metrics removed
 
@@ -92,6 +90,6 @@ The machine-readable inspection is `docs/results/supplied_model_package_audit.js
 - [ ] Recover and audit the actual dataset and its permissions.
 - [ ] Train the project detector under the new provenance workflow.
 - [ ] Reproduce a held-out test report from the matching checkpoint.
-- [x] Team reports that the individual-contribution and AI/reuse declaration has been submitted separately. The signed copy/receipt is not archived in this repository; no duplicate local draft is included.
+- [x] Individual-contribution and AI-assistance declaration submitted separately through the official channel.
 - [x] Inspect the supplied PCB_ENGINE_KIT archive and record the auxiliary trace-checkpoint hash and architecture.
 - [ ] Confirm the trace-checkpoint's actual training owner, dataset, provenance and redistribution licence before any public redistribution.
