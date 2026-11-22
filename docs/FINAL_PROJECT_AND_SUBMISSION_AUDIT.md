@@ -333,9 +333,9 @@ The GitHub Actions workflow checks:
 - the repository contract test suite; and
 - dataset utility contract tests.
 
-The latest recorded run at the time of this audit completed successfully:
+The latest recorded run for the final documentation state completed successfully:
 
-https://github.com/MathewsV-Manoj/pcb-defect-detection/actions/runs/44995960496
+https://github.com/MathewsV-Manoj/pcb-defect-detection/actions/runs/44997039895
 
 A successful CI run verifies the tests that ran in CI. It does not validate the primary model's accuracy, physical wiring, camera/conveyor cycle, external video upload or team declarations.
 
