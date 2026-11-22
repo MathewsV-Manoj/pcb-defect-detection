@@ -26,7 +26,7 @@ This document distinguishes source code from tested deliverables. It is not a cl
 
 ## Model and dataset ownership controls
 
-The previous default PCB model download path has been removed. The current provisioner does not fetch an external PCB detector. The current training CLI rejects .pt initial weights and starts from a YOLO architecture YAML with pretrained=False. Validation, export, inference and Pi provisioning require metadata that declares project training and matches the checkpoint/model hashes.
+The previous default PCB model download path has been removed. The current provisioner does not fetch an external PCB detector. The current training CLI rejects .pt initial weights and starts from a YOLO architecture YAML with pretrained=False. On the development machine, training/export verifies the checkpoint hash against its provenance sidecar and binds the dataset YAML/audit hashes to that provenance record. On the Pi, the loader verifies the ONNX file hash and checks declared random-initialization/class-order metadata plus the presence of checkpoint/dataset/provenance hash fields; it cannot recompute those original source hashes because the training dataset and checkpoint are not deployed with the ONNX file.
 
 This code-level rule does not prove who executed the training run. The team must confirm it actually ran the documented workflow and disclose any code written with assistance, adapted from examples or supplied by third parties. Ultralytics, PyTorch, OpenCV, ONNX Runtime, ExecuTorch and Llama remain third-party components. They are not represented as team inventions.
 
