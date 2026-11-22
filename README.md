@@ -94,6 +94,7 @@ The repository cannot independently prove that every custom source line was writ
 ## Main documentation
 
 - docs/PROJECT_REPORT.md
+- docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md
 - docs/SUBMISSION_READINESS.md
 - docs/DELIVERABLES_AND_EVALUATION.md
 - docs/PHASE1_SUBMISSION_CHECKLIST.md
