@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
   "measurement_type": "team_source_authorship_and_reuse_attestation",
-  "status": "DRAFT_FOR_TEAM_REVIEW",
+  "status": "TEAM_REPORTED_DECLARATION_AVAILABLE_REPOSITORY_REVIEW_PENDING",
   "team_reviewed_all_project_source": false,
   "file_to_contributor_mapping": null,
-  "reused_or_adapted_code_disclosed": false,
-  "ai_assisted_code_disclosed_according_to_challenge_rules": false,
+  "reused_or_adapted_code_disclosed": "TEAM_REPORTED_DECLARATION_AVAILABLE_NOT_INDEPENDENTLY_REVIEWED",
+  "ai_assisted_code_disclosed_according_to_challenge_rules": "TEAM_REPORTED_DECLARATION_AVAILABLE_NOT_INDEPENDENTLY_REVIEWED",
   "third_party_licenses_and_notices_reviewed": false,
-  "each_team_member_confirmed_contribution": false,
+  "each_team_member_confirmed_contribution": "TEAM_REPORTED_DECLARATION_AVAILABLE_NOT_INDEPENDENTLY_REVIEWED",
   "attestation_date": null,
   "team_approved_by": [],
-  "note": "A draft declaration template is available at docs/TEAM_DECLARATION_TEMPLATE.md. The repository explicitly discloses ChatGPT-assisted cleanup edits in docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md. The team must review the actual diff, identify each person's real contributions, disclose reused/adapted code and AI assistance according to the official challenge rules, review licences, and obtain each member's confirmation. This record must not be marked complete or submitted as signed until all members have personally approved it.",
+  "note": "The user confirms that the individual-contribution and AI-assistance declaration is already available/submitted separately. The repository also documents ChatGPT-assisted cleanup edits in docs/THIRD_PARTY_AND_ORIGINALITY_AUDIT.md. Because the actual signed declaration or submission receipt has not been added to this repository, the statement is recorded as team-reported rather than independently reviewed. The file-to-contributor mapping and third-party licence review fields remain unverified from repository evidence.",
   "ai_assistance_disclosed_in_repository": true,
   "team_members": [
     {
@@ -28,5 +28,7 @@
       "contribution_mapping": "TO_BE_COMPLETED_BY_MEMBER",
       "individual_confirmation": "PENDING"
     }
-  ]
+  ],
+  "team_reported_declaration_available": true,
+  "team_reported_declaration_context": "User confirms the individual contribution and AI-assistance declaration is already available/submitted separately."
 }
