@@ -29,7 +29,9 @@ The PS5 hardware list includes a Raspberry Pi 5 CPU-only configuration. The conf
 
 ## Defect model evaluation
 
-Use a held-out test set of PCB boards or board/capture groups. Images from the same physical PCB or capture session must not be split between training and test data.
+The team has supplied a screenshot reporting these **validation** metrics: precision 98.3%, recall 98.4%, mAP@0.50 98.9% and mAP@0.50:0.95 62.5%. Per-class results are Missing Hole (97.8% precision, 98.2% recall, 98.5% mAP@0.50), Open Circuit (99.1%, 99.6%, 99.5%) and Short Circuit (97.9%, 97.6%, 98.8%). These are transcribed into `docs/results/published_pcb_benchmarks.json`; the raw training log, dataset identity, split manifest, checkpoint hash and validation sample counts have not yet been archived. Describe them as screenshot-reported validation results only, not independent test accuracy or Raspberry Pi performance.
+
+Use a separately held-out test set of PCB boards or board/capture groups. Images from the same physical PCB or capture session must not be split between training and test data.
 
 Record at minimum:
 
@@ -92,7 +94,7 @@ Measure on the Raspberry Pi, not on the training workstation:
 - Llama total response time and peak RAM; TTFT/tokens per second when the runner emits ExecuTorch observer telemetry, otherwise leave them null;
 - power only if measured with an appropriate external meter.
 
-For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method. Clearly label publisher-reported PCB model metrics, Arm's Pi 5 runtime reference and other published Llama results as external references. The DLMR vision-language paper is unrelated to PCB detection and is not a valid metric source for this system. See [LOCAL_EXECUTION_AND_PERFORMANCE.md](LOCAL_EXECUTION_AND_PERFORMANCE.md) and the detailed [published PCB detection benchmark comparison](EXTERNAL_PCB_BENCHMARKS.md). External study figures are literature references only; the project accuracy fields remain unmeasured until the project's own held-out boards are scored.
+For every figure, record the Pi model/RAM, OS, Python, OpenCV, ONNX Runtime and ExecuTorch versions, model/tokenizer hashes, dataset split, image size, thresholds, sample count and measurement method. Clearly label publisher-reported PCB model metrics, Arm's Pi 5 runtime reference and other published Llama results as external references. The DLMR vision-language paper is unrelated to PCB detection and is not a valid metric source for this system. See [LOCAL_EXECUTION_AND_PERFORMANCE.md](LOCAL_EXECUTION_AND_PERFORMANCE.md) and the detailed [published PCB detection benchmark comparison](EXTERNAL_PCB_BENCHMARKS.md). External study figures are literature references only. Screenshot-reported validation metrics are now recorded, but project held-out test accuracy remains unmeasured until the project's own held-out boards are scored.
 
 ## Eligibility and submission-form checks
 
@@ -100,6 +102,6 @@ The official challenge page states that teams may have 1–3 members; student te
 
 ## Current assessment
 
-The source-code and documentation deliverables, pinned Llama/ExecuTorch deployment path, benchmark tooling and a demonstration MP4 are committed. The remaining release evidence is target-specific: downloaded Llama assets and a successful on-device smoke test; final YOLO artifacts and held-out metrics; physical commissioning; and a validated severity policy. Keep each item open until its evidence is recorded. Published reference values are not project measurements; see docs/REFERENCE_BENCHMARKS.md.
+The source-code and documentation deliverables, pinned Llama/ExecuTorch deployment path, benchmark tooling and a demonstration MP4 are committed. Screenshot-reported validation metrics are now documented, but their dataset/checkpoint provenance and raw evaluator output must still be archived. Remaining release evidence includes a separately held-out test evaluation; downloaded Llama assets and a successful on-device smoke test; physical commissioning; and a validated severity policy. Keep each item open until its evidence is recorded. Published reference values are not project measurements; see docs/REFERENCE_BENCHMARKS.md.
 
 Official challenge information: https://armbharatchallenge.com/
