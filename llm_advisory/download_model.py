@@ -57,7 +57,7 @@ def main() -> int:
     print(f"Model: {TARGET_DIR / MODEL_FILE}")
     print(f"Tokenizer: {TARGET_DIR / TOKENIZER_FILE}")
     print(f"Local hash manifest: {manifest_path}")
-    print("Next: run llm_advisory/build_pi5_runner.sh on a Linux x86_64 build host.")
+    print("Next: run llm_advisory/build_pi5_runner.sh on the Pi 5, or cross-build on x86_64 with EXECUTORCH_SYSROOT set to the target Pi root filesystem.")
     return 0
 
 if __name__ == "__main__":
