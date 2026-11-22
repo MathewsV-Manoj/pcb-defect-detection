@@ -15,6 +15,7 @@ A conveyor-fed PCB inspection prototype built around a Raspberry Pi 5. It captur
 9. The dashboard displays the image, detections, advisory and local inspection history. The Pi can synchronize completed event records to Firebase Realtime Database when that connection is configured.
 
 The IR sensor confirms presence at its trigger point. It does not measure the exact PCB position in the camera image; this is set by the mechanical placement of the conveyor, sensor and camera.
+The Pi station controller does not start, stop or speed-control the conveyor motor. Conveyor motion is a separate subsystem; the controller reacts when a board reaches the IR trigger point.
 
 ## Defect classes and model contract
 
@@ -234,13 +235,15 @@ weights and compiled runtime are not tracked in Git. The repository cannot
 claim that Llama has already run on the team's physical Pi until the smoke test
 and complete station cycle are recorded.
 
-The checkout still does not include the final YOLO best.pt/best.onnx, the
-processed project dataset and its audit, or labelled held-out predictions.
+The checkout still does not include a project-trained YOLO best.pt/best.onnx,
+the processed project dataset and its audit, or labelled held-out predictions.
 The final three-class accuracy results, ONNX parity report, real Pi runtime
-measurements, physical commissioning record and confirmed severity policy
-also remain to be produced from the team's own data and hardware. Severity
-therefore remains UNASSESSED; detector confidence is not treated as severity.
-The MP4 file is present, but its actual scenes still need human review.
+measurements and physical commissioning record remain to be produced from the
+team's own data and hardware. A provisional type-based severity policy is
+configured (missing hole = MEDIUM; open/short circuit = HIGH), but it has not
+been approved against a board drawing or QA standard. Detector confidence is
+not treated as severity. The MP4 file is present and team-confirmed complete,
+but its actual scenes still need human review.
 
 No project accuracy, latency, FPS, power or end-to-end reliability number is
 claimed without a measurement record. Published Raspberry Pi 5 reference
