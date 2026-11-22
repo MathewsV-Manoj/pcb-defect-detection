@@ -90,6 +90,8 @@ class SubmissionContractTests(unittest.TestCase):
         ):
             self.assertIn(marker, importer)
         self.assertIn("group", (ROOT / "datasets" / "import_manifest.example.csv").read_text(encoding="utf-8").splitlines()[0])
+        self.assertNotIn("parse_deeppcb", importer)
+        self.assertNotIn('annotation_format == "deeppcb"', importer)
 
     def test_dataset_and_checkpoint_audits_do_not_claim_missing_artifacts(self):
         dataset = json.loads((ROOT / "docs" / "results" / "project_dataset_audit.json").read_text(encoding="utf-8"))
