@@ -1,6 +1,6 @@
 # Raspberry Pi 5 commissioning record
 
-Complete this form on the actual Raspberry Pi 5 station after the project ONNX model, Llama package and matching ExecuTorch runner have been installed. A source file or successful export command is not proof that a physical test passed. Do not fill unknown values by guesswork.
+The team reports that the physical build and tests are complete. This form has not yet been populated with the corresponding device details, pin map, repeated-cycle counts and supporting records, so the repository does not mark commissioning as independently evidenced. Complete it from the team's existing logs/photos; do not invent values or repeat completed tests solely to populate the form. The target-software smoke test and offline test are separate evidence items.
 
 ## Hardware safety and wiring
 
@@ -163,6 +163,6 @@ Do not substitute figures from published papers or other hardware. Power must be
 - Llama model/tokenizer identities and build information.
 - Actual BCM pin mapping and this completed commissioning sheet.
 - Repeated-cycle log and offline test evidence.
-- Demonstration video showing the actual hardware and model outputs.
+- If required by the challenge, a link to the final approved demonstration video submitted separately through the official channel; no MP4 is retained in this repository.
 
 Record failures as failures. Leave skipped or unmeasured fields blank. Do not claim that the station passed a test that was not conducted.
