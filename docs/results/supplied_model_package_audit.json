@@ -39,7 +39,24 @@
     "fault_detection_classes": [],
     "is_primary_three_class_fault_detector": false,
     "compatible_with_current_three_channel_rgb_yolo_pipeline": false,
-    "integrated_in_current_pi_runtime": false
+    "integrated_in_current_pi_runtime": false,
+    "strict_architecture_state_dict_load": "PASS_NO_MISSING_OR_UNEXPECTED_KEYS",
+    "dummy_forward_test": {
+      "input_shape": [
+        1,
+        5,
+        320,
+        320
+      ],
+      "output_shape": [
+        1,
+        1,
+        320,
+        320
+      ],
+      "output_finite": true,
+      "meaning": "Architecture and tensor-shape smoke check only; not a dataset evaluation or accuracy measurement."
+    }
   },
   "provenance": {
     "training_dataset_in_archive": false,
@@ -61,5 +78,5 @@
     "dataset_present": false,
     "note": "This separate YOLO training utility is not the source of the supplied U-Net state_dict and does not meet the current repository's random-initialization provenance gate."
   },
-  "conclusion": "The archive contains an inspectable auxiliary trace-extraction checkpoint. It is not the three-class missing_hole/open_circuit/short_circuit detector. Its file integrity was checked, but its training data, training provenance, ownership, licence and evaluation results are not established by this archive. It must not be used to fill the primary detector, accuracy or ONNX parity records."
+  "conclusion": "The archive contains an inspectable auxiliary trace-extraction checkpoint. Its checksum matches the archive manifest, its state_dict loads strictly into the included ResAttentionUNet implementation, and a dummy forward pass yields a finite single-channel mask of shape 320x320. It is not the three-class missing_hole/open_circuit/short_circuit detector. Its training data, training provenance, ownership, licence and evaluation results are not established by this archive. It must not be used to fill the primary detector, accuracy or ONNX parity records."
 }
