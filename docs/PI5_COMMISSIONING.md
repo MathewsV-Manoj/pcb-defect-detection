@@ -103,7 +103,7 @@ Open the dashboard from a laptop on the same trusted LAN. Record date, operator 
 | Advisory | ExecuTorch returns the expected structured fields | |
 | Next PCB | New capture occurs without another arming gesture | |
 
-Repeat at least 20 cycles. Record actual attempts, successful cycles, missed triggers, duplicate captures, unreadable frames, detector errors, advisory errors and any manual intervention. Do not calculate success rate from incomplete logs.
+Record the actual number of cycles included in the completed physical test, along with attempted and successful cycles, missed triggers, duplicate captures, unreadable frames, detector errors, advisory errors and manual interventions. This template does not impose an arbitrary minimum cycle count; follow the challenge's stated requirement, if any. If the original test logs do not contain a value, leave it unrecorded rather than estimating it. Do not repeat already completed physical tests solely to populate this form.
 
 ## Held-out detector check
 
