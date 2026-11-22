@@ -213,6 +213,21 @@ def checkpoint_audit(checkpoint_value: str | None, data_report: dict[str, Any]) 
     return report
 
 
+
+def read_evidence_status(path: Path, fields: tuple[str, ...], default: str) -> str:
+    if not path.is_file():
+        return default
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return "INVALID"
+    for field in fields:
+        status = value.get(field)
+        if isinstance(status, str) and status.strip():
+            return status.strip().upper()
+    return "UNSPECIFIED"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", help="Processed dataset data.yaml; omit to record NOT_PROVIDED")
@@ -223,14 +238,59 @@ def main() -> int:
     output_dir = Path(args.output_dir).expanduser().resolve()
     data_report = dataset_audit(args.data)
     checkpoint_report = checkpoint_audit(args.checkpoint, data_report)
+    evidence_status = {
+        "held_out_test_metrics": read_evidence_status(
+            output_dir / "project_test_metrics.json", ("result_status", "status"), "NOT_PROVIDED"
+        ),
+        "onnx_prediction_parity": read_evidence_status(
+            output_dir / "project_onnx_parity.json", ("status",), "NOT_PROVIDED"
+        ),
+        "pi_runtime_smoke_test": read_evidence_status(
+            output_dir / "pi5_runtime_smoke_test.json", ("overall_status", "status"), "NOT_RUN"
+        ),
+        "physical_station_commissioning": read_evidence_status(
+            output_dir / "physical_station_commissioning.json", ("status",), "NOT_VERIFIED"
+        ),
+        "offline_operation": read_evidence_status(
+            output_dir / "offline_operation_test.json", ("status",), "NOT_VERIFIED"
+        ),
+        "demo_video_content_review": read_evidence_status(
+            output_dir / "demo_video_review.json", ("status",), "NOT_CONFIRMED"
+        ),
+        "source_authorship_review": read_evidence_status(
+            output_dir / "source_authorship_attestation.json", ("status",), "TEAM_ATTESTATION_REQUIRED"
+        ),
+    }
+    required_statuses = {
+        "held_out_test_metrics": {"COMPLETE"},
+        "onnx_prediction_parity": {"PASS"},
+        "pi_runtime_smoke_test": {"PASSED", "PASS"},
+        "physical_station_commissioning": {"PASSED", "PASS"},
+        "offline_operation": {"PASSED", "PASS"},
+        "demo_video_content_review": {"REVIEWED", "PASS"},
+        "source_authorship_review": {"REVIEWED"},
+    }
+    evidence_blockers = [
+        f"{name}: expected {sorted(expected)}, got {evidence_status[name]}"
+        for name, expected in required_statuses.items()
+        if evidence_status[name] not in expected
+    ]
     combined = {
-        "schema_version": 1,
-        "audit_type": "project_release_provenance_audit",
+        "schema_version": 2,
+        "audit_type": "project_full_release_evidence_audit",
         "audited_at_utc": datetime.now(timezone.utc).isoformat(),
         "dataset_status": data_report["status"],
+        "dataset_release_ready": data_report.get("release_ready") is True,
         "checkpoint_status": checkpoint_report["status"],
-        "release_ready": data_report.get("release_ready") is True and checkpoint_report.get("release_ready") is True,
-        "rule": "No model or metric may be presented as a project result unless the checkpoint and dataset audits pass and the result is reproduced from the matching run.",
+        "checkpoint_release_ready": checkpoint_report.get("release_ready") is True,
+        "evidence_status": evidence_status,
+        "evidence_blockers": evidence_blockers,
+        "release_ready": (
+            data_report.get("release_ready") is True
+            and checkpoint_report.get("release_ready") is True
+            and not evidence_blockers
+        ),
+        "rule": "A complete release requires an audited dataset and matching project checkpoint, reproducible held-out test metrics, ONNX prediction parity, Pi smoke test, physical/offline evidence, video review and team authorship attestation.",
     }
     write_json(output_dir / "project_dataset_audit.json", data_report)
     write_json(output_dir / "project_checkpoint_audit.json", checkpoint_report)
