@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "measurement_type": "demo_video_content_review",
-  "status": "TEAM_REPORTED_UPLOADED_EXTERNALLY_NOT_STORED_IN_REPOSITORY",
-  "video_path": null,
-  "video_file_present_in_repository": false,
-  "video_sha256": null,
+  "status": "FILE_PRESENT_CONTENT_REVIEW_PENDING",
+  "video_path": "demo_video/WhatsApp Video 2026-11-21 at 5.48.59 PM.mp4",
+  "video_file_present_in_repository": true,
+  "video_sha256": "fc562f5889e80173a06e5220328c2bdb5140c02e762a50c3a6640fc9a1348003",
   "reviewed_by": null,
   "review_date": null,
   "checklist": {
@@ -18,8 +18,8 @@
     "video_matches_current_block_diagram": null,
     "no_credentials_or_secrets_exposed": null
   },
-  "note": "The team confirms that the demo video has been uploaded separately (for example, through the official submission channel). It is intentionally not stored in this GitHub repository. The current repository does not retain the external URL or independent review record. This record therefore records team-reported external upload, not a claim that the video was never submitted. Keep a copy of the submission receipt/link in the team's private submission records.",
+  "note": "The original MP4 is restored in this GitHub repository. Its SHA-256 matches the file previously committed to the repository. This confirms the repository copy's identity, not the contents of any separate official portal upload. The video content has not yet been independently reviewed; all content checklist fields therefore remain null. The official submission URL/receipt is not archived here.",
   "external_submission_link_recorded": false,
   "team_reported_uploaded": true,
-  "team_reported_upload_context": "User confirms the project demo video has been uploaded separately; the MP4 was removed from this GitHub repository at team request."
+  "team_reported_upload_context": "User confirms the project demo video has also been uploaded separately; the original MP4 has now been restored in this GitHub repository. The separate official submission link/receipt remains unarchived."
 }
