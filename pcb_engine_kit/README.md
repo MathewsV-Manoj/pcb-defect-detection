@@ -20,7 +20,7 @@ python pcb_engine_kit/dataset.py datasets/import_manifest.csv datasets/processed
 python pcb_engine_kit/audit_release.py --data datasets/processed/pcb3/data.yaml --output-dir docs/results
 ```
 
-Training is blocked unless the generated audit has complete team-declared source/rights/annotation metadata and all three classes are represented in train, validation and test. The importer will not reinterpret DeepPCB `pin-hole` or any other class as `missing_hole`.
+Training is blocked unless the generated audit has complete team-declared source/rights/annotation metadata and all three classes are represented in train, validation and test. The importer does not infer project class mappings from external dataset class IDs. Convert annotations only after manually checking the exact source class definitions.
 
 ## Train from an architecture YAML — no pretrained detector weights
 
