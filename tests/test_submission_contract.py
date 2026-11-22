@@ -104,6 +104,7 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertFalse(release["release_ready"])
         audit_tool = (ROOT / "pcb_engine_kit" / "audit_release.py").read_text(encoding="utf-8")
         self.assertIn("checkpoint_sha256_matches", audit_tool)
+        self.assertIn("original_source_image_and_label_hashes_match", audit_tool)
         self.assertIn("project_training_provenance.json", audit_tool)
 
     def test_project_validation_values_are_screenshot_only(self):
@@ -124,6 +125,8 @@ class SubmissionContractTests(unittest.TestCase):
         provisioner = (ROOT / "scripts" / "provision_pi5.sh").read_text(encoding="utf-8")
         self.assertNotIn("download_sulojan_pcb_yolov8s.py", provisioner)
         self.assertNotIn("export-upstream-onnx", provisioner)
+        dataset_importer = (ROOT / "pcb_engine_kit" / "dataset.py").read_text(encoding="utf-8")
+        self.assertNotIn("parse_deeppcb", dataset_importer)
         self.assertIn("VERIFIED_PROJECT_TRAINING", provisioner)
         for path in (
             "docs/EXTERNAL_PCB_BENCHMARKS.md",
@@ -165,6 +168,16 @@ class SubmissionContractTests(unittest.TestCase):
         self.assertIn("not trained by the project team", report)
         self.assertIn("TextLLMRunner", runner)
         self.assertNotIn("MultimodalRunner", runner)
+
+    def test_onnx_parity_verifier_is_limited_to_full_held_out_test_split(self):
+        parity = (ROOT / "pcb_engine_kit" / "compare_pt_onnx.py").read_text(encoding="utf-8")
+        report = json.loads((ROOT / "docs" / "results" / "project_onnx_parity.json").read_text(encoding="utf-8"))
+        self.assertIn("expected_test_dir", parity)
+        self.assertIn("--mark-verified requires the full held-out test split", parity)
+        self.assertIn("checkpoint_hash_matches_onnx_sidecar", parity)
+        self.assertIn("dataset_audit_hash_matches_onnx_sidecar", parity)
+        self.assertIn("prediction_parity_verified", parity)
+        self.assertEqual(report["status"], "NOT_PROVIDED")
 
     def test_severity_policy_is_configured_and_provisional(self):
         policy = json.loads((ROOT / "models" / "severity_policy.json").read_text(encoding="utf-8"))
