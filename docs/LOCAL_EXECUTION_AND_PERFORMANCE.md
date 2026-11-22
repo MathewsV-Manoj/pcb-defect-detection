@@ -72,7 +72,7 @@ A team-supplied training-results screenshot reports validation precision 98.3%, 
 
 Independent papers report approximately 98–99% mAP@0.50 on their own PCB datasets for several trained detectors. See [the detailed external PCB benchmark comparison](EXTERNAL_PCB_BENCHMARKS.md), including DeepPCB and PKU-Market-PCB, class coverage, dataset splits and caveats. These results do not establish accuracy of the current project checkpoint or this Pi station. The `project_test_metrics.json` report must be generated from the project's own held-out PCB groups.
 
-## Project measurements: not yet recorded
+## Pi runtime and held-out test measurements: not yet recorded
 
 The repository contains benchmark scripts, but no valid Pi 5 benchmark output or project-owned held-out test report is currently committed. Screenshot-reported validation metrics are documented above; archive the raw run artifacts and evaluate the detector on separate held-out board groups. The detector, full software pipeline and physical station must be measured separately.
 
