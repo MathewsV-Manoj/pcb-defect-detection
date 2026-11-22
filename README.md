@@ -9,7 +9,8 @@ The repository is a **software and deployment source checkout**, not a verified 
 | Area | Present in repository | Verification status |
 |---|---|---|
 | Three-class detector contract | Class order, OpenCV preprocessing, ONNX decoder and training/export source | Source present; trained model artifact absent |
-| Dataset tools | Importer, annotation helper, board-group split checks and provenance audit | Tools present; actual dataset and completed import manifest absent |\n| Auxiliary trace extractor | Five-channel ResAttention U-Net checkpoint supplied inside `PCB_ENGINE_KIT(2).zip` | Checkpoint hash inspected; not a three-class detector, not in the repository and not integrated with Pi inference |
+| Dataset tools | Importer, annotation helper, board-group split checks and provenance audit | Tools present; actual dataset and completed import manifest absent |
+| Auxiliary trace extractor | Five-channel ResAttention U-Net checkpoint supplied inside `PCB_ENGINE_KIT(2).zip` | Checkpoint hash inspected; not a three-class detector, not in the repository and not integrated with Pi inference |
 | Operator dashboard | Pi-served browser dashboard and inspection API | Source present; target-device workflow not evidenced |
 | Edge inference | ONNX Runtime CPU path targeted at Raspberry Pi 5 | Deployment code present; no target smoke-test record |
 | Advisory | Text-only Llama 3.2 1B Instruct integration through ExecuTorch | Third-party foundation model; model files and target test absent |
@@ -24,7 +25,9 @@ The project training utility accepts a YOLO architecture YAML and explicitly tra
 
 The project-trained detector is **not currently included** in this repository. The Pi provisioner refuses to proceed without a project ONNX file and matching provenance sidecar. Ultralytics/PyTorch, OpenCV and ONNX Runtime are third-party software dependencies; the YOLO architecture and framework are not claimed as original inventions.
 
-The Llama 3.2 1B Instruct model is also third-party. It is used only to turn structured detector findings into an operator advisory. It is not trained by the project team, does not receive the PCB image, and does not alter detector output.\n\nThe uploaded `PCB_ENGINE_KIT(2).zip` package was inspected. It contains an auxiliary five-channel ResAttention U-Net checkpoint that produces a single-channel trace mask. Its SHA-256 matches the package manifest, but the archive contains no training dataset, training log, checkpoint provenance or metrics. It is **not** the three-class RGB fault detector and is not connected to the current Pi inference path. See `docs/results/supplied_model_package_audit.json`.
+The Llama 3.2 1B Instruct model is also third-party. It is used only to turn structured detector findings into an operator advisory. It is not trained by the project team, does not receive the PCB image, and does not alter detector output.
+
+The uploaded `PCB_ENGINE_KIT(2).zip` package was inspected. It contains an auxiliary five-channel ResAttention U-Net checkpoint that produces a single-channel trace mask. Its SHA-256 matches the package manifest, but the archive contains no training dataset, training log, checkpoint provenance or metrics. It is **not** the three-class RGB fault detector and is not connected to the current Pi inference path. See `docs/results/supplied_model_package_audit.json`.
 
 ## Dataset preparation, training and evaluation
 
